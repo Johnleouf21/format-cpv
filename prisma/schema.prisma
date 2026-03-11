@@ -1,0 +1,211 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  LEARNER
+  TRAINER
+  ADMIN
+}
+
+enum QuestionType {
+  SINGLE_CHOICE
+  MULTIPLE_CHOICE
+}
+
+model User {
+  id             String    @id @default(uuid())
+  email          String    @unique
+  name           String
+  role           UserRole  @default(LEARNER)
+  azureAdId      String?   @unique @map("azure_ad_id")
+  emailVerified  DateTime? @map("email_verified")
+
+  trainerId  String?  @map("trainer_id")
+  trainer    User?    @relation("TrainerLearners", fields: [trainerId], references: [id])
+  learners   User[]   @relation("TrainerLearners")
+
+  parcoursId String?   @map("parcours_id")
+  parcours   Parcours? @relation(fields: [parcoursId], references: [id])
+
+  progress       Progress[]
+  invitations    Invitation[] @relation("TrainerInvitations")
+  usedInvitation Invitation?  @relation("InvitationUser")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+model Parcours {
+  id          String @id @default(uuid())
+  title       String
+  description String @default("")
+
+  modules     Module[]
+  users       User[]
+  invitations Invitation[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("parcours")
+}
+
+model Module {
+  id      String @id @default(uuid())
+  title   String
+  content String @db.Text
+  order   Int    @default(0)
+
+  parcoursId String   @map("parcours_id")
+  parcours   Parcours @relation(fields: [parcoursId], references: [id], onDelete: Cascade)
+
+  quiz     Quiz?
+  progress Progress[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([parcoursId, order])
+  @@map("modules")
+}
+
+model Quiz {
+  id String @id @default(uuid())
+
+  moduleId String   @unique @map("module_id")
+  module   Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  questions Question[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("quizzes")
+}
+
+model Question {
+  id    String       @id @default(uuid())
+  text  String
+  type  QuestionType @default(SINGLE_CHOICE)
+  order Int          @default(0)
+
+  quizId String @map("quiz_id")
+  quiz   Quiz   @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  answers Answer[]
+
+  @@index([quizId, order])
+  @@map("questions")
+}
+
+model Answer {
+  id        String  @id @default(uuid())
+  text      String
+  isCorrect Boolean @default(false) @map("is_correct")
+  order     Int     @default(0)
+
+  questionId String   @map("question_id")
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@index([questionId])
+  @@map("answers")
+}
+
+model Progress {
+  id          String   @id @default(uuid())
+  completedAt DateTime @default(now()) @map("completed_at")
+
+  userId   String @map("user_id")
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  moduleId String @map("module_id")
+  module   Module @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
+  quizResult QuizResult?
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, moduleId])
+  @@index([userId])
+  @@map("progress")
+}
+
+model QuizResult {
+  id             String @id @default(uuid())
+  score          Int
+  totalQuestions Int    @map("total_questions")
+  answers        Json
+
+  progressId String   @unique @map("progress_id")
+  progress   Progress @relation(fields: [progressId], references: [id], onDelete: Cascade)
+
+  completedAt DateTime @default(now()) @map("completed_at")
+
+  @@map("quiz_results")
+}
+
+model Invitation {
+  id        String    @id @default(uuid())
+  token     String    @unique @default(uuid())
+  email     String?
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+
+  trainerId String @map("trainer_id")
+  trainer   User   @relation("TrainerInvitations", fields: [trainerId], references: [id])
+
+  parcoursId String   @map("parcours_id")
+  parcours   Parcours @relation(fields: [parcoursId], references: [id])
+
+  usedById String? @unique @map("used_by_id")
+  usedBy   User?   @relation("InvitationUser", fields: [usedById], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([trainerId])
+  @@index([token])
+  @@map("invitations")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model AllowedDomain {
+  id        String   @id @default(uuid())
+  domain    String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("allowed_domains")
+}
+
+model AllowedEmail {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      UserRole @default(LEARNER)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("allowed_emails")
+}
+
+model PendingLogin {
+  id        String   @id @default(uuid())
+  email     String
+  verified  Boolean  @default(false)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("pending_logins")
+}

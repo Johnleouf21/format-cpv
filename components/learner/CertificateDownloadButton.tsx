@@ -7,18 +7,21 @@ import { Download, Loader2, Award } from 'lucide-react'
 interface CertificateDownloadButtonProps {
   disabled?: boolean
   className?: string
+  parcoursId?: string
 }
 
 export function CertificateDownloadButton({
   disabled,
   className,
+  parcoursId,
 }: CertificateDownloadButtonProps) {
   const [isDownloading, setIsDownloading] = useState(false)
 
   const handleDownload = async () => {
     setIsDownloading(true)
     try {
-      const response = await fetch('/api/certificates/generate')
+      const params = parcoursId ? `?parcoursId=${parcoursId}` : ''
+      const response = await fetch(`/api/certificates/generate${params}`)
 
       if (!response.ok) {
         const error = await response.json()

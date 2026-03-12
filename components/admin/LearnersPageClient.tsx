@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { AdminLearnersTable } from './AdminLearnersTable'
+import { AddUserDialog } from '@/components/shared/AddUserDialog'
 import { Users, Filter } from 'lucide-react'
 
 interface Learner {
@@ -178,11 +179,17 @@ export function LearnersPageClient() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Apprenants</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {learners.length} apprenant{learners.length !== 1 ? 's' : ''} trouvé{learners.length !== 1 ? 's' : ''}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Apprenants</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {learners.length} apprenant{learners.length !== 1 ? 's' : ''} trouvé{learners.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        <AddUserDialog
+          parcoursList={parcoursList}
+          onUserAdded={fetchLearners}
+        />
       </div>
 
       <Card>

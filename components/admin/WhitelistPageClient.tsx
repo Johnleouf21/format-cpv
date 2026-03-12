@@ -169,6 +169,9 @@ export function WhitelistPageClient() {
         <p className="text-sm text-muted-foreground mt-0.5">
           Gérez les domaines et emails autorisés à se connecter
         </p>
+        <p className="text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md mt-2 inline-block">
+          Les utilisateurs ajoutés via la gestion des apprenants sont automatiquement autorisés.
+        </p>
       </div>
 
       {/* Domains Section */}

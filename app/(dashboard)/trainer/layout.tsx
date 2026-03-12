@@ -8,15 +8,13 @@ import { MobileNav } from '@/components/shared/MobileNav'
 const mobileNavItems = [
   { href: '/trainer', label: 'Dashboard', icon: 'LayoutDashboard' },
   { href: '/trainer/parcours', label: 'Parcours', icon: 'Route' },
-  { href: '/trainer/invite', label: 'Inviter', icon: 'UserPlus' },
-  { href: '/trainer/bulk-invite', label: 'Import masse', icon: 'Upload' },
+  { href: '/trainer/learners', label: 'Mes apprenants', icon: 'Users' },
 ]
 
 const navLinks = [
   { href: '/trainer', label: 'Dashboard' },
   { href: '/trainer/parcours', label: 'Parcours' },
-  { href: '/trainer/invite', label: 'Inviter' },
-  { href: '/trainer/bulk-invite', label: 'Import masse' },
+  { href: '/trainer/learners', label: 'Mes apprenants' },
 ]
 
 export default async function TrainerLayout({

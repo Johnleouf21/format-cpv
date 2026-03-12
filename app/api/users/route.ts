@@ -1,0 +1,62 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
+import { addUser, getUsers } from '@/lib/services/user-management.service'
+import { addUserSchema } from '@/lib/validations/user-management.schema'
+import { handleApiError, ApiError } from '@/lib/errors/api-error'
+
+export async function GET(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
+
+    const { searchParams } = request.nextUrl
+    const parcoursId = searchParams.get('parcoursId') || undefined
+    const role = searchParams.get('role') as 'LEARNER' | 'TRAINER' | 'ADMIN' | undefined
+    const search = searchParams.get('search') || undefined
+
+    // TRAINER can only see their own learners
+    const trainerId = session.user.role === 'TRAINER' ? session.user.id : searchParams.get('trainerId') || undefined
+
+    if (session.user.role === 'LEARNER') {
+      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    }
+
+    const users = await getUsers({ trainerId, parcoursId, role, search })
+    return NextResponse.json(users)
+  } catch (error) {
+    return handleApiError(error)
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await auth()
+    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
+
+    if (session.user.role === 'LEARNER') {
+      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    }
+
+    const body = await request.json()
+    const data = addUserSchema.parse(body)
+
+    // TRAINER can only create LEARNER and auto-assigns as their learner
+    if (session.user.role === 'TRAINER') {
+      if (data.role && data.role !== 'LEARNER') {
+        throw new ApiError(403, 'Un formateur ne peut créer que des apprenants', 'FORBIDDEN')
+      }
+      data.role = 'LEARNER'
+      data.trainerId = session.user.id
+    }
+
+    const result = await addUser({
+      ...data,
+      addedBy: session.user.id,
+      addedByName: session.user.name || undefined,
+    })
+
+    return NextResponse.json(result, { status: result.isNew ? 201 : 200 })
+  } catch (error) {
+    return handleApiError(error)
+  }
+}

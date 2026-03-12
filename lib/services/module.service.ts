@@ -18,14 +18,20 @@ export async function getModuleById(moduleId: string, userId: string) {
     throw new ApiError(404, 'Module non trouvé', 'MODULE_NOT_FOUND')
   }
 
-  // Check if user has access to this module (assigned to this parcours)
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { parcoursId: true },
+  // Check if user has access to this module (assigned to this parcours via UserParcours)
+  const hasAccess = await prisma.userParcours.findUnique({
+    where: { userId_parcoursId: { userId, parcoursId: module.parcoursId } },
   })
 
-  if (user?.parcoursId !== module.parcoursId) {
-    throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
+  // Fallback: check legacy parcoursId on User
+  if (!hasAccess) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { parcoursId: true },
+    })
+    if (user?.parcoursId !== module.parcoursId) {
+      throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
+    }
   }
 
   // Check if module is completed by user

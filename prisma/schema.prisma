@@ -30,8 +30,9 @@ model User {
   learners   User[]   @relation("TrainerLearners")
 
   parcoursId String?   @map("parcours_id")
-  parcours   Parcours? @relation(fields: [parcoursId], references: [id])
+  parcours   Parcours? @relation("LegacyUserParcours", fields: [parcoursId], references: [id])
 
+  userParcours UserParcours[]
   progress       Progress[]
   invitations    Invitation[] @relation("TrainerInvitations")
   usedInvitation Invitation?  @relation("InvitationUser")
@@ -47,9 +48,10 @@ model Parcours {
   title       String
   description String @default("")
 
-  modules     Module[]
-  users       User[]
-  invitations Invitation[]
+  modules      Module[]
+  users        User[]        @relation("LegacyUserParcours")
+  userParcours UserParcours[]
+  invitations  Invitation[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -208,4 +210,18 @@ model PendingLogin {
   createdAt DateTime @default(now()) @map("created_at")
 
   @@map("pending_logins")
+}
+
+model UserParcours {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parcoursId String   @map("parcours_id")
+  parcours   Parcours @relation(fields: [parcoursId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  @@unique([userId, parcoursId])
+  @@index([userId])
+  @@index([parcoursId])
+  @@map("user_parcours")
 }

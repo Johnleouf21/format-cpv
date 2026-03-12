@@ -5,7 +5,7 @@ import { getCertificateData, canGenerateCertificate } from '@/lib/services/certi
 import { CertificateTemplate } from '@/components/pdf/CertificateTemplate'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -15,8 +15,11 @@ export async function GET() {
       )
     }
 
+    const { searchParams } = new URL(request.url)
+    const parcoursId = searchParams.get('parcoursId') || undefined
+
     // Check if user can generate certificate
-    const canGenerate = await canGenerateCertificate(session.user.id)
+    const canGenerate = await canGenerateCertificate(session.user.id, parcoursId)
     if (!canGenerate) {
       throw new ApiError(
         400,
@@ -26,7 +29,7 @@ export async function GET() {
     }
 
     // Get certificate data
-    const certificateData = await getCertificateData(session.user.id)
+    const certificateData = await getCertificateData(session.user.id, parcoursId)
 
     // Generate PDF
     const pdfBuffer = await renderToBuffer(

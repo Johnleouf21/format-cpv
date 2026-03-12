@@ -9,25 +9,35 @@ export interface CertificateData {
   totalModules: number
 }
 
-export async function canGenerateCertificate(userId: string): Promise<boolean> {
+async function resolveParcoursId(userId: string, parcoursId?: string): Promise<string | null> {
+  if (parcoursId) return parcoursId
+
+  // Try UserParcours first
+  const assignment = await prisma.userParcours.findFirst({
+    where: { userId },
+    orderBy: { assignedAt: 'asc' },
+    select: { parcoursId: true },
+  })
+  if (assignment) return assignment.parcoursId
+
+  // Fallback: legacy
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { parcoursId: true },
   })
+  return user?.parcoursId || null
+}
 
-  if (!user?.parcoursId) {
-    return false
-  }
+export async function canGenerateCertificate(userId: string, parcoursId?: string): Promise<boolean> {
+  const targetParcoursId = await resolveParcoursId(userId, parcoursId)
+  if (!targetParcoursId) return false
 
   const [completedCount, totalCount] = await Promise.all([
     prisma.progress.count({
-      where: {
-        userId,
-        module: { parcoursId: user.parcoursId },
-      },
+      where: { userId, module: { parcoursId: targetParcoursId } },
     }),
     prisma.module.count({
-      where: { parcoursId: user.parcoursId },
+      where: { parcoursId: targetParcoursId },
     }),
   ])
 
@@ -35,69 +45,51 @@ export async function canGenerateCertificate(userId: string): Promise<boolean> {
 }
 
 export async function getCertificateData(
-  userId: string
+  userId: string,
+  parcoursId?: string
 ): Promise<CertificateData> {
+  const targetParcoursId = await resolveParcoursId(userId, parcoursId)
+  if (!targetParcoursId) {
+    throw new ApiError(404, 'Aucun parcours assigné', 'NOT_FOUND')
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: {
-      parcours: {
-        include: {
-          modules: {
-            select: { id: true },
-          },
-        },
-      },
-      progress: {
-        where: {
-          module: {
-            parcours: {
-              users: {
-                some: { id: userId },
-              },
-            },
-          },
-        },
-        orderBy: { completedAt: 'desc' },
-        take: 1,
-        select: { completedAt: true },
-      },
-    },
+    select: { name: true },
   })
 
-  if (!user || !user.parcours) {
-    throw new ApiError(404, 'Utilisateur ou parcours non trouvé', 'NOT_FOUND')
+  if (!user) {
+    throw new ApiError(404, 'Utilisateur non trouvé', 'NOT_FOUND')
+  }
+
+  const parcours = await prisma.parcours.findUnique({
+    where: { id: targetParcoursId },
+    include: { modules: { select: { id: true } } },
+  })
+
+  if (!parcours) {
+    throw new ApiError(404, 'Parcours non trouvé', 'NOT_FOUND')
   }
 
   const completedCount = await prisma.progress.count({
-    where: {
-      userId,
-      module: { parcoursId: user.parcoursId! },
-    },
+    where: { userId, module: { parcoursId: targetParcoursId } },
   })
 
-  const totalModules = user.parcours.modules.length
+  const totalModules = parcours.modules.length
 
   if (completedCount < totalModules) {
-    throw new ApiError(
-      400,
-      'Le parcours n\'est pas encore complété',
-      'PARCOURS_NOT_COMPLETED'
-    )
+    throw new ApiError(400, 'Le parcours n\'est pas encore complété', 'PARCOURS_NOT_COMPLETED')
   }
 
-  // Get the last completion date
   const lastProgress = await prisma.progress.findFirst({
-    where: {
-      userId,
-      module: { parcoursId: user.parcoursId! },
-    },
+    where: { userId, module: { parcoursId: targetParcoursId } },
     orderBy: { completedAt: 'desc' },
     select: { completedAt: true },
   })
 
   return {
     userName: user.name,
-    parcoursTitle: user.parcours.title,
+    parcoursTitle: parcours.title,
     completedAt: lastProgress?.completedAt || new Date(),
     modulesCompleted: completedCount,
     totalModules,

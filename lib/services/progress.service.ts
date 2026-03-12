@@ -1,13 +1,30 @@
 import { prisma } from '@/lib/db'
 import { ApiError } from '@/lib/errors/api-error'
 
-export async function getUserProgress(userId: string) {
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { parcoursId: true },
-  })
+export async function getUserProgress(userId: string, parcoursId?: string) {
+  // Determine which parcours to get progress for
+  let targetParcoursId = parcoursId
 
-  if (!user?.parcoursId) {
+  if (!targetParcoursId) {
+    // Try UserParcours first
+    const assignment = await prisma.userParcours.findFirst({
+      where: { userId },
+      orderBy: { assignedAt: 'asc' },
+      select: { parcoursId: true },
+    })
+    if (assignment) {
+      targetParcoursId = assignment.parcoursId
+    } else {
+      // Fallback: legacy parcoursId
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { parcoursId: true },
+      })
+      targetParcoursId = user?.parcoursId || undefined
+    }
+  }
+
+  if (!targetParcoursId) {
     throw new ApiError(404, 'Aucun parcours assigné', 'NO_PARCOURS_ASSIGNED')
   }
 
@@ -15,7 +32,7 @@ export async function getUserProgress(userId: string) {
     prisma.progress.findMany({
       where: {
         userId,
-        module: { parcoursId: user.parcoursId },
+        module: { parcoursId: targetParcoursId },
       },
       include: {
         module: {
@@ -28,7 +45,7 @@ export async function getUserProgress(userId: string) {
       orderBy: { completedAt: 'desc' },
     }),
     prisma.module.count({
-      where: { parcoursId: user.parcoursId },
+      where: { parcoursId: targetParcoursId },
     }),
   ])
 
@@ -62,13 +79,20 @@ export async function markModuleAsCompleted(userId: string, moduleId: string) {
     throw new ApiError(404, 'Module non trouvé', 'MODULE_NOT_FOUND')
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { parcoursId: true },
+  // Check access via UserParcours
+  const hasAccess = await prisma.userParcours.findUnique({
+    where: { userId_parcoursId: { userId, parcoursId: module.parcoursId } },
   })
 
-  if (user?.parcoursId !== module.parcoursId) {
-    throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
+  if (!hasAccess) {
+    // Fallback: legacy parcoursId
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { parcoursId: true },
+    })
+    if (user?.parcoursId !== module.parcoursId) {
+      throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
+    }
   }
 
   // Check if already completed

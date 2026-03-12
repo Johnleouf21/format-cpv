@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { Suspense, useEffect, useState, useCallback } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { signIn } from 'next-auth/react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,6 +9,25 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 
 export default function VerifyRequestPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+        <Card className="w-full max-w-md text-center">
+          <CardHeader>
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+              <Mail className="h-6 w-6 text-blue-600" />
+            </div>
+            <CardTitle className="text-2xl font-bold">Chargement...</CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+    }>
+      <VerifyRequestContent />
+    </Suspense>
+  )
+}
+
+function VerifyRequestContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const pendingId = searchParams.get('pendingId')

@@ -10,23 +10,6 @@ export interface UploadResult {
   filename: string
 }
 
-function getAzureBlobClient() {
-  const connectionString = process.env.AZURE_STORAGE_CONNECTION_STRING
-  if (!connectionString) {
-    return null
-  }
-
-  // Lazy import Azure SDK only when needed
-  try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const { BlobServiceClient } = require('@azure/storage-blob')
-    return BlobServiceClient.fromConnectionString(connectionString)
-  } catch {
-    console.warn('Azure Storage SDK not installed, using local storage')
-    return null
-  }
-}
-
 export async function uploadImage(
   file: File,
   folder: string = 'modules'
@@ -55,58 +38,11 @@ export async function uploadImage(
   const randomStr = Math.random().toString(36).substring(2, 8)
   const filename = `${timestamp}-${randomStr}.${ext}`
 
-  // Try Azure Blob Storage first
-  const azureClient = getAzureBlobClient()
-  if (azureClient) {
-    return uploadToAzure(azureClient, file, folder, filename)
-  }
-
-  // Fallback to local storage
-  return uploadToLocal(file, folder, filename)
-}
-
-async function uploadToAzure(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  blobServiceClient: any,
-  file: File,
-  folder: string,
-  filename: string
-): Promise<UploadResult> {
-  const containerName = process.env.AZURE_STORAGE_CONTAINER || 'module-images'
-  const containerClient = blobServiceClient.getContainerClient(containerName)
-
-  // Create container if it doesn't exist
-  await containerClient.createIfNotExists({ access: 'blob' })
-
-  const blobPath = `${folder}/${filename}`
-  const blockBlobClient = containerClient.getBlockBlobClient(blobPath)
-
-  const buffer = Buffer.from(await file.arrayBuffer())
-  await blockBlobClient.upload(buffer, buffer.length, {
-    blobHTTPHeaders: {
-      blobContentType: file.type,
-    },
-  })
-
-  return {
-    url: blockBlobClient.url,
-    filename: blobPath,
-  }
-}
-
-async function uploadToLocal(
-  file: File,
-  folder: string,
-  filename: string
-): Promise<UploadResult> {
   const uploadDir = path.join(process.cwd(), 'public', 'uploads', folder)
-
-  // Ensure directory exists
   await mkdir(uploadDir, { recursive: true })
 
   const filePath = path.join(uploadDir, filename)
   const buffer = Buffer.from(await file.arrayBuffer())
-
   await writeFile(filePath, buffer)
 
   return {
@@ -116,27 +52,6 @@ async function uploadToLocal(
 }
 
 export async function deleteImage(url: string): Promise<void> {
-  // Check if it's an Azure URL
-  if (url.includes('blob.core.windows.net')) {
-    const azureClient = getAzureBlobClient()
-    if (azureClient) {
-      try {
-        const containerName = process.env.AZURE_STORAGE_CONTAINER || 'module-images'
-        const containerClient = azureClient.getContainerClient(containerName)
-
-        // Extract blob name from URL
-        const urlObj = new URL(url)
-        const blobName = urlObj.pathname.split('/').slice(2).join('/')
-
-        const blockBlobClient = containerClient.getBlockBlobClient(blobName)
-        await blockBlobClient.deleteIfExists()
-      } catch (error) {
-        console.error('Error deleting from Azure:', error)
-      }
-    }
-    return
-  }
-
-  // Local file - just log, don't actually delete for safety
+  // Local file - log only for safety
   console.log('Would delete local file:', url)
 }

@@ -20,6 +20,18 @@ export async function createInvitation(
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS)
 
+  // Auto-whitelist the email if provided
+  if (data.email) {
+    await prisma.allowedEmail.upsert({
+      where: { email: data.email },
+      update: {},
+      create: {
+        email: data.email,
+        role: UserRole.LEARNER,
+      },
+    })
+  }
+
   const invitations = await Promise.all(
     Array.from({ length: data.count || 1 }).map(() =>
       prisma.invitation.create({
@@ -98,7 +110,7 @@ export async function redeemInvitation(
     throw new ApiError(400, 'Un compte existe déjà avec cet email', 'EMAIL_EXISTS')
   }
 
-  // Create user and mark invitation as used in a transaction
+  // Create user, whitelist email, and mark invitation as used in a transaction
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
@@ -107,6 +119,16 @@ export async function redeemInvitation(
         role: UserRole.LEARNER,
         trainerId: invitation.trainerId,
         parcoursId: invitation.parcoursId,
+      },
+    })
+
+    // Auto-whitelist the email so the user can login via magic link later
+    await tx.allowedEmail.upsert({
+      where: { email: data.email },
+      update: {},
+      create: {
+        email: data.email,
+        role: UserRole.LEARNER,
       },
     })
 
@@ -181,6 +203,20 @@ export async function createBulkInvitations(
 
   const expiresAt = new Date()
   expiresAt.setDate(expiresAt.getDate() + INVITATION_EXPIRY_DAYS)
+
+  // Auto-whitelist all emails
+  await Promise.all(
+    data.emails.map((email) =>
+      prisma.allowedEmail.upsert({
+        where: { email },
+        update: {},
+        create: {
+          email,
+          role: UserRole.LEARNER,
+        },
+      })
+    )
+  )
 
   const invitations = await prisma.$transaction(
     data.emails.map((email) =>

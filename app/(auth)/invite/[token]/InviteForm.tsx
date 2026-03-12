@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import { signOut } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,6 +29,22 @@ export function InviteForm({ token, parcours, trainer, prefillEmail }: InviteFor
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Auto sign-out if a different session is active
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch('/api/auth/session')
+        const session = await res.json()
+        if (session?.user?.email && session.user.email !== prefillEmail) {
+          await signOut({ redirect: false })
+        }
+      } catch {
+        // No session or error — continue normally
+      }
+    }
+    checkSession()
+  }, [prefillEmail])
 
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -116,7 +133,7 @@ export function InviteForm({ token, parcours, trainer, prefillEmail }: InviteFor
             </Button>
 
             <p className="text-xs text-center text-muted-foreground">
-              En créant votre compte, vous pourrez vous connecter avec Microsoft 365
+              En créant votre compte, vous pourrez vous connecter via un lien magique envoyé par email
             </p>
           </form>
         </Form>

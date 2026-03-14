@@ -2,10 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { ModuleForm } from './ModuleForm'
-import { ArrowLeft } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { ModuleFormSkeleton } from '@/components/shared/ModuleCard'
-import Link from 'next/link'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 
 interface Parcours {
   id: string
@@ -39,14 +37,10 @@ export function NewModulePageClient() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/modules">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
-      </div>
+      <PageBreadcrumb items={[
+        { label: 'Modules', href: '/admin/modules' },
+        { label: 'Nouveau module' },
+      ]} />
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Nouveau module</h1>

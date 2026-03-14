@@ -23,9 +23,10 @@ import { Loader2 } from 'lucide-react'
 interface Learner {
   id: string
   name: string
-  trainer: {
+  trainer?: {
     id: string
     name: string
+    email?: string
   } | null
 }
 

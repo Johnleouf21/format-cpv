@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import {
   Select,
   SelectContent,
@@ -12,9 +11,18 @@ import {
 import { AdminLearnersTable } from './AdminLearnersTable'
 import { AddUserDialog } from '@/components/shared/AddUserDialog'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Users, Filter } from 'lucide-react'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import type { LearnerItem } from '@/components/shared/LearnersListView'
 
-interface Learner {
+interface LearnerParcours {
+  id: string
+  title: string
+  completed: number
+  total: number
+  percentage: number
+}
+
+interface ApiLearner {
   id: string
   name: string
   email: string
@@ -23,10 +31,7 @@ interface Learner {
     name: string
     email: string
   } | null
-  parcours: {
-    id: string
-    title: string
-  } | null
+  parcours: LearnerParcours[]
   progress: {
     completed: number
     total: number
@@ -46,11 +51,22 @@ interface Parcours {
   title: string
 }
 
+function mapToLearnerItem(learner: ApiLearner): LearnerItem & { progress: ApiLearner['progress']; createdAt: Date } {
+  return {
+    ...learner,
+    progressSummary: {
+      total: learner.progress.total,
+      completed: learner.progress.completed,
+    },
+  }
+}
+
 export function LearnersPageClient() {
-  const [learners, setLearners] = useState<Learner[]>([])
+  const [rawLearners, setRawLearners] = useState<ApiLearner[]>([])
   const [trainers, setTrainers] = useState<Trainer[]>([])
   const [parcoursList, setParcoursList] = useState<Parcours[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   // Filters
   const [selectedTrainer, setSelectedTrainer] = useState<string>('all')
@@ -66,7 +82,7 @@ export function LearnersPageClient() {
 
       const response = await fetch(`/api/admin/learners?${params}`)
       if (response.ok) {
-        setLearners(await response.json())
+        setRawLearners(await response.json())
       }
     } catch (error) {
       console.error('Error fetching learners:', error)
@@ -82,7 +98,7 @@ export function LearnersPageClient() {
           fetch('/api/admin/parcours'),
         ])
 
-        if (learnersRes.ok) setLearners(await learnersRes.json())
+        if (learnersRes.ok) setRawLearners(await learnersRes.json())
         if (trainersRes.ok) setTrainers(await trainersRes.json())
         if (parcoursRes.ok) setParcoursList(await parcoursRes.json())
       } catch (error) {
@@ -101,13 +117,23 @@ export function LearnersPageClient() {
     }
   }, [selectedTrainer, selectedParcours, selectedStatus, fetchLearners, isLoading])
 
+  // Map + client-side search filter
+  const learners = useMemo(() => {
+    const mapped = rawLearners.map(mapToLearnerItem)
+    if (!search) return mapped
+    const q = search.toLowerCase()
+    return mapped.filter(
+      (l) => l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q)
+    )
+  }, [rawLearners, search])
+
   async function handleDelete(id: string) {
     const response = await fetch(`/api/admin/learners/${id}`, {
       method: 'DELETE',
     })
 
     if (response.ok) {
-      setLearners((prev) => prev.filter((l) => l.id !== id))
+      setRawLearners((prev) => prev.filter((l) => l.id !== id))
     }
   }
 
@@ -124,36 +150,10 @@ export function LearnersPageClient() {
     }
 
     const updatedLearner = await response.json()
-    setLearners((prev) =>
+    setRawLearners((prev) =>
       prev.map((l) =>
         l.id === learnerId
           ? { ...l, trainer: updatedLearner.trainer }
-          : l
-      )
-    )
-  }
-
-  async function handleAssignParcours(learnerId: string, parcoursId: string | null) {
-    const response = await fetch(`/api/admin/learners/${learnerId}/assign-parcours`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ parcoursId }),
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.message || 'Une erreur est survenue')
-    }
-
-    const updatedLearner = await response.json()
-    setLearners((prev) =>
-      prev.map((l) =>
-        l.id === learnerId
-          ? {
-              ...l,
-              parcours: updatedLearner.parcours,
-              progress: { completed: 0, total: 0, percentage: 0 },
-            }
           : l
       )
     )
@@ -207,64 +207,58 @@ export function LearnersPageClient() {
         />
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
-            <CardDescription>
-              Liste de tous les apprenants de la plateforme
-            </CardDescription>
-            <div className="flex flex-wrap items-center gap-2">
-              <Select value={selectedTrainer} onValueChange={setSelectedTrainer}>
-                <SelectTrigger className="w-[160px] h-8 text-xs">
-                  <SelectValue placeholder="Formateur" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les formateurs</SelectItem>
-                  {trainers.map((t) => (
-                    <SelectItem key={t.id} value={t.id}>
-                      {t.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedParcours} onValueChange={setSelectedParcours}>
-                <SelectTrigger className="w-[160px] h-8 text-xs">
-                  <SelectValue placeholder="Parcours" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les parcours</SelectItem>
-                  {parcoursList.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="w-[130px] h-8 text-xs">
-                  <SelectValue placeholder="Statut" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous</SelectItem>
-                  <SelectItem value="not_started">Non commencé</SelectItem>
-                  <SelectItem value="active">En cours</SelectItem>
-                  <SelectItem value="completed">Terminé</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+      <AdminLearnersTable
+        learners={learners}
+        trainers={trainers}
+        parcoursList={parcoursList}
+        search={search}
+        onSearchChange={setSearch}
+        isLoading={false}
+        onDelete={handleDelete}
+        onReassign={handleReassign}
+        onRefresh={fetchLearners}
+        headerExtra={
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={selectedTrainer} onValueChange={setSelectedTrainer}>
+              <SelectTrigger className="w-[160px] h-8 text-xs">
+                <SelectValue placeholder="Formateur" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les formateurs</SelectItem>
+                {trainers.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>
+                    {t.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedParcours} onValueChange={setSelectedParcours}>
+              <SelectTrigger className="w-[160px] h-8 text-xs">
+                <SelectValue placeholder="Parcours" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous les parcours</SelectItem>
+                {parcoursList.map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {p.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+              <SelectTrigger className="w-[130px] h-8 text-xs">
+                <SelectValue placeholder="Statut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Tous</SelectItem>
+                <SelectItem value="not_started">Non commencé</SelectItem>
+                <SelectItem value="active">En cours</SelectItem>
+                <SelectItem value="completed">Terminé</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
-        </CardHeader>
-        <CardContent>
-          <AdminLearnersTable
-            learners={learners}
-            trainers={trainers}
-            parcoursList={parcoursList}
-            onDelete={handleDelete}
-            onReassign={handleReassign}
-            onAssignParcours={handleAssignParcours}
-          />
-        </CardContent>
-      </Card>
+        }
+      />
     </div>
   )
 }

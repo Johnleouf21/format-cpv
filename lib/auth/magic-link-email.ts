@@ -53,7 +53,7 @@ export async function sendMagicLinkEmail(
               </div>
 
               <p style="color: #6B7280; font-size: 14px;">
-                Ce lien expire dans 24 heures. Si vous n'avez pas demandé cette connexion, ignorez cet email.
+                Ce lien expire dans 15 minutes. Si vous n'avez pas demandé cette connexion, ignorez cet email.
               </p>
             </div>
 
@@ -63,7 +63,7 @@ export async function sendMagicLinkEmail(
           </body>
         </html>
       `,
-      text: `Connexion à FormaCPV\n\nCliquez sur ce lien pour vous connecter :\n${url}\n\nCe lien expire dans 24 heures.\nSi vous n'avez pas demandé cette connexion, ignorez cet email.`,
+      text: `Connexion à FormaCPV\n\nCliquez sur ce lien pour vous connecter :\n${url}\n\nCe lien expire dans 15 minutes.\nSi vous n'avez pas demandé cette connexion, ignorez cet email.`,
     }),
   })
 

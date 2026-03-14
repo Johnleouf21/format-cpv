@@ -17,6 +17,7 @@ import {
   PanelLeftClose,
   PanelLeft,
 } from 'lucide-react'
+import { ChatBot } from '@/components/shared/ChatBot'
 
 interface NavItem {
   href: string
@@ -197,6 +198,7 @@ export function DashboardShell({
             </div>
           </main>
         </div>
+        <ChatBot userName={userName} currentSpace={currentSpace} />
       </div>
     )
   }
@@ -239,6 +241,7 @@ export function DashboardShell({
         </div>
       </header>
       <main className="px-3 sm:px-6 py-6 sm:py-8">{children}</main>
+      <ChatBot userName={userName} currentSpace={currentSpace} />
     </div>
   )
 }

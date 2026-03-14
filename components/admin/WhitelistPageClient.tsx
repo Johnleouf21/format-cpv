@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { ShieldCheck, Plus, Trash2, Globe, Mail, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Globe, Mail, AlertCircle } from 'lucide-react'
 
 interface AllowedDomain {
   id: string
@@ -45,7 +45,7 @@ interface AllowedEmail {
 }
 
 const roleLabels: Record<string, string> = {
-  ADMIN: 'Administrateur',
+  ADMIN: 'Admin',
   TRAINER: 'Formateur',
   LEARNER: 'Apprenant',
 }
@@ -232,34 +232,61 @@ export function WhitelistPageClient() {
               Aucun domaine autorisé
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Domaine</TableHead>
-                  <TableHead>Ajouté le</TableHead>
-                  <TableHead className="w-[60px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile: Cards */}
+              <div className="space-y-2 md:hidden">
                 {domains.map((domain) => (
-                  <TableRow key={domain.id}>
-                    <TableCell className="font-mono">@{domain.domain}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(domain.createdAt).toLocaleDateString('fr-FR')}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveDomain(domain.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                  <div key={domain.id} className="flex items-center justify-between gap-2 border rounded-lg p-3">
+                    <div className="min-w-0">
+                      <p className="font-mono text-sm truncate">@{domain.domain}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(domain.createdAt).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="shrink-0"
+                      onClick={() => handleRemoveDomain(domain.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-red-500" />
+                    </Button>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop: Table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Domaine</TableHead>
+                      <TableHead>Ajouté le</TableHead>
+                      <TableHead className="w-[60px]" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {domains.map((domain) => (
+                      <TableRow key={domain.id}>
+                        <TableCell className="font-mono">@{domain.domain}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(domain.createdAt).toLocaleDateString('fr-FR')}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveDomain(domain.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>
@@ -272,7 +299,7 @@ export function WhitelistPageClient() {
               <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50">
                 <Mail className="h-4.5 w-4.5 text-blue-600" />
               </div>
-              Emails individuels autorisés
+              Emails individuels
             </CardTitle>
             <CardDescription>
               Emails spécifiques avec rôle assigné (prioritaire sur le domaine)
@@ -289,22 +316,25 @@ export function WhitelistPageClient() {
               Aucun email individuel autorisé
             </p>
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Email</TableHead>
-                  <TableHead>Rôle</TableHead>
-                  <TableHead>Ajouté le</TableHead>
-                  <TableHead className="w-[60px]" />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <>
+              {/* Mobile: Cards */}
+              <div className="space-y-2 md:hidden">
                 {emails.map((email) => (
-                  <TableRow key={email.id}>
-                    <TableCell className="font-mono">{email.email}</TableCell>
-                    <TableCell>
+                  <div key={email.id} className="border rounded-lg p-3 space-y-2">
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm font-medium truncate min-w-0">{email.email}</p>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="shrink-0 -mt-1 -mr-1"
+                        onClick={() => handleRemoveEmail(email.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-500" />
+                      </Button>
+                    </div>
+                    <div className="flex items-center justify-between gap-2">
                       <Select value={email.role} onValueChange={(value) => handleUpdateEmailRole(email.id, value)}>
-                        <SelectTrigger className="h-8 w-[150px]">
+                        <SelectTrigger className="h-8 w-[140px]">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -313,23 +343,59 @@ export function WhitelistPageClient() {
                           <SelectItem value="LEARNER">Apprenant</SelectItem>
                         </SelectContent>
                       </Select>
-                    </TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(email.createdAt).toLocaleDateString('fr-FR')}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleRemoveEmail(email.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-red-500" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
+                      <span className="text-xs text-muted-foreground shrink-0">
+                        {new Date(email.createdAt).toLocaleDateString('fr-FR')}
+                      </span>
+                    </div>
+                  </div>
                 ))}
-              </TableBody>
-            </Table>
+              </div>
+
+              {/* Desktop: Table */}
+              <div className="hidden md:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Rôle</TableHead>
+                      <TableHead>Ajouté le</TableHead>
+                      <TableHead className="w-[60px]" />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {emails.map((email) => (
+                      <TableRow key={email.id}>
+                        <TableCell className="font-mono">{email.email}</TableCell>
+                        <TableCell>
+                          <Select value={email.role} onValueChange={(value) => handleUpdateEmailRole(email.id, value)}>
+                            <SelectTrigger className="h-8 w-[150px]">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ADMIN">Administrateur</SelectItem>
+                              <SelectItem value="TRAINER">Formateur</SelectItem>
+                              <SelectItem value="LEARNER">Apprenant</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {new Date(email.createdAt).toLocaleDateString('fr-FR')}
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => handleRemoveEmail(email.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </>
           )}
         </CardContent>
       </Card>

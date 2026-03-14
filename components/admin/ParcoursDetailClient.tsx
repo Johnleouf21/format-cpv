@@ -14,7 +14,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
-import { ArrowLeft, Route, BookOpen, Plus, Edit, Eye, ChevronUp, ChevronDown } from 'lucide-react'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
+import { Route, BookOpen, Plus, Edit, Eye, ChevronUp, ChevronDown } from 'lucide-react'
 
 interface Module {
   id: string
@@ -114,12 +115,10 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
   if (error || !parcours) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/parcours">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
+        <PageBreadcrumb items={[
+          { label: 'Parcours', href: '/admin/parcours' },
+          { label: 'Erreur' },
+        ]} />
         <div className="p-4 bg-destructive/10 text-destructive rounded-md">
           {error || 'Parcours non trouvé'}
         </div>
@@ -129,14 +128,10 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/parcours">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
-      </div>
+      <PageBreadcrumb items={[
+        { label: 'Parcours', href: '/admin/parcours' },
+        { label: parcours.title },
+      ]} />
 
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>

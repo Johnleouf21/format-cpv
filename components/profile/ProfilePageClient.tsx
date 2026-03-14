@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,6 +9,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import {
   User,
   Mail,
@@ -21,6 +30,9 @@ import {
   PanelLeft,
   Monitor,
   AlertCircle,
+  Bell,
+  Send,
+  HelpCircle,
 } from 'lucide-react'
 
 interface ProfilePageClientProps {
@@ -42,12 +54,34 @@ const roleBadgeVariants: Record<string, string> = {
   LEARNER: 'bg-green-100 text-green-700 border-green-200',
 }
 
+interface NotificationPreferences {
+  emailWelcome: boolean
+  emailAssignment: boolean
+  emailContentUpdate: boolean
+}
+
+interface ContactPerson {
+  id: string
+  name: string
+  role: string
+}
+
 export function ProfilePageClient({ userName, userEmail, userRole }: ProfilePageClientProps) {
   const router = useRouter()
   const [name, setName] = useState(userName)
   const [isSaving, setIsSaving] = useState(false)
   const [saved, setSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [notifPrefs, setNotifPrefs] = useState<NotificationPreferences | null>(null)
+  const [notifLoading, setNotifLoading] = useState(true)
+  const [contacts, setContacts] = useState<ContactPerson[]>([])
+  const [contactsLoading, setContactsLoading] = useState(true)
+  const [contactRecipient, setContactRecipient] = useState('')
+  const [contactSubject, setContactSubject] = useState('')
+  const [contactMessage, setContactMessage] = useState('')
+  const [contactSending, setContactSending] = useState(false)
+  const [contactSent, setContactSent] = useState(false)
+  const [contactError, setContactError] = useState<string | null>(null)
   const [theme, setTheme] = useState<'light' | 'dark'>(() => {
     if (typeof window !== 'undefined') {
       return localStorage.getItem('forma-cpv-theme') as 'light' | 'dark' || 'light'
@@ -95,6 +129,91 @@ export function ProfilePageClient({ userName, userEmail, userRole }: ProfilePage
       setError(err instanceof Error ? err.message : 'Une erreur est survenue')
     } finally {
       setIsSaving(false)
+    }
+  }
+
+  const fetchNotifPrefs = useCallback(async () => {
+    try {
+      const res = await fetch('/api/profile/notifications')
+      if (res.ok) {
+        setNotifPrefs(await res.json())
+      }
+    } catch {
+      // ignore
+    } finally {
+      setNotifLoading(false)
+    }
+  }, [])
+
+  const fetchContacts = useCallback(async () => {
+    try {
+      const res = await fetch('/api/profile/contact')
+      if (res.ok) {
+        const data = await res.json()
+        setContacts(data.contacts || [])
+        if (data.contacts?.length > 0) {
+          setContactRecipient(data.contacts[0].id)
+        }
+      }
+    } catch {
+      // ignore
+    } finally {
+      setContactsLoading(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchNotifPrefs()
+    fetchContacts()
+  }, [fetchNotifPrefs, fetchContacts])
+
+  const updateNotifPref = async (key: keyof NotificationPreferences, value: boolean) => {
+    const prev = notifPrefs
+    setNotifPrefs((p) => p ? { ...p, [key]: value } : p)
+    try {
+      const res = await fetch('/api/profile/notifications', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ [key]: value }),
+      })
+      if (!res.ok) {
+        setNotifPrefs(prev)
+      }
+    } catch {
+      setNotifPrefs(prev)
+    }
+  }
+
+  const handleSendContact = async () => {
+    if (!contactRecipient || !contactSubject.trim() || !contactMessage.trim()) return
+    setContactSending(true)
+    setContactError(null)
+    setContactSent(false)
+
+    try {
+      const res = await fetch('/api/profile/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recipientId: contactRecipient,
+          subject: contactSubject.trim(),
+          message: contactMessage.trim(),
+        }),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Erreur lors de l'envoi")
+      }
+
+      setContactSent(true)
+      setContactSubject('')
+      setContactMessage('')
+      setTimeout(() => setContactSent(false), 5000)
+    } catch (err) {
+      setContactError(err instanceof Error ? err.message : 'Une erreur est survenue')
+    } finally {
+      setContactSending(false)
     }
   }
 
@@ -266,30 +385,162 @@ export function ProfilePageClient({ userName, userEmail, userRole }: ProfilePage
       {/* Notifications */}
       <Card id="notifications">
         <CardHeader>
-          <CardTitle>Notifications</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <Bell className="h-5 w-5" />
+            Notifications
+          </CardTitle>
           <CardDescription>
-            Gérez vos préférences de notification
+            Choisissez les emails que vous souhaitez recevoir
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Vous recevez automatiquement un email lorsqu&apos;un formateur vous assigne une nouvelle formation.
-          </p>
+        <CardContent className="space-y-4">
+          {notifLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Chargement...
+            </div>
+          ) : notifPrefs ? (
+            <>
+              <div className="flex items-center justify-between max-w-sm">
+                <div>
+                  <p className="text-sm font-medium">Email de bienvenue</p>
+                  <p className="text-xs text-muted-foreground">
+                    Recevoir un email lors de la création de votre compte
+                  </p>
+                </div>
+                <Switch
+                  checked={notifPrefs.emailWelcome}
+                  onCheckedChange={(v) => updateNotifPref('emailWelcome', v)}
+                />
+              </div>
+              <div className="flex items-center justify-between max-w-sm">
+                <div>
+                  <p className="text-sm font-medium">Assignation de formation</p>
+                  <p className="text-xs text-muted-foreground">
+                    Recevoir un email quand une formation vous est attribuée
+                  </p>
+                </div>
+                <Switch
+                  checked={notifPrefs.emailAssignment}
+                  onCheckedChange={(v) => updateNotifPref('emailAssignment', v)}
+                />
+              </div>
+              <div className="flex items-center justify-between max-w-sm">
+                <div>
+                  <p className="text-sm font-medium">Mise à jour de contenu</p>
+                  <p className="text-xs text-muted-foreground">
+                    Recevoir un email quand un module ou parcours est modifié
+                  </p>
+                </div>
+                <Switch
+                  checked={notifPrefs.emailContentUpdate}
+                  onCheckedChange={(v) => updateNotifPref('emailContentUpdate', v)}
+                />
+              </div>
+            </>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              Impossible de charger les préférences.
+            </p>
+          )}
         </CardContent>
       </Card>
 
-      {/* Help */}
+      {/* Help / Contact */}
       <Card id="help">
         <CardHeader>
-          <CardTitle>Aide / Support</CardTitle>
+          <CardTitle className="flex items-center gap-2">
+            <HelpCircle className="h-5 w-5" />
+            Aide / Support
+          </CardTitle>
           <CardDescription>
-            Besoin d&apos;aide ?
+            Contactez votre formateur ou administrateur directement depuis la plateforme
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            Contactez votre formateur ou administrateur pour toute question relative à vos formations.
-          </p>
+        <CardContent className="space-y-4">
+          {contactsLoading ? (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Chargement des contacts...
+            </div>
+          ) : contacts.length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              Aucun contact disponible. Vous serez mis en relation avec un formateur ou administrateur prochainement.
+            </p>
+          ) : (
+            <>
+              <div className="space-y-2">
+                <Label>Destinataire</Label>
+                <Select value={contactRecipient} onValueChange={setContactRecipient}>
+                  <SelectTrigger className="max-w-sm">
+                    <SelectValue placeholder="Choisir un destinataire" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {contacts.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name} — {c.role === 'ADMIN' ? 'Administrateur' : 'Formateur'}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contact-subject">Sujet</Label>
+                <Input
+                  id="contact-subject"
+                  value={contactSubject}
+                  onChange={(e) => setContactSubject(e.target.value)}
+                  placeholder="Ex : Question sur ma formation"
+                  className="max-w-sm"
+                  maxLength={200}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="contact-message">Message</Label>
+                <Textarea
+                  id="contact-message"
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  placeholder="Décrivez votre question ou problème..."
+                  className="max-w-lg min-h-[100px]"
+                  maxLength={2000}
+                />
+                <p className="text-xs text-muted-foreground">
+                  {contactMessage.length}/2000 caractères
+                </p>
+              </div>
+
+              {contactError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{contactError}</AlertDescription>
+                </Alert>
+              )}
+
+              {contactSent && (
+                <Alert className="border-green-200 bg-green-50">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-green-700">
+                    Message envoyé ! Le destinataire pourra vous répondre par email.
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              <Button
+                onClick={handleSendContact}
+                disabled={contactSending || !contactRecipient || !contactSubject.trim() || !contactMessage.trim()}
+              >
+                {contactSending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                {contactSending ? 'Envoi en cours...' : 'Envoyer le message'}
+              </Button>
+            </>
+          )}
         </CardContent>
       </Card>
     </div>

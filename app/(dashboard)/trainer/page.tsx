@@ -3,7 +3,10 @@ import { redirect } from 'next/navigation'
 import { getTrainerStats, getTrainerLearners } from '@/lib/services/trainer.service'
 import { prisma } from '@/lib/db'
 import { StatsCards } from '@/components/trainer/StatsCards'
+import { ProgressDistribution } from '@/components/trainer/ProgressDistribution'
+import { AtRiskLearners } from '@/components/trainer/AtRiskLearners'
 import { TrainerDashboardClient } from '@/components/trainer/TrainerDashboardClient'
+import { UserRole } from '@prisma/client'
 import { Users } from 'lucide-react'
 
 export default async function TrainerDashboardPage() {
@@ -13,14 +16,18 @@ export default async function TrainerDashboardPage() {
     redirect('/login')
   }
 
+  const userRole = session.user.role as UserRole
+
   const [stats, learners, parcoursList] = await Promise.all([
-    getTrainerStats(session.user.id),
-    getTrainerLearners(session.user.id),
+    getTrainerStats(session.user.id, userRole),
+    getTrainerLearners(session.user.id, { userRole }),
     prisma.parcours.findMany({
       select: { id: true, title: true },
       orderBy: { title: 'asc' },
     }),
   ])
+
+  const totalLearners = stats.distribution.notStarted + stats.distribution.inProgress + stats.distribution.almostDone + stats.distribution.completed
 
   return (
     <div className="space-y-8">
@@ -36,6 +43,13 @@ export default async function TrainerDashboardPage() {
         totalConnected={stats.totalConnected}
         avgCompletion={stats.avgCompletion}
       />
+
+      {totalLearners > 0 && (
+        <div className="grid gap-6 lg:grid-cols-2">
+          <ProgressDistribution distribution={stats.distribution} total={totalLearners} />
+          <AtRiskLearners learners={stats.atRiskLearners} />
+        </div>
+      )}
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2.5">

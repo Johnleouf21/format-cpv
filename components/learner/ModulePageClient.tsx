@@ -8,6 +8,7 @@ import { CompleteModuleButton } from './CompleteModuleButton'
 import { QuizComponent } from './QuizComponent'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 import { Loader2, PartyPopper } from 'lucide-react'
 
 interface ModuleData {
@@ -138,14 +139,10 @@ export function ModulePageClient({ data }: ModulePageClientProps) {
 
   return (
     <div className="space-y-6">
-      {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Link href="/learner" className="hover:text-foreground">
-          Accueil
-        </Link>
-        <span>/</span>
-        <span className="text-foreground">{data.module.title}</span>
-      </nav>
+      <PageBreadcrumb items={[
+        { label: 'Mes formations', href: '/learner' },
+        { label: data.module.title },
+      ]} />
 
       {/* Module header */}
       <div className="bg-card rounded-lg p-6 shadow-sm border">

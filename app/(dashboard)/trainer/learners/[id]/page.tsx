@@ -1,12 +1,13 @@
 import { auth } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
-import Link from 'next/link'
 import { getLearnerDetails } from '@/lib/services/trainer.service'
+import { UserRole } from '@prisma/client'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { ArrowLeft, User, BookOpen, CheckCircle, HelpCircle } from 'lucide-react'
+import { User, BookOpen, CheckCircle, HelpCircle } from 'lucide-react'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 
 interface LearnerDetailsPageProps {
   params: Promise<{ id: string }>
@@ -24,7 +25,7 @@ export default async function LearnerDetailsPage({
   const { id } = await params
 
   try {
-    const data = await getLearnerDetails(session.user.id, id)
+    const data = await getLearnerDetails(session.user.id, id, session.user.role as UserRole)
 
     const formatDate = (date: Date | string | null) => {
       if (!date) return '-'
@@ -39,13 +40,10 @@ export default async function LearnerDetailsPage({
 
     return (
       <div className="space-y-6">
-        {/* Back button */}
-        <Button variant="ghost" asChild>
-          <Link href="/trainer">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour au dashboard
-          </Link>
-        </Button>
+        <PageBreadcrumb items={[
+          { label: 'Apprenants', href: '/trainer/learners' },
+          { label: data.learner.name },
+        ]} />
 
         {/* Header */}
         <div className="flex items-start justify-between">

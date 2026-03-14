@@ -27,7 +27,8 @@ function getOrCreatePrismaClient(): PrismaClient {
     connectionTimeoutMillis: 10000,
   })
 
-  const adapter = new PrismaPg(pool)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const adapter = new PrismaPg(pool as any)
   const prisma = new PrismaClient({
     adapter,
     log: process.env.NODE_ENV === 'development' ? ['error', 'warn'] : ['error'],

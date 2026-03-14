@@ -1,10 +1,24 @@
 import { prisma } from '@/lib/db'
 import { ApiError } from '@/lib/errors/api-error'
+import { UserRole } from '@prisma/client'
 
 export interface TrainerStats {
   totalInvited: number
   totalConnected: number
   avgCompletion: number
+  distribution: {
+    notStarted: number
+    inProgress: number
+    almostDone: number
+    completed: number
+  }
+  atRiskLearners: {
+    id: string
+    name: string
+    email: string
+    percentage: number
+    lastActivity: Date | null
+  }[]
 }
 
 export interface LearnerWithProgress {
@@ -24,51 +38,89 @@ export interface LearnerWithProgress {
   createdAt: Date
 }
 
-export async function getTrainerStats(trainerId: string): Promise<TrainerStats> {
-  // Run all queries in parallel
+// Build the where clause based on role:
+// ADMIN sees all users with at least one parcours assigned (any role)
+// TRAINER sees only their own assigned learners
+function learnerWhereClause(userId: string, userRole: UserRole) {
+  if (userRole === 'ADMIN') {
+    return { userParcours: { some: {} } }
+  }
+  return { trainerId: userId }
+}
+
+export async function getTrainerStats(
+  userId: string,
+  userRole: UserRole = UserRole.TRAINER
+): Promise<TrainerStats> {
+  const where = learnerWhereClause(userId, userRole)
+
   const [totalInvited, totalConnected, learners] = await Promise.all([
-    // Count total invitations created by this trainer
     prisma.invitation.count({
-      where: { trainerId },
+      where: userRole === 'ADMIN' ? {} : { trainerId: userId },
     }),
-    // Count used invitations (connected learners)
     prisma.invitation.count({
       where: {
-        trainerId,
+        ...(userRole === 'ADMIN' ? {} : { trainerId: userId }),
         usedAt: { not: null },
       },
     }),
-    // Get learners with their parcours modules and progress
     prisma.user.findMany({
-      where: { trainerId },
+      where,
       include: {
-        parcours: {
+        userParcours: {
           include: {
-            modules: { select: { id: true } },
+            parcours: {
+              include: { modules: { select: { id: true } } },
+            },
           },
         },
-        progress: { select: { moduleId: true } },
+        progress: { select: { moduleId: true, completedAt: true } },
       },
     }),
   ])
 
-  // Calculate average completion from fetched data
   let totalCompletionPercentage = 0
   let learnerCount = 0
+  const distribution = { notStarted: 0, inProgress: 0, almostDone: 0, completed: 0 }
+  const atRiskLearners: TrainerStats['atRiskLearners'] = []
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
 
   for (const learner of learners) {
-    if (!learner.parcours) continue
-
-    const totalModules = learner.parcours.modules.length
+    const allModuleIds = learner.userParcours.flatMap((up) =>
+      up.parcours.modules.map((m) => m.id)
+    )
+    const totalModules = allModuleIds.length
     if (totalModules === 0) continue
 
-    const parcoursModuleIds = new Set(learner.parcours.modules.map((m) => m.id))
-    const completedCount = learner.progress.filter((p) =>
-      parcoursModuleIds.has(p.moduleId)
-    ).length
+    const completedModuleIds = new Set(learner.progress.map((p) => p.moduleId))
+    const completedCount = allModuleIds.filter((id) => completedModuleIds.has(id)).length
 
-    totalCompletionPercentage += (completedCount / totalModules) * 100
+    const percentage = Math.round((completedCount / totalModules) * 100)
+    totalCompletionPercentage += percentage
     learnerCount++
+
+    // Distribution
+    if (percentage === 0) distribution.notStarted++
+    else if (percentage < 50) distribution.inProgress++
+    else if (percentage < 100) distribution.almostDone++
+    else distribution.completed++
+
+    // At-risk: started but < 100% and no activity in 7 days
+    if (percentage > 0 && percentage < 100) {
+      const sortedProgress = [...learner.progress].sort(
+        (a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
+      )
+      const lastActivity = sortedProgress[0]?.completedAt || null
+      if (!lastActivity || new Date(lastActivity) < sevenDaysAgo) {
+        atRiskLearners.push({
+          id: learner.id,
+          name: learner.name,
+          email: learner.email,
+          percentage,
+          lastActivity,
+        })
+      }
+    }
   }
 
   const avgCompletion =
@@ -78,31 +130,40 @@ export async function getTrainerStats(trainerId: string): Promise<TrainerStats> 
     totalInvited,
     totalConnected,
     avgCompletion,
+    distribution,
+    atRiskLearners: atRiskLearners.sort((a, b) => a.percentage - b.percentage),
   }
 }
 
 export async function getTrainerLearners(
-  trainerId: string,
+  userId: string,
   options?: {
+    userRole?: UserRole
     parcoursId?: string
     status?: 'all' | 'active' | 'completed' | 'not_started'
   }
 ): Promise<LearnerWithProgress[]> {
-  // Get learners with their parcours and progress in a single query
+  const userRole = options?.userRole || UserRole.TRAINER
+  const baseWhere = learnerWhereClause(userId, userRole)
+
+  const where = {
+    ...baseWhere,
+    ...(options?.parcoursId && {
+      userParcours: { some: { parcoursId: options.parcoursId } },
+    }),
+  }
+
   const learners = await prisma.user.findMany({
-    where: {
-      trainerId,
-      ...(options?.parcoursId && { parcoursId: options.parcoursId }),
-    },
+    where,
     include: {
-      parcours: {
+      userParcours: {
         include: {
-          modules: {
-            select: { id: true },
+          parcours: {
+            include: { modules: { select: { id: true } } },
           },
         },
       },
-      progress: true, // Get all progress to count completed modules
+      progress: true,
     },
     orderBy: { createdAt: 'desc' },
   })
@@ -110,15 +171,12 @@ export async function getTrainerLearners(
   const learnersWithProgress: LearnerWithProgress[] = []
 
   for (const learner of learners) {
-    const totalModules = learner.parcours?.modules?.length || 0
-    const parcoursModuleIds = new Set(
-      learner.parcours?.modules?.map((m) => m.id) || []
+    const allModuleIds = learner.userParcours.flatMap((up) =>
+      up.parcours.modules.map((m) => m.id)
     )
-
-    // Count completed modules from the already fetched progress data
-    const completedCount = learner.progress.filter((p) =>
-      parcoursModuleIds.has(p.moduleId)
-    ).length
+    const totalModules = allModuleIds.length
+    const completedModuleIds = new Set(learner.progress.map((p) => p.moduleId))
+    const completedCount = allModuleIds.filter((id) => completedModuleIds.has(id)).length
 
     const percentage =
       totalModules > 0 ? Math.round((completedCount / totalModules) * 100) : 0
@@ -127,11 +185,7 @@ export async function getTrainerLearners(
     if (options?.status && options.status !== 'all') {
       if (options.status === 'completed' && percentage !== 100) continue
       if (options.status === 'not_started' && completedCount !== 0) continue
-      if (
-        options.status === 'active' &&
-        (completedCount === 0 || percentage === 100)
-      )
-        continue
+      if (options.status === 'active' && (completedCount === 0 || percentage === 100)) continue
     }
 
     // Get last activity from progress
@@ -140,15 +194,15 @@ export async function getTrainerLearners(
         new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime()
     )
 
+    // Use first userParcours as primary parcours display
+    const primaryParcours = learner.userParcours[0]?.parcours || null
+
     learnersWithProgress.push({
       id: learner.id,
       name: learner.name,
       email: learner.email,
-      parcours: learner.parcours
-        ? {
-            id: learner.parcours.id,
-            title: learner.parcours.title,
-          }
+      parcours: primaryParcours
+        ? { id: primaryParcours.id, title: primaryParcours.title }
         : null,
       progress: {
         completed: completedCount,
@@ -164,26 +218,30 @@ export async function getTrainerLearners(
 }
 
 export async function getLearnerDetails(
-  trainerId: string,
-  learnerId: string
+  userId: string,
+  learnerId: string,
+  userRole: UserRole = UserRole.TRAINER
 ) {
+  // ADMIN can view any user with parcours, TRAINER only their own
+  const where = userRole === 'ADMIN'
+    ? { id: learnerId, userParcours: { some: {} } }
+    : { id: learnerId, trainerId: userId }
+
   const learner = await prisma.user.findFirst({
-    where: {
-      id: learnerId,
-      trainerId, // Ensure trainer owns this learner
-    },
+    where,
     include: {
-      parcours: {
+      userParcours: {
         include: {
-          modules: {
-            orderBy: { order: 'asc' },
-            select: {
-              id: true,
-              title: true,
-              order: true,
+          parcours: {
+            include: {
+              modules: {
+                orderBy: { order: 'asc' },
+                select: { id: true, title: true, order: true },
+              },
             },
           },
         },
+        orderBy: { assignedAt: 'desc' },
       },
       progress: {
         include: {
@@ -207,8 +265,12 @@ export async function getLearnerDetails(
     learner.progress.map((p) => p.moduleId)
   )
 
+  // Use first parcours as primary display (backward compat)
+  const primaryUp = learner.userParcours[0]
+  const primaryParcours = primaryUp?.parcours || null
+
   const modulesWithProgress =
-    learner.parcours?.modules.map((module) => {
+    primaryParcours?.modules.map((module) => {
       const progress = learner.progress.find(
         (p) => p.moduleId === module.id
       )
@@ -232,21 +294,21 @@ export async function getLearnerDetails(
       email: learner.email,
       createdAt: learner.createdAt,
     },
-    parcours: learner.parcours
+    parcours: primaryParcours
       ? {
-          id: learner.parcours.id,
-          title: learner.parcours.title,
-          description: learner.parcours.description,
+          id: primaryParcours.id,
+          title: primaryParcours.title,
+          description: primaryParcours.description,
         }
       : null,
     modules: modulesWithProgress,
     progress: {
       completed: learner.progress.length,
-      total: learner.parcours?.modules.length || 0,
+      total: primaryParcours?.modules.length || 0,
       percentage:
-        learner.parcours?.modules.length
+        primaryParcours?.modules.length
           ? Math.round(
-              (learner.progress.length / learner.parcours.modules.length) * 100
+              (learner.progress.length / primaryParcours.modules.length) * 100
             )
           : 0,
     },

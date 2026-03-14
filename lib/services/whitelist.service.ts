@@ -63,5 +63,15 @@ export async function updateAllowedEmailRole(id: string, role: UserRole) {
 }
 
 export async function removeAllowedEmail(id: string) {
-  return prisma.allowedEmail.delete({ where: { id } })
+  // Get email before deleting
+  const allowedEmail = await prisma.allowedEmail.findUnique({ where: { id } })
+  if (!allowedEmail) return
+
+  await prisma.$transaction(async (tx) => {
+    // Delete the AllowedEmail entry
+    await tx.allowedEmail.delete({ where: { id } })
+
+    // Also delete the User if one exists with this email (cascades: userParcours, progress)
+    await tx.user.deleteMany({ where: { email: allowedEmail.email } })
+  })
 }

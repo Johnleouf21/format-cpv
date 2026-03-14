@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Route, BookOpen, Eye } from 'lucide-react'
+import { Route, BookOpen, Eye } from 'lucide-react'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
@@ -64,12 +65,10 @@ export function TrainerParcoursDetailClient({ parcoursId }: TrainerParcoursDetai
   if (error || !parcours) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/trainer/parcours">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
+        <PageBreadcrumb items={[
+          { label: 'Parcours', href: '/trainer/parcours' },
+          { label: 'Erreur' },
+        ]} />
         <div className="p-4 bg-destructive/10 text-destructive rounded-md">
           {error || 'Parcours non trouvé'}
         </div>
@@ -79,12 +78,10 @@ export function TrainerParcoursDetailClient({ parcoursId }: TrainerParcoursDetai
 
   return (
     <div className="space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link href="/trainer/parcours">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour aux parcours
-        </Link>
-      </Button>
+      <PageBreadcrumb items={[
+        { label: 'Parcours', href: '/trainer/parcours' },
+        { label: parcours.title },
+      ]} />
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{parcours.title}</h1>

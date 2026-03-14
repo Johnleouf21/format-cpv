@@ -9,7 +9,8 @@ import { CertificateDownloadButton } from '@/components/learner/CertificateDownl
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import Link from 'next/link'
-import { Trophy, PartyPopper, ArrowLeft } from 'lucide-react'
+import { Trophy, PartyPopper } from 'lucide-react'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 
 interface PageProps {
   params: Promise<{ parcoursId: string }>
@@ -46,12 +47,10 @@ export default async function LearnerParcoursPage({ params }: PageProps) {
 
     return (
       <div className="space-y-6">
-        <Button variant="ghost" asChild className="mb-2">
-          <Link href="/learner">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour aux formations
-          </Link>
-        </Button>
+        <PageBreadcrumb items={[
+          { label: 'Mes formations', href: '/learner' },
+          { label: data.parcours.title },
+        ]} />
 
         <WelcomeCard
           userName={data.user.name}

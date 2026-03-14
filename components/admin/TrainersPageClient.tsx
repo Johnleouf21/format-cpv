@@ -12,6 +12,7 @@ interface Trainer {
   id: string
   name: string
   email: string
+  role: string
   learnerCount: number
   createdAt: Date
 }
@@ -112,7 +113,7 @@ export function TrainersPageClient() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <TrainersTable trainers={trainers} onRemove={handleRemove} />
+          <TrainersTable trainers={trainers} onRemove={handleRemove} onRoleChanged={fetchTrainers} />
         </CardContent>
       </Card>
 

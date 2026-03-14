@@ -32,10 +32,12 @@ model User {
   parcoursId String?   @map("parcours_id")
   parcours   Parcours? @relation("LegacyUserParcours", fields: [parcoursId], references: [id])
 
-  userParcours UserParcours[]
-  progress       Progress[]
-  invitations    Invitation[] @relation("TrainerInvitations")
-  usedInvitation Invitation?  @relation("InvitationUser")
+  userParcours            UserParcours[]
+  progress                Progress[]
+  invitations             Invitation[]             @relation("TrainerInvitations")
+  usedInvitation          Invitation?              @relation("InvitationUser")
+  notificationPreference  NotificationPreference?
+  earnedBadges            EarnedBadge[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -224,4 +226,40 @@ model UserParcours {
   @@index([userId])
   @@index([parcoursId])
   @@map("user_parcours")
+}
+
+model NotificationPreference {
+  id                String  @id @default(uuid())
+  userId            String  @unique @map("user_id")
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  emailWelcome      Boolean @default(true) @map("email_welcome")
+  emailAssignment   Boolean @default(true) @map("email_assignment")
+  emailContentUpdate Boolean @default(true) @map("email_content_update")
+
+  @@map("notification_preferences")
+}
+
+enum BadgeType {
+  FIRST_MODULE
+  FIVE_MODULES
+  TEN_MODULES
+  QUIZ_ACE
+  PERFECT_QUIZ
+  FIVE_QUIZZES
+  PARCOURS_COMPLETE
+  MULTI_PARCOURS
+  CHAMPION
+  SPEEDSTER
+}
+
+model EarnedBadge {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  badgeType BadgeType @map("badge_type")
+  earnedAt  DateTime  @default(now()) @map("earned_at")
+
+  @@unique([userId, badgeType])
+  @@index([userId])
+  @@map("earned_badges")
 }

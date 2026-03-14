@@ -94,7 +94,7 @@ export function UserMenu({
     await signOut({ callbackUrl: '/login' })
   }
 
-  const statsHref = currentSpace === 'admin' ? '/admin' : currentSpace === 'trainer' ? '/trainer' : '/learner'
+  const statsHref = currentSpace === 'admin' ? '/admin' : currentSpace === 'trainer' ? '/trainer' : '/learner#stats'
   const showCertificates = currentSpace === 'learner' || userRole === 'LEARNER'
   const availableSpaces = spaces.filter(s => s.roles.includes(userRole))
 
@@ -201,7 +201,7 @@ export function UserMenu({
           </DropdownMenuItem>
           {showCertificates && (
             <DropdownMenuItem asChild className="cursor-pointer">
-              <Link href="/learner">
+              <Link href="/learner/certificates">
                 <Award className="mr-2 h-4 w-4" />
                 Mes certificats
               </Link>

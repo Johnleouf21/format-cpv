@@ -234,14 +234,18 @@ export async function updateUserRole(
   const user = await prisma.user.findUnique({ where: { id: userId } })
   if (!user) throw new ApiError(404, 'Utilisateur non trouvé', 'USER_NOT_FOUND')
 
-  // Cannot modify users of equal or higher role
-  if (ROLE_LEVEL[user.role] >= ROLE_LEVEL[currentUserRole]) {
-    throw new ApiError(403, 'Vous ne pouvez pas modifier un utilisateur de rang supérieur ou égal', 'FORBIDDEN')
-  }
-
-  // Cannot promote above own role
-  if (ROLE_LEVEL[newRole] >= ROLE_LEVEL[currentUserRole]) {
-    throw new ApiError(403, 'Vous ne pouvez pas attribuer un rôle supérieur ou égal au vôtre', 'FORBIDDEN')
+  // ADMIN can change any role to any role (pyramide: ADMIN > TRAINER > LEARNER)
+  if (currentUserRole === 'ADMIN') {
+    // Admin can do anything, no restrictions
+  } else {
+    // Non-admin: cannot modify users of equal or higher role
+    if (ROLE_LEVEL[user.role] >= ROLE_LEVEL[currentUserRole]) {
+      throw new ApiError(403, 'Vous ne pouvez pas modifier un utilisateur de rang supérieur ou égal', 'FORBIDDEN')
+    }
+    // Non-admin: cannot promote above own role
+    if (ROLE_LEVEL[newRole] >= ROLE_LEVEL[currentUserRole]) {
+      throw new ApiError(403, 'Vous ne pouvez pas attribuer un rôle supérieur ou égal au vôtre', 'FORBIDDEN')
+    }
   }
 
   await prisma.$transaction(async (tx) => {
@@ -265,7 +269,7 @@ export interface UserWithParcours {
   role: UserRole
   createdAt: Date
   trainer: { id: string; name: string } | null
-  parcours: { id: string; title: string; assignedAt: Date }[]
+  parcours: { id: string; title: string; assignedAt: Date; completed: number; total: number }[]
   progressSummary: { total: number; completed: number }
 }
 
@@ -314,11 +318,17 @@ export async function getUsers(options?: {
       role: user.role,
       createdAt: user.createdAt,
       trainer: user.trainer,
-      parcours: user.userParcours.map((up) => ({
-        id: up.parcours.id,
-        title: up.parcours.title,
-        assignedAt: up.assignedAt,
-      })),
+      parcours: user.userParcours.map((up) => {
+        const totalModules = up.parcours.modules.length
+        const completed = up.parcours.modules.filter((m) => completedModuleIds.includes(m.id)).length
+        return {
+          id: up.parcours.id,
+          title: up.parcours.title,
+          assignedAt: up.assignedAt,
+          completed,
+          total: totalModules,
+        }
+      }),
       progressSummary: {
         total: allModuleIds.length,
         completed: completedCount,

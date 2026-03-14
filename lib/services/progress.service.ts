@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
 import { ApiError } from '@/lib/errors/api-error'
+import { checkAndAwardBadges } from './badge.service'
 
 export async function getUserProgress(userId: string, parcoursId?: string) {
   // Determine which parcours to get progress for
@@ -128,6 +129,9 @@ export async function markModuleAsCompleted(userId: string, moduleId: string) {
     orderBy: { order: 'asc' },
     select: { id: true, title: true },
   })
+
+  // Check and award badges (fire-and-forget)
+  checkAndAwardBadges(userId).catch(() => {})
 
   return {
     alreadyCompleted: false,

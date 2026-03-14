@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, Edit } from 'lucide-react'
+import { Edit } from 'lucide-react'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 import { ModuleContent } from '@/components/learner/ModuleContent'
+import { QuizEditor } from './QuizEditor'
 import Link from 'next/link'
 
 interface Module {
@@ -80,12 +82,10 @@ export function ModulePreviewClient({ moduleId }: ModulePreviewClientProps) {
   if (error || !module) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/modules">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
+        <PageBreadcrumb items={[
+          { label: 'Modules', href: '/admin/modules' },
+          { label: 'Erreur' },
+        ]} />
         <div className="p-4 bg-destructive/10 text-destructive rounded-md">
           {error || 'Module non trouvé'}
         </div>
@@ -96,12 +96,11 @@ export function ModulePreviewClient({ moduleId }: ModulePreviewClientProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href="/admin/modules">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
+        <PageBreadcrumb items={[
+          { label: 'Modules', href: '/admin/modules' },
+          { label: module.parcours.title, href: `/admin/parcours/${module.parcours.id}` },
+          { label: module.title },
+        ]} />
         <Button variant="outline" size="sm" asChild>
           <Link href={`/admin/modules/${module.id}/edit`}>
             <Edit className="mr-2 h-4 w-4" />
@@ -128,6 +127,8 @@ export function ModulePreviewClient({ moduleId }: ModulePreviewClientProps) {
           <ModuleContent content={module.content} />
         </CardContent>
       </Card>
+
+      <QuizEditor moduleId={module.id} />
     </div>
   )
 }

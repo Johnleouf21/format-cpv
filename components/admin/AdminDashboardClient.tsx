@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from 'react'
 import { AdminStatsCards } from './AdminStatsCards'
+import { AddTrainerForm } from './AddTrainerForm'
+import { AddUserDialog } from '@/components/shared/AddUserDialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
 import { Skeleton } from '@/components/ui/skeleton'
-import { BookOpen, Route, GraduationCap, Users, Plus, ArrowRight } from 'lucide-react'
+import { BookOpen, Route, GraduationCap, Users, Plus, ArrowRight, UserPlus } from 'lucide-react'
 
 interface AdminStats {
   totalLearners: number
@@ -15,27 +17,50 @@ interface AdminStats {
   totalModules: number
 }
 
+interface Parcours {
+  id: string
+  title: string
+}
+
 export function AdminDashboardClient() {
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [parcoursList, setParcoursList] = useState<Parcours[]>([])
+  const [isTrainerFormOpen, setIsTrainerFormOpen] = useState(false)
 
   useEffect(() => {
-    async function fetchStats() {
+    async function fetchData() {
       try {
-        const response = await fetch('/api/admin/stats')
-        if (response.ok) {
-          const data = await response.json()
-          setStats(data)
-        }
+        const [statsRes, parcoursRes] = await Promise.all([
+          fetch('/api/admin/stats'),
+          fetch('/api/admin/parcours'),
+        ])
+        if (statsRes.ok) setStats(await statsRes.json())
+        if (parcoursRes.ok) setParcoursList(await parcoursRes.json())
       } catch (error) {
-        console.error('Error fetching stats:', error)
+        console.error('Error fetching data:', error)
       } finally {
         setIsLoading(false)
       }
     }
 
-    fetchStats()
+    fetchData()
   }, [])
+
+  async function handleAddTrainer(data: { email: string; name?: string }) {
+    const response = await fetch('/api/admin/trainers', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+    })
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.message || 'Une erreur est survenue')
+    }
+    // Refresh stats
+    const statsRes = await fetch('/api/admin/stats')
+    if (statsRes.ok) setStats(await statsRes.json())
+  }
 
   if (isLoading) {
     return (
@@ -89,6 +114,7 @@ export function AdminDashboardClient() {
       href: '/admin/trainers',
       iconBg: 'bg-violet-50',
       iconColor: 'text-violet-600',
+      action: () => setIsTrainerFormOpen(true),
     },
     {
       title: 'Apprenants',
@@ -99,6 +125,11 @@ export function AdminDashboardClient() {
       iconColor: 'text-blue-600',
     },
   ]
+
+  const refreshStats = async () => {
+    const statsRes = await fetch('/api/admin/stats')
+    if (statsRes.ok) setStats(await statsRes.json())
+  }
 
   return (
     <div className="space-y-8">
@@ -138,11 +169,35 @@ export function AdminDashboardClient() {
                     </Link>
                   </Button>
                 )}
+                {action.action && (
+                  <Button size="sm" onClick={action.action}>
+                    <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                    Ajouter
+                  </Button>
+                )}
+                {action.title === 'Apprenants' && (
+                  <AddUserDialog
+                    parcoursList={parcoursList}
+                    onUserAdded={refreshStats}
+                    trigger={
+                      <Button size="sm">
+                        <UserPlus className="mr-1.5 h-3.5 w-3.5" />
+                        Ajouter
+                      </Button>
+                    }
+                  />
+                )}
               </CardContent>
             </Card>
           ))}
         </div>
       </div>
+
+      <AddTrainerForm
+        open={isTrainerFormOpen}
+        onOpenChange={setIsTrainerFormOpen}
+        onSubmit={handleAddTrainer}
+      />
     </div>
   )
 }

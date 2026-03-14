@@ -4,6 +4,8 @@ import { DashboardShell } from '@/components/shared/DashboardShell'
 
 const navItems = [
   { href: '/learner', label: 'Mes formations', icon: 'BookOpen' },
+  { href: '/learner/quiz-history', label: 'Quiz', icon: 'ShieldCheck' },
+  { href: '/learner/certificates', label: 'Certificats', icon: 'GraduationCap' },
 ]
 
 export default async function LearnerLayout({

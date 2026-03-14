@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, BookOpen } from 'lucide-react'
+import { BookOpen } from 'lucide-react'
+import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -59,12 +60,10 @@ export function TrainerModuleViewClient({ parcoursId, moduleId }: TrainerModuleV
   if (error || !module) {
     return (
       <div className="space-y-6">
-        <Button variant="ghost" size="sm" asChild>
-          <Link href={`/trainer/parcours/${parcoursId}`}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Retour
-          </Link>
-        </Button>
+        <PageBreadcrumb items={[
+          { label: 'Parcours', href: '/trainer/parcours' },
+          { label: 'Erreur' },
+        ]} />
         <div className="p-4 bg-destructive/10 text-destructive rounded-md">
           {error || 'Module non trouvé'}
         </div>
@@ -74,12 +73,11 @@ export function TrainerModuleViewClient({ parcoursId, moduleId }: TrainerModuleV
 
   return (
     <div className="space-y-6">
-      <Button variant="ghost" size="sm" asChild>
-        <Link href={`/trainer/parcours/${parcoursId}`}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour aux modules
-        </Link>
-      </Button>
+      <PageBreadcrumb items={[
+        { label: 'Parcours', href: '/trainer/parcours' },
+        { label: module.parcours.title, href: `/trainer/parcours/${parcoursId}` },
+        { label: module.title },
+      ]} />
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{module.title}</h1>

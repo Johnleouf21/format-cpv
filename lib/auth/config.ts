@@ -16,6 +16,7 @@ if (process.env.RESEND_API_KEY) {
     Resend({
       apiKey: process.env.RESEND_API_KEY,
       from: process.env.EMAIL_FROM || 'FormaCPV <onboarding@resend.dev>',
+      maxAge: 15 * 60, // 15 minutes
       sendVerificationRequest: sendMagicLinkEmail,
     })
   )
@@ -174,7 +175,7 @@ export const authConfig: NextAuthConfig = {
   },
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 days
+    maxAge: 8 * 60 * 60, // 8 hours
   },
   cookies: {
     sessionToken: {
@@ -184,6 +185,7 @@ export const authConfig: NextAuthConfig = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
+        // No maxAge → session cookie, dies when browser closes
       },
     },
   },

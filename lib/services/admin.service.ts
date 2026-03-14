@@ -1,6 +1,7 @@
 import { prisma } from '@/lib/db'
 import { ApiError } from '@/lib/errors/api-error'
 import { UserRole } from '@prisma/client'
+import { sendTrainerWelcomeEmail } from './email.service'
 
 // ============================================================================
 // MODULES
@@ -344,13 +345,14 @@ export interface TrainerWithStats {
   id: string
   name: string
   email: string
+  role: UserRole
   learnerCount: number
   createdAt: Date
 }
 
 export async function getTrainers(): Promise<TrainerWithStats[]> {
   const trainers = await prisma.user.findMany({
-    where: { role: UserRole.TRAINER },
+    where: { role: { in: [UserRole.TRAINER, UserRole.ADMIN] } },
     include: {
       _count: {
         select: { learners: true },
@@ -363,6 +365,7 @@ export async function getTrainers(): Promise<TrainerWithStats[]> {
     id: t.id,
     name: t.name,
     email: t.email,
+    role: t.role,
     learnerCount: t._count.learners,
     createdAt: t.createdAt,
   }))
@@ -370,7 +373,7 @@ export async function getTrainers(): Promise<TrainerWithStats[]> {
 
 export async function getTrainerWithLearners(id: string) {
   const trainer = await prisma.user.findFirst({
-    where: { id, role: UserRole.TRAINER },
+    where: { id, role: { in: [UserRole.TRAINER, UserRole.ADMIN] } },
     include: {
       learners: {
         include: {
@@ -432,6 +435,9 @@ export async function addTrainer(email: string, name?: string) {
     create: { email: email.toLowerCase(), role: UserRole.TRAINER },
   })
 
+  // Send welcome email
+  await sendTrainerWelcomeEmail({ to: email })
+
   return trainer
 }
 
@@ -474,6 +480,14 @@ export async function removeTrainer(id: string) {
 // LEARNERS
 // ============================================================================
 
+export interface LearnerParcoursDetail {
+  id: string
+  title: string
+  completed: number
+  total: number
+  percentage: number
+}
+
 export interface LearnerWithDetails {
   id: string
   name: string
@@ -483,10 +497,7 @@ export interface LearnerWithDetails {
     name: string
     email: string
   } | null
-  parcours: {
-    id: string
-    title: string
-  } | null
+  parcours: LearnerParcoursDetail[]
   progress: {
     completed: number
     total: number
@@ -504,25 +515,28 @@ export interface GetLearnersOptions {
 export async function getLearners(options?: GetLearnersOptions): Promise<LearnerWithDetails[]> {
   const learners = await prisma.user.findMany({
     where: {
-      role: UserRole.LEARNER,
+      userParcours: { some: options?.parcoursId ? { parcoursId: options.parcoursId } : {} },
       ...(options?.trainerId && { trainerId: options.trainerId }),
-      ...(options?.parcoursId && { parcoursId: options.parcoursId }),
     },
     include: {
       trainer: {
         select: { id: true, name: true, email: true },
       },
-      parcours: {
-        select: {
-          id: true,
-          title: true,
-          modules: {
-            select: { id: true },
+      userParcours: {
+        include: {
+          parcours: {
+            select: {
+              id: true,
+              title: true,
+              modules: {
+                select: { id: true },
+              },
+            },
           },
         },
       },
       progress: {
-        select: { id: true },
+        select: { id: true, moduleId: true },
       },
     },
     orderBy: { createdAt: 'desc' },
@@ -531,15 +545,32 @@ export async function getLearners(options?: GetLearnersOptions): Promise<Learner
   const result: LearnerWithDetails[] = []
 
   for (const learner of learners) {
-    const totalModules = learner.parcours?.modules.length ?? 0
-    const completed = learner.progress.length
-    const percentage = totalModules > 0 ? Math.round((completed / totalModules) * 100) : 0
+    const completedModuleIds = new Set(learner.progress.map((p) => p.moduleId))
+
+    // Build per-parcours progress
+    const parcoursDetails: LearnerParcoursDetail[] = learner.userParcours.map((up) => {
+      const totalModules = up.parcours.modules.length
+      const completed = up.parcours.modules.filter((m) => completedModuleIds.has(m.id)).length
+      const percentage = totalModules > 0 ? Math.round((completed / totalModules) * 100) : 0
+      return {
+        id: up.parcours.id,
+        title: up.parcours.title,
+        completed,
+        total: totalModules,
+        percentage,
+      }
+    })
+
+    // Global progress across all parcours
+    const totalModules = parcoursDetails.reduce((sum, p) => sum + p.total, 0)
+    const totalCompleted = parcoursDetails.reduce((sum, p) => sum + p.completed, 0)
+    const globalPercentage = totalModules > 0 ? Math.round((totalCompleted / totalModules) * 100) : 0
 
     // Filter by status if provided
     if (options?.status && options.status !== 'all') {
-      if (options.status === 'completed' && percentage !== 100) continue
-      if (options.status === 'not_started' && completed !== 0) continue
-      if (options.status === 'active' && (completed === 0 || percentage === 100)) continue
+      if (options.status === 'completed' && globalPercentage !== 100) continue
+      if (options.status === 'not_started' && totalCompleted !== 0) continue
+      if (options.status === 'active' && (totalCompleted === 0 || globalPercentage === 100)) continue
     }
 
     result.push({
@@ -547,13 +578,11 @@ export async function getLearners(options?: GetLearnersOptions): Promise<Learner
       name: learner.name,
       email: learner.email,
       trainer: learner.trainer,
-      parcours: learner.parcours
-        ? { id: learner.parcours.id, title: learner.parcours.title }
-        : null,
+      parcours: parcoursDetails,
       progress: {
-        completed,
+        completed: totalCompleted,
         total: totalModules,
-        percentage,
+        percentage: globalPercentage,
       },
       createdAt: learner.createdAt,
     })
@@ -564,7 +593,7 @@ export async function getLearners(options?: GetLearnersOptions): Promise<Learner
 
 export async function getLearnerById(id: string) {
   const learner = await prisma.user.findFirst({
-    where: { id, role: UserRole.LEARNER },
+    where: { id, userParcours: { some: {} } },
     include: {
       trainer: {
         select: { id: true, name: true, email: true },
@@ -598,18 +627,18 @@ export async function getLearnerById(id: string) {
 }
 
 export async function reassignLearner(learnerId: string, newTrainerId: string) {
-  // Verify learner exists
+  // Verify learner exists (any user with assigned parcours)
   const learner = await prisma.user.findFirst({
-    where: { id: learnerId, role: UserRole.LEARNER },
+    where: { id: learnerId, userParcours: { some: {} } },
   })
 
   if (!learner) {
     throw new ApiError(404, 'Apprenant non trouvé', 'LEARNER_NOT_FOUND')
   }
 
-  // Verify new trainer exists
+  // Verify new trainer exists (TRAINER or ADMIN)
   const trainer = await prisma.user.findFirst({
-    where: { id: newTrainerId, role: UserRole.TRAINER },
+    where: { id: newTrainerId, role: { in: [UserRole.TRAINER, UserRole.ADMIN] } },
   })
 
   if (!trainer) {
@@ -631,7 +660,7 @@ export async function reassignLearner(learnerId: string, newTrainerId: string) {
 
 export async function deleteLearner(id: string) {
   const existing = await prisma.user.findFirst({
-    where: { id, role: UserRole.LEARNER },
+    where: { id, userParcours: { some: {} } },
   })
 
   if (!existing) {
@@ -650,7 +679,7 @@ export async function deleteLearner(id: string) {
 export async function getAdminStats() {
   const [totalLearners, totalTrainers, totalParcours, totalModules] = await Promise.all([
     prisma.user.count({ where: { role: UserRole.LEARNER } }),
-    prisma.user.count({ where: { role: UserRole.TRAINER } }),
+    prisma.user.count({ where: { role: { in: [UserRole.TRAINER, UserRole.ADMIN] } } }),
     prisma.parcours.count(),
     prisma.module.count(),
   ])

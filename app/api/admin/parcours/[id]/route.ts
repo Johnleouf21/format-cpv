@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getParcoursById, updateParcours, deleteParcours } from '@/lib/services/admin.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { prisma } from '@/lib/db'
+import { sendContentUpdateEmailBulk } from '@/lib/services/email.service'
 import { z } from 'zod'
 
 const updateParcoursSchema = z.object({
@@ -49,6 +51,20 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const data = updateParcoursSchema.parse(body)
 
     const parcours = await updateParcours(id, data)
+
+    // Notify assigned learners (fire-and-forget)
+    prisma.userParcours.findMany({
+      where: { parcoursId: id },
+      include: { user: { select: { email: true } } },
+    }).then((assignments) => {
+      const emails = assignments.map((a) => a.user.email)
+      if (emails.length > 0) {
+        sendContentUpdateEmailBulk(emails, {
+          contentType: 'parcours',
+          contentTitle: parcours.title,
+        })
+      }
+    }).catch(() => { /* email errors should not block */ })
 
     return NextResponse.json(parcours)
   } catch (error) {

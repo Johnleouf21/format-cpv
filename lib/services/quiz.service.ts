@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
 import { ApiError } from '@/lib/errors/api-error'
+import { checkAndAwardBadges } from './badge.service'
 
 export interface QuizWithQuestions {
   id: string
@@ -229,6 +230,9 @@ export async function saveQuizResultWithProgress(
       },
     })
   }
+
+  // Check and award badges (fire-and-forget)
+  checkAndAwardBadges(userId).catch(() => {})
 
   return progress
 }

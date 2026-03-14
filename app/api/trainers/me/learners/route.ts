@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getTrainerLearners } from '@/lib/services/trainer.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { UserRole } from '@prisma/client'
 
 export async function GET(request: Request) {
   try {
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
       | undefined
 
     const learners = await getTrainerLearners(session.user.id, {
+      userRole: session.user.role as UserRole,
       parcoursId,
       status,
     })

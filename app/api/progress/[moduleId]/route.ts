@@ -16,7 +16,8 @@ export async function POST(_request: NextRequest, { params }: RouteParams) {
     }
 
     const { moduleId } = await params
-    const result = await markModuleAsCompleted(session.user.id, moduleId)
+    const body = await _request.json().catch(() => ({}))
+    const result = await markModuleAsCompleted(session.user.id, moduleId, body.startedAt)
 
     return NextResponse.json(result, { status: result.alreadyCompleted ? 200 : 201 })
   } catch (error) {

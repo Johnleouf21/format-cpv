@@ -10,6 +10,7 @@ interface Module {
   title: string
   content: string
   order: number
+  minDuration: number
   parcours: {
     id: string
     title: string
@@ -97,6 +98,7 @@ export function EditModulePageClient({ moduleId }: EditModulePageClientProps) {
           content: module.content,
           parcoursId: module.parcours.id,
           order: module.order,
+          minDuration: module.minDuration,
         }}
         parcoursList={parcoursList}
       />

@@ -16,7 +16,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUploader } from './ImageUploader'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, ExternalLink, Eye, Code, AlertCircle } from 'lucide-react'
+import { Loader2, ExternalLink, Eye, Code, AlertCircle, ImageIcon, Video, Clock } from 'lucide-react'
 import { ModuleContent } from '@/components/learner/ModuleContent'
 
 interface Parcours {
@@ -31,6 +31,7 @@ interface ModuleFormProps {
     content: string
     parcoursId: string
     order: number
+    minDuration?: number
   }
   parcoursList: Parcours[]
 }
@@ -44,12 +45,29 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
   const [content, setContent] = useState(module?.content || '')
   const [parcoursId, setParcoursId] = useState(module?.parcoursId || '')
   const [order, setOrder] = useState(module?.order?.toString() || '0')
+  const [minDuration, setMinDuration] = useState(module?.minDuration?.toString() || '0')
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const cursorPositionRef = useRef<number>(0)
   const [showPreview, setShowPreview] = useState(false)
 
+  // Media toolbar state
+  const [showImageUrlForm, setShowImageUrlForm] = useState(false)
+  const [showVideoUrlForm, setShowVideoUrlForm] = useState(false)
+  const [mediaUrl, setMediaUrl] = useState('')
+  const [mediaAlt, setMediaAlt] = useState('')
+
   const isEditing = !!module
+
+  function insertAtCursor(text: string) {
+    const position = cursorPositionRef.current
+    setContent((prev) => {
+      const before = prev.substring(0, position)
+      const after = prev.substring(position)
+      return before + text + after
+    })
+    cursorPositionRef.current = position + text.length
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -68,6 +86,7 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
           content,
           parcoursId,
           order: parseInt(order, 10),
+          minDuration: parseInt(minDuration, 10) || 0,
         }),
       })
 
@@ -92,17 +111,23 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
   }
 
   function handleImageUploaded(url: string) {
-    const imageMarkdown = `\n![Image](${url})\n`
-    const position = cursorPositionRef.current
+    insertAtCursor(`\n![Image](${url})\n`)
+  }
 
-    setContent((prev) => {
-      const before = prev.substring(0, position)
-      const after = prev.substring(position)
-      return before + imageMarkdown + after
-    })
+  function handleInsertImageUrl() {
+    if (!mediaUrl.trim()) return
+    insertAtCursor(`\n![${mediaAlt || 'Image'}](${mediaUrl.trim()})\n`)
+    setMediaUrl('')
+    setMediaAlt('')
+    setShowImageUrlForm(false)
+  }
 
-    // Update cursor position for next insert
-    cursorPositionRef.current = position + imageMarkdown.length
+  function handleInsertVideoUrl() {
+    if (!mediaUrl.trim()) return
+    insertAtCursor(`\n<video-embed src="${mediaUrl.trim()}" title="${mediaAlt || ''}" />\n`)
+    setMediaUrl('')
+    setMediaAlt('')
+    setShowVideoUrlForm(false)
   }
 
   return (
@@ -133,7 +158,7 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="parcours">Parcours *</Label>
               <Select value={parcoursId} onValueChange={setParcoursId} required>
@@ -159,6 +184,24 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
                 value={order}
                 onChange={(e) => setOrder(e.target.value)}
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="minDuration" className="flex items-center gap-1.5">
+                <Clock className="h-3.5 w-3.5" />
+                Temps minimum (min)
+              </Label>
+              <Input
+                id="minDuration"
+                type="number"
+                min="0"
+                max="480"
+                value={minDuration}
+                onChange={(e) => setMinDuration(e.target.value)}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                0 = pas de minimum
+              </p>
             </div>
           </div>
         </CardContent>
@@ -223,6 +266,88 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
             </div>
           ) : (
             <>
+              {/* Media toolbar */}
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setShowImageUrlForm(!showImageUrlForm); setShowVideoUrlForm(false); setMediaUrl(''); setMediaAlt('') }}
+                >
+                  <ImageIcon className="mr-2 h-4 w-4" />
+                  Image URL
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => { setShowVideoUrlForm(!showVideoUrlForm); setShowImageUrlForm(false); setMediaUrl(''); setMediaAlt('') }}
+                >
+                  <Video className="mr-2 h-4 w-4" />
+                  Vidéo URL
+                </Button>
+              </div>
+
+              {/* Image URL inline form */}
+              {showImageUrlForm && (
+                <div className="flex gap-2 items-end rounded-md border p-3 bg-muted/50">
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-xs">URL de l&apos;image</Label>
+                    <Input
+                      value={mediaUrl}
+                      onChange={(e) => setMediaUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="w-48 space-y-1">
+                    <Label className="text-xs">Description</Label>
+                    <Input
+                      value={mediaAlt}
+                      onChange={(e) => setMediaAlt(e.target.value)}
+                      placeholder="Description"
+                      className="text-sm"
+                    />
+                  </div>
+                  <Button type="button" size="sm" onClick={handleInsertImageUrl} disabled={!mediaUrl.trim()}>
+                    Insérer
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setShowImageUrlForm(false)}>
+                    Annuler
+                  </Button>
+                </div>
+              )}
+
+              {/* Video URL inline form */}
+              {showVideoUrlForm && (
+                <div className="flex gap-2 items-end rounded-md border p-3 bg-muted/50">
+                  <div className="flex-1 space-y-1">
+                    <Label className="text-xs">URL de la vidéo (OneDrive, YouTube, Vimeo...)</Label>
+                    <Input
+                      value={mediaUrl}
+                      onChange={(e) => setMediaUrl(e.target.value)}
+                      placeholder="https://..."
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="w-48 space-y-1">
+                    <Label className="text-xs">Titre (optionnel)</Label>
+                    <Input
+                      value={mediaAlt}
+                      onChange={(e) => setMediaAlt(e.target.value)}
+                      placeholder="Titre"
+                      className="text-sm"
+                    />
+                  </div>
+                  <Button type="button" size="sm" onClick={handleInsertVideoUrl} disabled={!mediaUrl.trim()}>
+                    Insérer
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => setShowVideoUrlForm(false)}>
+                    Annuler
+                  </Button>
+                </div>
+              )}
+
               <div className="space-y-2">
                 <Label htmlFor="content">Contenu (Markdown) *</Label>
                 <Textarea

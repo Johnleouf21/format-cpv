@@ -11,6 +11,7 @@ const updateModuleSchema = z.object({
   content: z.string().min(1, 'Le contenu est requis').optional(),
   parcoursId: z.string().uuid('ID de parcours invalide').optional(),
   order: z.number().int().min(0).optional(),
+  minDuration: z.number().int().min(0).max(480).optional(),
 })
 
 interface RouteParams {

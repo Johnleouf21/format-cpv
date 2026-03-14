@@ -18,6 +18,7 @@ interface ModuleData {
     content: string
     order: number
     hasQuiz: boolean
+    minDuration: number
   }
   isCompleted: boolean
   navigation: {
@@ -58,6 +59,27 @@ export function ModulePageClient({ data }: ModulePageClientProps) {
   const [isLoadingQuiz, setIsLoadingQuiz] = useState(data.module.hasQuiz)
   const [showCompletionMessage, setShowCompletionMessage] = useState(false)
   const [quizCompleted, setQuizCompleted] = useState(false)
+
+  // Timer for minimum duration
+  const [startedAt] = useState(() => new Date().toISOString())
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const minDurationSeconds = (data.module.minDuration || 0) * 60
+  const timeRemaining = Math.max(0, minDurationSeconds - elapsedSeconds)
+  const isTimeElapsed = timeRemaining <= 0
+
+  useEffect(() => {
+    if (minDurationSeconds <= 0) return
+    const interval = setInterval(() => {
+      setElapsedSeconds((prev) => {
+        if (prev >= minDurationSeconds) {
+          clearInterval(interval)
+          return prev
+        }
+        return prev + 1
+      })
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [minDurationSeconds])
 
   useEffect(() => {
     if (data.module.hasQuiz) {
@@ -185,6 +207,9 @@ export function ModulePageClient({ data }: ModulePageClientProps) {
             isCompleted={data.isCompleted}
             nextModuleId={data.navigation.next?.id}
             onCompleted={handleModuleCompleted}
+            isTimeElapsed={isTimeElapsed}
+            timeRemaining={timeRemaining}
+            startedAt={startedAt}
           />
         </div>
       )}

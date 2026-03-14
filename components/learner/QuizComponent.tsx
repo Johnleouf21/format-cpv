@@ -99,10 +99,6 @@ export function QuizComponent({
     }
   }
 
-  const handleSkipQuiz = () => {
-    onQuizCompleted?.(null as unknown as QuizResultData)
-  }
-
   // If user already completed the quiz, show previous result
   if (previousResult && !showQuiz) {
     return (
@@ -178,7 +174,7 @@ export function QuizComponent({
           Quiz - Testez vos connaissances
         </CardTitle>
         <CardDescription>
-          Ce quiz est optionnel et n&apos;affecte pas votre progression.
+          Complétez ce quiz pour valider le module.
           {quiz.questions.length} question{quiz.questions.length > 1 ? 's' : ''}
         </CardDescription>
       </CardHeader>
@@ -196,11 +192,11 @@ export function QuizComponent({
           />
         ))}
 
-        <div className="flex gap-4 pt-4 border-t">
+        <div className="pt-4 border-t">
           <Button
             onClick={handleSubmit}
             disabled={!isAllQuestionsAnswered() || isSubmitting}
-            className="flex-1"
+            className="w-full"
           >
             {isSubmitting ? (
               <>
@@ -210,9 +206,6 @@ export function QuizComponent({
             ) : (
               'Soumettre mes réponses'
             )}
-          </Button>
-          <Button variant="outline" onClick={handleSkipQuiz}>
-            Passer le quiz
           </Button>
         </div>
       </CardContent>

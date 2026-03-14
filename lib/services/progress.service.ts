@@ -69,11 +69,11 @@ export async function getUserProgress(userId: string, parcoursId?: string) {
   }
 }
 
-export async function markModuleAsCompleted(userId: string, moduleId: string) {
+export async function markModuleAsCompleted(userId: string, moduleId: string, startedAt?: string) {
   // Verify module exists and user has access
   const module = await prisma.module.findUnique({
     where: { id: moduleId },
-    select: { id: true, parcoursId: true },
+    select: { id: true, parcoursId: true, minDuration: true },
   })
 
   if (!module) {
@@ -93,6 +93,32 @@ export async function markModuleAsCompleted(userId: string, moduleId: string) {
     })
     if (user?.parcoursId !== module.parcoursId) {
       throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
+    }
+  }
+
+  // Validate minimum duration
+  if (module.minDuration && module.minDuration > 0 && startedAt) {
+    const elapsed = (Date.now() - new Date(startedAt).getTime()) / 1000
+    const required = module.minDuration * 60 * 0.9 // 10% tolerance
+    if (elapsed < required) {
+      throw new ApiError(400, 'Temps minimum non atteint pour ce module', 'MIN_DURATION_NOT_MET')
+    }
+  }
+
+  // Validate quiz completion if module has a quiz
+  const quiz = await prisma.quiz.findUnique({
+    where: { moduleId },
+    select: { id: true },
+  })
+
+  if (quiz) {
+    // QuizResult is linked via Progress, check if a progress record with quiz result exists
+    const progressWithQuiz = await prisma.progress.findUnique({
+      where: { userId_moduleId: { userId, moduleId } },
+      include: { quizResult: true },
+    })
+    if (!progressWithQuiz?.quizResult) {
+      throw new ApiError(400, 'Vous devez compléter le quiz avant de valider ce module', 'QUIZ_NOT_COMPLETED')
     }
   }
 

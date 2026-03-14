@@ -27,7 +27,7 @@ export async function getParcours(): Promise<ParcoursWithStats[]> {
       _count: {
         select: {
           modules: true,
-          users: true,
+          userParcours: true,
         },
       },
     },
@@ -39,7 +39,7 @@ export async function getParcours(): Promise<ParcoursWithStats[]> {
     title: p.title,
     description: p.description,
     moduleCount: p._count.modules,
-    learnerCount: p._count.users,
+    learnerCount: p._count.userParcours,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
   }))
@@ -59,7 +59,7 @@ export async function getParcoursById(id: string) {
         },
       },
       _count: {
-        select: { users: true },
+        select: { userParcours: true },
       },
     },
   })
@@ -70,7 +70,7 @@ export async function getParcoursById(id: string) {
 
   return {
     ...parcours,
-    learnerCount: parcours._count.users,
+    learnerCount: parcours._count.userParcours,
   }
 }
 
@@ -110,7 +110,7 @@ export async function deleteParcours(id: string) {
     where: { id },
     include: {
       _count: {
-        select: { users: true },
+        select: { userParcours: true },
       },
     },
   })
@@ -119,7 +119,7 @@ export async function deleteParcours(id: string) {
     throw new ApiError(404, 'Parcours non trouvé', 'PARCOURS_NOT_FOUND')
   }
 
-  if (existing._count.users > 0) {
+  if (existing._count.userParcours > 0) {
     throw new ApiError(
       400,
       'Impossible de supprimer un parcours avec des apprenants actifs',

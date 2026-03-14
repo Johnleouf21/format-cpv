@@ -65,7 +65,8 @@ model Module {
   id      String @id @default(uuid())
   title   String
   content String @db.Text
-  order   Int    @default(0)
+  order       Int    @default(0)
+  minDuration Int    @default(0) @map("min_duration")
 
   parcoursId String   @map("parcours_id")
   parcours   Parcours @relation(fields: [parcoursId], references: [id], onDelete: Cascade)

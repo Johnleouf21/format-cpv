@@ -68,6 +68,7 @@ export async function getModuleById(moduleId: string, userId: string) {
       content: module.content,
       order: module.order,
       hasQuiz: !!module.quiz,
+      minDuration: module.minDuration,
     },
     parcours: module.parcours,
     isCompleted: !!progress,

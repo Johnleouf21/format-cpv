@@ -4,6 +4,7 @@ import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
 import { Check } from 'lucide-react'
+import { getVideoEmbedUrl } from '@/lib/utils/media'
 
 interface ModuleContentProps {
   content: string
@@ -16,6 +17,29 @@ export function ModuleContent({ content }: ModuleContentProps) {
         rehypePlugins={[rehypeRaw]}
         remarkPlugins={[remarkGfm]}
         components={{
+          // Video embeds - responsive 16:9 iframe (custom HTML tag via rehype-raw)
+          ...{ 'video-embed': ({ src, title }: { src?: string; title?: string }) => {
+            if (!src) return null
+            const embedUrl = getVideoEmbedUrl(src)
+            return (
+              <figure className="my-8">
+                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                  <iframe
+                    src={embedUrl}
+                    title={title || 'Vidéo'}
+                    className="absolute inset-0 w-full h-full rounded-lg shadow-xl border border-border/50"
+                    allowFullScreen
+                    allow="autoplay; encrypted-media; fullscreen"
+                  />
+                </div>
+                {title && (
+                  <figcaption className="text-center text-sm text-muted-foreground mt-3 italic">
+                    {title}
+                  </figcaption>
+                )}
+              </figure>
+            )
+          }},
           // Headings - Notion-like sizes and weights
           h1: ({ children, ...props }) => (
             <h1

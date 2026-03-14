@@ -146,9 +146,19 @@ export const authConfig: NextAuthConfig = {
       return token
     },
     async session({ session, token }) {
-      if (token) {
+      if (token?.id) {
         session.user.id = token.id as string
-        session.user.role = token.role as UserRole
+        // Always fetch fresh name and role from DB
+        const dbUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: { name: true, role: true },
+        })
+        if (dbUser) {
+          session.user.name = dbUser.name
+          session.user.role = dbUser.role
+        } else {
+          session.user.role = token.role as UserRole
+        }
       }
       return session
     },

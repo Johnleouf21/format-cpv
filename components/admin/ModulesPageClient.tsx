@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import {
   Select,
   SelectContent,
@@ -11,8 +11,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { ModulesTable } from './ModulesTable'
-import { Plus, BookOpen } from 'lucide-react'
+import { ModuleCard, ModuleCardSkeleton } from '@/components/shared/ModuleCard'
+import { ConfirmDialog } from './ConfirmDialog'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Plus } from 'lucide-react'
 
 interface Module {
   id: string
@@ -36,6 +38,8 @@ export function ModulesPageClient() {
   const [parcoursList, setParcoursList] = useState<Parcours[]>([])
   const [selectedParcours, setSelectedParcours] = useState<string>('all')
   const [isLoading, setIsLoading] = useState(true)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     async function fetchData() {
@@ -61,13 +65,19 @@ export function ModulesPageClient() {
     fetchData()
   }, [])
 
-  async function handleDelete(id: string) {
-    const response = await fetch(`/api/admin/modules/${id}`, {
-      method: 'DELETE',
-    })
-
-    if (response.ok) {
-      setModules((prev) => prev.filter((m) => m.id !== id))
+  async function handleDelete() {
+    if (!deleteId) return
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/admin/modules/${deleteId}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        setModules((prev) => prev.filter((m) => m.id !== deleteId))
+        setDeleteId(null)
+      }
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -75,21 +85,23 @@ export function ModulesPageClient() {
     ? modules
     : modules.filter((m) => m.parcours.id === selectedParcours)
 
+  const moduleToDelete = modules.find((m) => m.id === deleteId)
+
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-40" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-7 w-32 mb-1" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-9 w-40" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4].map((i) => (
+            <ModuleCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }
@@ -103,39 +115,66 @@ export function ModulesPageClient() {
             {modules.length} module{modules.length !== 1 ? 's' : ''} au total
           </p>
         </div>
-        <Button asChild>
-          <Link href="/admin/modules/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Nouveau module
-          </Link>
-        </Button>
+        <div className="flex items-center gap-3">
+          <Select value={selectedParcours} onValueChange={setSelectedParcours}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filtrer par parcours" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les parcours</SelectItem>
+              {parcoursList.map((p) => (
+                <SelectItem key={p.id} value={p.id}>
+                  {p.title}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button asChild>
+            <Link href="/admin/modules/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau module
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-            <CardDescription>
-              Liste des modules de formation
-            </CardDescription>
-            <Select value={selectedParcours} onValueChange={setSelectedParcours}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Filtrer par parcours" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les parcours</SelectItem>
-                {parcoursList.map((p) => (
-                  <SelectItem key={p.id} value={p.id}>
-                    {p.title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <ModulesTable modules={filteredModules} onDelete={handleDelete} />
-        </CardContent>
-      </Card>
+      {filteredModules.length === 0 ? (
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-center text-muted-foreground">
+              Aucun module trouvé
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {filteredModules.map((m) => (
+            <ModuleCard
+              key={m.id}
+              id={m.id}
+              title={m.title}
+              order={m.order}
+              parcoursTitle={m.parcours.title}
+              hasQuiz={m.hasQuiz}
+              updatedAt={m.updatedAt}
+              previewHref={`/admin/modules/${m.id}/preview`}
+              editHref={`/admin/modules/${m.id}/edit`}
+              onDelete={() => setDeleteId(m.id)}
+            />
+          ))}
+        </div>
+      )}
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Supprimer le module"
+        description={`Êtes-vous sûr de vouloir supprimer le module "${moduleToDelete?.title}" ? Cette action est irréversible et supprimera également les quiz et la progression associés.`}
+        confirmLabel="Supprimer"
+        onConfirm={handleDelete}
+        isLoading={isDeleting}
+        variant="destructive"
+      />
     </div>
   )
 }

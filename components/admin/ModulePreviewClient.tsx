@@ -1,10 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { ArrowLeft, BookOpen, Edit } from 'lucide-react'
+import { ArrowLeft, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 import { ModuleContent } from '@/components/learner/ModuleContent'
 import Link from 'next/link'
 
@@ -49,8 +50,29 @@ export function ModulePreviewClient({ moduleId }: ModulePreviewClientProps) {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-10 bg-gray-200 rounded animate-pulse w-40" />
-        <div className="h-64 bg-gray-100 rounded animate-pulse" />
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-36" />
+          <Skeleton className="h-8 w-28" />
+        </div>
+        <div>
+          <Skeleton className="h-7 w-64 mb-2" />
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-5 w-24" />
+            <Skeleton className="h-4 w-20" />
+          </div>
+        </div>
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+            <Skeleton className="h-4 w-5/6" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-4 w-2/3" />
+          </CardContent>
+        </Card>
       </div>
     )
   }
@@ -89,13 +111,10 @@ export function ModulePreviewClient({ moduleId }: ModulePreviewClientProps) {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <BookOpen className="h-8 w-8" />
-          Prévisualisation du module
-        </h1>
-        <div className="flex items-center gap-2 mt-2">
+        <h1 className="text-2xl font-bold tracking-tight">Prévisualisation du module</h1>
+        <div className="flex items-center gap-2 mt-1">
           <Badge variant="secondary">{module.parcours.title}</Badge>
-          <span className="text-muted-foreground">
+          <span className="text-sm text-muted-foreground">
             Module {module.order + 1}
           </span>
         </div>

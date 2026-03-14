@@ -7,6 +7,7 @@ import { ModuleList } from '@/components/learner/ModuleList'
 import { CertificateDownloadButton } from '@/components/learner/CertificateDownloadButton'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
 import Link from 'next/link'
 import { Trophy, PartyPopper, BookOpen, ArrowRight } from 'lucide-react'
 
@@ -20,15 +21,22 @@ export default async function LearnerHomePage() {
   try {
     const assignments = await getUserParcoursAssignments(session.user.id)
 
-    // No parcours assigned
+    // No parcours assigned — welcoming onboarding
     if (assignments.length === 0) {
       return (
-        <div className="text-center py-12">
-          <h1 className="text-xl font-semibold text-red-600">
-            Aucun parcours assigné
+        <div className="flex flex-col items-center justify-center py-16 px-4">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 mb-6">
+            <BookOpen className="h-8 w-8 text-blue-600" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">
+            Bienvenue{session.user.name ? `, ${session.user.name}` : ''} !
           </h1>
-          <p className="text-muted-foreground mt-2">
-            Contactez votre formateur pour être assigné à un parcours.
+          <p className="text-muted-foreground text-center max-w-md mb-4">
+            Votre compte est bien actif. Un formateur va bientôt vous assigner
+            une ou plusieurs formations.
+          </p>
+          <p className="text-sm text-muted-foreground text-center max-w-md">
+            Vous recevrez un email de notification dès qu&apos;une formation vous sera attribuée.
           </p>
         </div>
       )
@@ -73,12 +81,7 @@ export default async function LearnerHomePage() {
                   <CardContent>
                     <div className="space-y-3">
                       <div className="flex items-center gap-2">
-                        <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full transition-all ${isCompleted ? 'bg-green-500' : 'bg-blue-600'}`}
-                            style={{ width: `${percent}%` }}
-                          />
-                        </div>
+                        <Progress value={percent} className={`flex-1 h-2 ${isCompleted ? '[&>[data-slot=progress-indicator]]:bg-green-500' : ''}`} />
                         <span className="text-sm font-medium text-muted-foreground">{percent}%</span>
                       </div>
                       <Button asChild className="w-full" variant={isCompleted ? 'outline' : 'default'}>
@@ -108,7 +111,7 @@ export default async function LearnerHomePage() {
           parcoursTitle={data.parcours.title}
         />
 
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="bg-card rounded-lg p-6 shadow-sm border">
           <ProgressIndicator
             completed={data.progress.completed}
             total={data.progress.total}
@@ -154,12 +157,19 @@ export default async function LearnerHomePage() {
     )
   } catch {
     return (
-      <div className="text-center py-12">
-        <h1 className="text-xl font-semibold text-red-600">
-          Aucun parcours assigné
+      <div className="flex flex-col items-center justify-center py-16 px-4">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 mb-6">
+          <BookOpen className="h-8 w-8 text-blue-600" />
+        </div>
+        <h1 className="text-2xl font-bold mb-2">
+          Bienvenue{session.user.name ? `, ${session.user.name}` : ''} !
         </h1>
-        <p className="text-muted-foreground mt-2">
-          Contactez votre formateur pour être assigné à un parcours.
+        <p className="text-muted-foreground text-center max-w-md mb-4">
+          Votre compte est bien actif. Un formateur va bientôt vous assigner
+          une ou plusieurs formations.
+        </p>
+        <p className="text-sm text-muted-foreground text-center max-w-md">
+          Vous recevrez un email de notification dès qu&apos;une formation vous sera attribuée.
         </p>
       </div>
     )

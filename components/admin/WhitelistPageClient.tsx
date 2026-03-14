@@ -20,7 +20,16 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog'
-import { ShieldCheck, Plus, Trash2, Globe, Mail } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Skeleton } from '@/components/ui/skeleton'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { ShieldCheck, Plus, Trash2, Globe, Mail, AlertCircle } from 'lucide-react'
 
 interface AllowedDomain {
   id: string
@@ -146,14 +155,38 @@ export function WhitelistPageClient() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <div>
+          <Skeleton className="h-7 w-24 mb-1" />
+          <Skeleton className="h-4 w-72" />
+        </div>
         <Card>
-          <CardHeader>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-40" />
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <Skeleton className="h-6 w-44 mb-2" />
+              <Skeleton className="h-4 w-80" />
+            </div>
+            <Skeleton className="h-8 w-24" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
+              {[1, 2].map((i) => (
+                <Skeleton key={i} className="h-10 w-full" />
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <Skeleton className="h-6 w-56 mb-2" />
+              <Skeleton className="h-4 w-80" />
+            </div>
+            <Skeleton className="h-8 w-24" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+                <Skeleton key={i} className="h-10 w-full" />
               ))}
             </div>
           </CardContent>
@@ -270,15 +303,16 @@ export function WhitelistPageClient() {
                   <TableRow key={email.id}>
                     <TableCell className="font-mono">{email.email}</TableCell>
                     <TableCell>
-                      <select
-                        value={email.role}
-                        onChange={(e) => handleUpdateEmailRole(email.id, e.target.value)}
-                        className="h-8 rounded-md border border-input bg-transparent px-2 text-sm"
-                      >
-                        <option value="ADMIN">Administrateur</option>
-                        <option value="TRAINER">Formateur</option>
-                        <option value="LEARNER">Apprenant</option>
-                      </select>
+                      <Select value={email.role} onValueChange={(value) => handleUpdateEmailRole(email.id, value)}>
+                        <SelectTrigger className="h-8 w-[150px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="ADMIN">Administrateur</SelectItem>
+                          <SelectItem value="TRAINER">Formateur</SelectItem>
+                          <SelectItem value="LEARNER">Apprenant</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {new Date(email.createdAt).toLocaleDateString('fr-FR')}
@@ -309,7 +343,10 @@ export function WhitelistPageClient() {
           <form onSubmit={handleAddDomain}>
             <div className="space-y-4 py-4">
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
               <div className="space-y-2">
                 <Label htmlFor="domain">Domaine</Label>
@@ -344,7 +381,10 @@ export function WhitelistPageClient() {
           <form onSubmit={handleAddEmail}>
             <div className="space-y-4 py-4">
               {error && (
-                <p className="text-sm text-red-600 bg-red-50 p-2 rounded">{error}</p>
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
@@ -359,16 +399,16 @@ export function WhitelistPageClient() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="role">Rôle</Label>
-                <select
-                  id="role"
-                  value={newEmailRole}
-                  onChange={(e) => setNewEmailRole(e.target.value)}
-                  className="w-full h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-                >
-                  <option value="ADMIN">Administrateur</option>
-                  <option value="TRAINER">Formateur</option>
-                  <option value="LEARNER">Apprenant</option>
-                </select>
+                <Select value={newEmailRole} onValueChange={setNewEmailRole}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un rôle" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ADMIN">Administrateur</SelectItem>
+                    <SelectItem value="TRAINER">Formateur</SelectItem>
+                    <SelectItem value="LEARNER">Apprenant</SelectItem>
+                  </SelectContent>
+                </Select>
                 <p className="text-xs text-muted-foreground">
                   Le rôle sera attribué lors de la première connexion
                 </p>

@@ -13,6 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
 import { ArrowLeft, Route, BookOpen, Plus, Edit, Eye, ChevronUp, ChevronDown } from 'lucide-react'
 
 interface Module {
@@ -107,12 +108,7 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
   }
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 bg-gray-200 rounded animate-pulse w-40" />
-        <div className="h-64 bg-gray-100 rounded animate-pulse" />
-      </div>
-    )
+    return <ParcoursDetailSkeleton />
   }
 
   if (error || !parcours) {
@@ -142,23 +138,22 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
         </Button>
       </div>
 
-      <div className="flex items-start justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <Route className="h-8 w-8" />
-            {parcours.title}
-          </h1>
-          <p className="text-muted-foreground mt-1">
-            {parcours.description || 'Aucune description'}
-          </p>
+          <h1 className="text-2xl font-bold tracking-tight">{parcours.title}</h1>
+          {parcours.description && (
+            <p className="text-sm text-muted-foreground mt-0.5">
+              {parcours.description}
+            </p>
+          )}
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 shrink-0">
           <Badge variant="secondary" className="gap-1">
             <BookOpen className="h-3 w-3" />
-            {parcours.modules.length} modules
+            {parcours.modules.length} module{parcours.modules.length !== 1 ? 's' : ''}
           </Badge>
           <Badge variant="secondary">
-            {parcours.learnerCount} apprenants
+            {parcours.learnerCount} apprenant{parcours.learnerCount !== 1 ? 's' : ''}
           </Badge>
         </div>
       </div>

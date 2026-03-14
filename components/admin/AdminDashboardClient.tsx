@@ -5,6 +5,7 @@ import { AdminStatsCards } from './AdminStatsCards'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+import { Skeleton } from '@/components/ui/skeleton'
 import { BookOpen, Route, GraduationCap, Users, Plus, ArrowRight } from 'lucide-react'
 
 interface AdminStats {
@@ -40,18 +41,18 @@ export function AdminDashboardClient() {
     return (
       <div className="space-y-8">
         <div>
-          <div className="h-8 bg-gray-200 rounded animate-pulse w-48 mb-2" />
-          <div className="h-4 bg-gray-100 rounded animate-pulse w-72" />
+          <Skeleton className="h-8 w-48 mb-2" />
+          <Skeleton className="h-4 w-72" />
         </div>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
               <CardContent className="p-5">
                 <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-xl bg-gray-100 animate-pulse" />
+                  <Skeleton className="w-12 h-12 rounded-xl" />
                   <div>
-                    <div className="h-3 bg-gray-200 rounded animate-pulse w-16 mb-2" />
-                    <div className="h-7 bg-gray-200 rounded animate-pulse w-10" />
+                    <Skeleton className="h-3 w-16 mb-2" />
+                    <Skeleton className="h-7 w-10" />
                   </div>
                 </div>
               </CardContent>

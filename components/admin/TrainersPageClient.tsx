@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { TrainersTable } from './TrainersTable'
 import { AddTrainerForm } from './AddTrainerForm'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Plus, GraduationCap } from 'lucide-react'
 
 interface Trainer {
@@ -66,14 +67,21 @@ export function TrainersPageClient() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-7 w-36 mb-1" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-9 w-48" />
+        </div>
         <Card>
-          <CardHeader>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-40" />
+          <CardHeader className="pb-3">
+            <Skeleton className="h-4 w-64" />
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
+            <div className="space-y-3">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+                <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
           </CardContent>

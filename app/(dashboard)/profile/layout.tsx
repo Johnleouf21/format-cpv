@@ -3,7 +3,7 @@ import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/shared/DashboardShell'
 import { MobileNav } from '@/components/shared/MobileNav'
 
-const navItems = [
+const adminNavItems = [
   { href: '/admin', label: 'Dashboard', icon: 'LayoutDashboard' },
   { href: '/admin/modules', label: 'Modules', icon: 'BookOpen' },
   { href: '/admin/parcours', label: 'Parcours', icon: 'Route' },
@@ -12,7 +12,15 @@ const navItems = [
   { href: '/admin/whitelist', label: 'Accès', icon: 'ShieldCheck' },
 ]
 
-export default async function AdminLayout({
+const trainerNavItems = [
+  { href: '/trainer', label: 'Mes parcours', icon: 'Route' },
+]
+
+const learnerNavItems = [
+  { href: '/learner', label: 'Mes formations', icon: 'BookOpen' },
+]
+
+export default async function ProfileLayout({
   children,
 }: {
   children: React.ReactNode
@@ -23,9 +31,29 @@ export default async function AdminLayout({
     redirect('/login')
   }
 
-  if (session.user.role !== 'ADMIN') {
-    redirect('/learner')
-  }
+  const currentSpace =
+    session.user.role === 'ADMIN'
+      ? 'admin' as const
+      : session.user.role === 'TRAINER'
+        ? 'trainer' as const
+        : 'learner' as const
+
+  const navItems =
+    currentSpace === 'admin'
+      ? adminNavItems
+      : currentSpace === 'trainer'
+        ? trainerNavItems
+        : learnerNavItems
+
+  const roleLabel =
+    currentSpace === 'admin' ? 'Admin' : currentSpace === 'trainer' ? 'Formateur' : 'Apprenant'
+
+  const roleBadgeClass =
+    currentSpace === 'admin'
+      ? 'bg-red-100 text-red-800'
+      : currentSpace === 'trainer'
+        ? 'bg-blue-100 text-blue-800'
+        : 'bg-green-100 text-green-800'
 
   return (
     <DashboardShell
@@ -34,14 +62,14 @@ export default async function AdminLayout({
         <MobileNav
           items={navItems}
           userName={session.user.name || ''}
-          roleLabel="Admin"
-          roleBadgeClass="bg-red-100 text-red-800"
+          roleLabel={roleLabel}
+          roleBadgeClass={roleBadgeClass}
         />
       }
       userName={session.user.name || session.user.email || ''}
       userEmail={session.user.email || ''}
       userRole={session.user.role}
-      currentSpace="admin"
+      currentSpace={currentSpace}
     >
       {children}
     </DashboardShell>

@@ -2,10 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ParcoursTable } from './ParcoursTable'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ParcoursCard, ParcoursCardSkeleton } from '@/components/shared/ParcoursCard'
 import { ParcoursForm } from './ParcoursForm'
-import { Plus, Route } from 'lucide-react'
+import { ConfirmDialog } from './ConfirmDialog'
+import { Plus } from 'lucide-react'
 import { useSearchParams } from 'next/navigation'
 
 interface Parcours {
@@ -23,6 +25,8 @@ export function ParcoursPageClient() {
   const [isLoading, setIsLoading] = useState(true)
   const [isFormOpen, setIsFormOpen] = useState(searchParams.get('new') === 'true')
   const [editingParcours, setEditingParcours] = useState<Parcours | null>(null)
+  const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     fetchParcours()
@@ -41,13 +45,19 @@ export function ParcoursPageClient() {
     }
   }
 
-  async function handleDelete(id: string) {
-    const response = await fetch(`/api/admin/parcours/${id}`, {
-      method: 'DELETE',
-    })
-
-    if (response.ok) {
-      setParcoursList((prev) => prev.filter((p) => p.id !== id))
+  async function handleDelete() {
+    if (!deleteId) return
+    setIsDeleting(true)
+    try {
+      const response = await fetch(`/api/admin/parcours/${deleteId}`, {
+        method: 'DELETE',
+      })
+      if (response.ok) {
+        setParcoursList((prev) => prev.filter((p) => p.id !== deleteId))
+        setDeleteId(null)
+      }
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -74,9 +84,7 @@ export function ParcoursPageClient() {
     if (isEditing) {
       setParcoursList((prev) =>
         prev.map((p) =>
-          p.id === editingParcours.id
-            ? { ...p, ...result }
-            : p
+          p.id === editingParcours.id ? { ...p, ...result } : p
         )
       )
     } else {
@@ -86,11 +94,6 @@ export function ParcoursPageClient() {
     setEditingParcours(null)
   }
 
-  function handleEdit(parcours: Parcours) {
-    setEditingParcours(parcours)
-    setIsFormOpen(true)
-  }
-
   function handleFormClose(open: boolean) {
     setIsFormOpen(open)
     if (!open) {
@@ -98,21 +101,24 @@ export function ParcoursPageClient() {
     }
   }
 
+  const parcoursToDelete = parcoursList.find((p) => p.id === deleteId)
+  const canDelete = parcoursToDelete?.learnerCount === 0
+
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-40" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-7 w-32 mb-1" />
+            <Skeleton className="h-4 w-48" />
+          </div>
+          <Skeleton className="h-9 w-44" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3].map((i) => (
+            <ParcoursCardSkeleton key={i} />
+          ))}
+        </div>
       </div>
     )
   }
@@ -132,26 +138,56 @@ export function ParcoursPageClient() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader className="pb-3">
-          <CardDescription>
-            Liste des parcours de formation
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ParcoursTable
-            parcoursList={parcoursList}
-            onDelete={handleDelete}
-            onEdit={handleEdit}
-          />
-        </CardContent>
-      </Card>
+      {parcoursList.length === 0 ? (
+        <Card>
+          <CardContent className="py-8">
+            <p className="text-center text-muted-foreground">
+              Aucun parcours trouvé
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {parcoursList.map((p) => (
+            <ParcoursCard
+              key={p.id}
+              id={p.id}
+              title={p.title}
+              description={p.description}
+              moduleCount={p.moduleCount}
+              learnerCount={p.learnerCount}
+              detailHref={`/admin/parcours/${p.id}`}
+              onEdit={() => {
+                setEditingParcours(p)
+                setIsFormOpen(true)
+              }}
+              onDelete={() => setDeleteId(p.id)}
+              canDelete={p.learnerCount === 0}
+            />
+          ))}
+        </div>
+      )}
 
       <ParcoursForm
         open={isFormOpen}
         onOpenChange={handleFormClose}
         parcours={editingParcours}
         onSubmit={handleSubmit}
+      />
+
+      <ConfirmDialog
+        open={!!deleteId}
+        onOpenChange={(open) => !open && setDeleteId(null)}
+        title="Supprimer le parcours"
+        description={
+          canDelete
+            ? `Êtes-vous sûr de vouloir supprimer le parcours "${parcoursToDelete?.title}" ? Cette action supprimera également tous les modules associés.`
+            : 'Ce parcours ne peut pas être supprimé car il a des apprenants actifs.'
+        }
+        confirmLabel="Supprimer"
+        onConfirm={canDelete ? handleDelete : () => setDeleteId(null)}
+        isLoading={isDeleting}
+        variant="destructive"
       />
     </div>
   )

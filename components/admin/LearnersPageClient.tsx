@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/select'
 import { AdminLearnersTable } from './AdminLearnersTable'
 import { AddUserDialog } from '@/components/shared/AddUserDialog'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Users, Filter } from 'lucide-react'
 
 interface Learner {
@@ -161,14 +162,28 @@ export function LearnersPageClient() {
   if (isLoading) {
     return (
       <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-7 w-36 mb-1" />
+            <Skeleton className="h-4 w-52" />
+          </div>
+          <Skeleton className="h-9 w-48" />
+        </div>
         <Card>
-          <CardHeader>
-            <div className="h-6 bg-gray-200 rounded animate-pulse w-40" />
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-64" />
+              <div className="flex gap-2">
+                <Skeleton className="h-8 w-[160px]" />
+                <Skeleton className="h-8 w-[160px]" />
+                <Skeleton className="h-8 w-[130px]" />
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-gray-100 rounded animate-pulse" />
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-14 w-full" />
               ))}
             </div>
           </CardContent>

@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { ModuleForm } from './ModuleForm'
-import { ArrowLeft, BookOpen } from 'lucide-react'
+import { ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { ModuleFormSkeleton } from '@/components/shared/ModuleCard'
 import Link from 'next/link'
 
 interface Module {
@@ -59,12 +60,7 @@ export function EditModulePageClient({ moduleId }: EditModulePageClientProps) {
   }, [moduleId])
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 bg-gray-200 rounded animate-pulse w-40" />
-        <div className="h-64 bg-gray-100 rounded animate-pulse" />
-      </div>
-    )
+    return <ModuleFormSkeleton />
   }
 
   if (error || !module) {
@@ -95,11 +91,8 @@ export function EditModulePageClient({ moduleId }: EditModulePageClientProps) {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold flex items-center gap-2">
-          <BookOpen className="h-8 w-8" />
-          Modifier le module
-        </h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-2xl font-bold tracking-tight">Modifier le module</h1>
+        <p className="text-sm text-muted-foreground mt-0.5">
           {module.title}
         </p>
       </div>

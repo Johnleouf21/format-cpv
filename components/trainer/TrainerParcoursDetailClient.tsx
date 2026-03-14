@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { ArrowLeft, Route, BookOpen, Eye } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
 import {
   Table,
   TableBody,
@@ -57,12 +58,7 @@ export function TrainerParcoursDetailClient({ parcoursId }: TrainerParcoursDetai
   }, [parcoursId])
 
   if (isLoading) {
-    return (
-      <div className="space-y-6">
-        <div className="h-10 bg-gray-200 rounded animate-pulse w-40" />
-        <div className="h-64 bg-gray-100 rounded animate-pulse" />
-      </div>
-    )
+    return <ParcoursDetailSkeleton />
   }
 
   if (error || !parcours) {

@@ -148,7 +148,7 @@ export function ModulePageClient({ data }: ModulePageClientProps) {
       </nav>
 
       {/* Module header */}
-      <div className="bg-white rounded-lg p-6 shadow-sm">
+      <div className="bg-card rounded-lg p-6 shadow-sm border">
         <div className="flex items-center gap-3 mb-4">
           <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">
             {data.module.order}
@@ -182,7 +182,7 @@ export function ModulePageClient({ data }: ModulePageClientProps) {
 
       {/* Complete button - show if no quiz or quiz already completed */}
       {(!data.module.hasQuiz || quizCompleted) && (
-        <div className="bg-white rounded-lg p-6 shadow-sm">
+        <div className="bg-card rounded-lg p-6 shadow-sm border">
           <CompleteModuleButton
             moduleId={data.module.id}
             isCompleted={data.isCompleted}

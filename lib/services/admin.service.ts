@@ -35,8 +35,9 @@ export interface UpdateModuleInput {
 }
 
 export async function getModules(parcoursId?: string): Promise<ModuleWithDetails[]> {
+  const where = parcoursId ? { parcoursId } : {}
   const modules = await prisma.module.findMany({
-    where: parcoursId ? { parcoursId } : undefined,
+    where,
     include: {
       parcours: {
         select: { id: true, title: true },
@@ -45,7 +46,7 @@ export async function getModules(parcoursId?: string): Promise<ModuleWithDetails
         select: { id: true },
       },
     },
-    orderBy: [{ parcours: { title: 'asc' } }, { order: 'asc' }],
+    orderBy: { order: 'asc' },
   })
 
   return modules.map((m) => ({
@@ -407,6 +408,12 @@ export async function addTrainer(email: string, name?: string) {
       where: { email },
       data: { role: UserRole.TRAINER },
     })
+    // Sync AllowedEmail
+    await prisma.allowedEmail.upsert({
+      where: { email: email.toLowerCase() },
+      update: { role: UserRole.TRAINER },
+      create: { email: email.toLowerCase(), role: UserRole.TRAINER },
+    })
     return trainer
   }
 
@@ -417,6 +424,12 @@ export async function addTrainer(email: string, name?: string) {
       name: name ?? email.split('@')[0],
       role: UserRole.TRAINER,
     },
+  })
+  // Sync AllowedEmail
+  await prisma.allowedEmail.upsert({
+    where: { email: email.toLowerCase() },
+    update: { role: UserRole.TRAINER },
+    create: { email: email.toLowerCase(), role: UserRole.TRAINER },
   })
 
   return trainer

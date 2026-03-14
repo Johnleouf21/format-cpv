@@ -40,6 +40,14 @@ export function FormaCPVAdapter(): Adapter {
           role,
         },
       })
+
+      // Ensure AllowedEmail entry exists (for domain-based users)
+      await prisma.allowedEmail.upsert({
+        where: { email: data.email!.toLowerCase() },
+        update: {},
+        create: { email: data.email!.toLowerCase(), role },
+      })
+
       return mapToAdapterUser(user)
     },
 

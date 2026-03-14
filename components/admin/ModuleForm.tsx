@@ -15,7 +15,8 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ImageUploader } from './ImageUploader'
-import { Loader2, ExternalLink, Eye, Code } from 'lucide-react'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, ExternalLink, Eye, Code, AlertCircle } from 'lucide-react'
 import { ModuleContent } from '@/components/learner/ModuleContent'
 
 interface Parcours {
@@ -107,9 +108,10 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-4 bg-destructive/10 text-destructive rounded-md">
-          {error}
-        </div>
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
       )}
 
       <Card>
@@ -212,7 +214,7 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
         </CardHeader>
         <CardContent className="space-y-4">
           {showPreview ? (
-            <div className="min-h-[400px] rounded-md border p-4 bg-white">
+            <div className="min-h-[400px] rounded-md border p-4 bg-card">
               {content ? (
                 <ModuleContent content={content} />
               ) : (

@@ -1,11 +1,9 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Route, BookOpen, Users, Eye } from 'lucide-react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { ParcoursCard, ParcoursCardSkeleton } from '@/components/shared/ParcoursCard'
 
 interface Parcours {
   id: string
@@ -39,10 +37,13 @@ export function TrainerParcoursListClient() {
   if (isLoading) {
     return (
       <div className="space-y-6">
-        <div className="h-10 bg-gray-200 rounded animate-pulse w-60" />
+        <div>
+          <Skeleton className="h-7 w-32 mb-1" />
+          <Skeleton className="h-4 w-72" />
+        </div>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 bg-gray-100 rounded animate-pulse" />
+            <ParcoursCardSkeleton key={i} />
           ))}
         </div>
       </div>
@@ -69,39 +70,16 @@ export function TrainerParcoursListClient() {
       ) : (
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {parcours.map((p) => (
-            <Card key={p.id} className="hover:shadow-md transition-all hover:border-gray-300">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-violet-50">
-                    <Route className="h-4.5 w-4.5 text-violet-600" />
-                  </div>
-                  {p.title}
-                </CardTitle>
-                {p.description && (
-                  <CardDescription className="line-clamp-2">
-                    {p.description}
-                  </CardDescription>
-                )}
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <BookOpen className="h-4 w-4" />
-                    <span>{p.moduleCount} module{p.moduleCount !== 1 ? 's' : ''}</span>
-                  </div>
-                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
-                    <Users className="h-4 w-4" />
-                    <span>{p.learnerCount} apprenant{p.learnerCount !== 1 ? 's' : ''}</span>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full" asChild>
-                  <Link href={`/trainer/parcours/${p.id}`}>
-                    <Eye className="mr-2 h-4 w-4" />
-                    Voir les modules
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <ParcoursCard
+              key={p.id}
+              id={p.id}
+              title={p.title}
+              description={p.description}
+              moduleCount={p.moduleCount}
+              learnerCount={p.learnerCount}
+              detailHref={`/trainer/parcours/${p.id}`}
+              detailLabel="Voir les modules"
+            />
           ))}
         </div>
       )}

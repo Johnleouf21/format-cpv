@@ -1,5 +1,5 @@
 import { prisma } from '@/lib/db'
-import type { Adapter, AdapterUser, VerificationToken } from '@auth/core/adapters'
+import type { Adapter, AdapterUser, VerificationToken } from 'next-auth/adapters'
 import { UserRole } from '@prisma/client'
 
 function mapToAdapterUser(user: {

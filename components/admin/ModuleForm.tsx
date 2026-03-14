@@ -14,7 +14,6 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ImageUploader } from './ImageUploader'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, ExternalLink, Eye, Code, AlertCircle, ImageIcon, Video, Clock } from 'lucide-react'
 import { ModuleContent } from '@/components/learner/ModuleContent'
@@ -108,10 +107,6 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
     if (textareaRef.current) {
       cursorPositionRef.current = textareaRef.current.selectionStart
     }
-  }
-
-  function handleImageUploaded(url: string) {
-    insertAtCursor(`\n![Image](${url})\n`)
   }
 
   function handleInsertImageUrl() {
@@ -373,7 +368,6 @@ Description de la section..."
                 />
               </div>
 
-              <ImageUploader onImageUploaded={handleImageUploaded} />
             </>
           )}
         </CardContent>

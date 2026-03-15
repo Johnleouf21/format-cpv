@@ -48,13 +48,20 @@ export async function getModuleQuiz(
     throw new ApiError(404, 'Module non trouvé', 'MODULE_NOT_FOUND')
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { parcoursId: true },
+  // Check access via UserParcours first
+  const hasAccess = await prisma.userParcours.findUnique({
+    where: { userId_parcoursId: { userId, parcoursId: module.parcoursId } },
   })
 
-  if (user?.parcoursId !== module.parcoursId) {
-    throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
+  if (!hasAccess) {
+    // Fallback: legacy parcoursId
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { parcoursId: true },
+    })
+    if (user?.parcoursId !== module.parcoursId) {
+      throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
+    }
   }
 
   const quiz = await prisma.quiz.findUnique({
@@ -118,14 +125,19 @@ export async function submitQuiz(
     throw new ApiError(404, 'Quiz non trouvé', 'QUIZ_NOT_FOUND')
   }
 
-  // Verify user has access
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { parcoursId: true },
+  // Verify user has access via UserParcours first
+  const hasAccess = await prisma.userParcours.findUnique({
+    where: { userId_parcoursId: { userId, parcoursId: quiz.module.parcoursId } },
   })
 
-  if (user?.parcoursId !== quiz.module.parcoursId) {
-    throw new ApiError(403, 'Accès non autorisé à ce quiz', 'QUIZ_ACCESS_DENIED')
+  if (!hasAccess) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { parcoursId: true },
+    })
+    if (user?.parcoursId !== quiz.module.parcoursId) {
+      throw new ApiError(403, 'Accès non autorisé à ce quiz', 'QUIZ_ACCESS_DENIED')
+    }
   }
 
   // Check if user has already completed the module with a quiz result
@@ -256,7 +268,11 @@ export async function hasCompletedQuiz(
 export async function getUserQuizResult(
   userId: string,
   moduleId: string
-): Promise<{ score: number; totalQuestions: number } | null> {
+): Promise<{
+  score: number
+  totalQuestions: number
+  results: { questionId: string; selectedAnswers: string[]; correctAnswers: string[] }[]
+} | null> {
   const progress = await prisma.progress.findUnique({
     where: {
       userId_moduleId: { userId, moduleId },
@@ -266,10 +282,37 @@ export async function getUserQuizResult(
         select: {
           score: true,
           totalQuestions: true,
+          answers: true,
         },
       },
     },
   })
 
-  return progress?.quizResult || null
+  if (!progress?.quizResult) return null
+
+  // Retrieve the quiz with correct answers to build the correction
+  const quiz = await prisma.quiz.findUnique({
+    where: { moduleId },
+    include: {
+      questions: {
+        include: {
+          answers: { select: { id: true, isCorrect: true } },
+        },
+      },
+    },
+  })
+
+  const userAnswers = progress.quizResult.answers as Record<string, string[]>
+
+  const results = (quiz?.questions || []).map((q) => ({
+    questionId: q.id,
+    selectedAnswers: userAnswers[q.id] || [],
+    correctAnswers: q.answers.filter((a) => a.isCorrect).map((a) => a.id),
+  }))
+
+  return {
+    score: progress.quizResult.score,
+    totalQuestions: progress.quizResult.totalQuestions,
+    results,
+  }
 }

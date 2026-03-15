@@ -4,7 +4,9 @@ import { prisma } from '@/lib/db'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { FileQuestion, Calendar, BookOpen, CheckCircle, XCircle } from 'lucide-react'
+import { FileQuestion, Calendar, BookOpen, CheckCircle, XCircle, Eye } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 export default async function QuizHistoryPage() {
   const session = await auth()
@@ -33,11 +35,12 @@ export default async function QuizHistoryPage() {
     orderBy: { completedAt: 'desc' },
   })
 
+  // q.score is already a percentage (0-100)
   const avgScore = quizResults.length > 0
-    ? Math.round(quizResults.reduce((sum, q) => sum + (q.score / q.totalQuestions) * 100, 0) / quizResults.length)
+    ? Math.round(quizResults.reduce((sum, q) => sum + q.score, 0) / quizResults.length)
     : 0
 
-  const passedCount = quizResults.filter((q) => (q.score / q.totalQuestions) >= 0.6).length
+  const passedCount = quizResults.filter((q) => q.score >= 60).length
 
   return (
     <div className="space-y-6">
@@ -90,8 +93,9 @@ export default async function QuizHistoryPage() {
       ) : (
         <div className="space-y-3">
           {quizResults.map((result) => {
-            const scorePercent = Math.round((result.score / result.totalQuestions) * 100)
-            const passed = scorePercent >= 60
+            // result.score is already a percentage (0-100)
+            const passed = result.score >= 60
+            const correctCount = Math.round((result.score / 100) * result.totalQuestions)
 
             return (
               <Card key={result.id}>
@@ -117,14 +121,19 @@ export default async function QuizHistoryPage() {
                           <Calendar className="h-3.5 w-3.5" />
                           {result.completedAt.toLocaleDateString('fr-FR')}
                         </span>
-                        <span>{result.score}/{result.totalQuestions} bonnes réponses</span>
+                        <span>{correctCount}/{result.totalQuestions} bonnes réponses</span>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <Progress value={scorePercent} className={`h-2 w-20 ${passed ? '' : '[&>[data-slot=progress-indicator]]:bg-red-500'}`} />
+                      <Progress value={result.score} className={`h-2 w-20 ${passed ? '' : '[&>[data-slot=progress-indicator]]:bg-red-500'}`} />
                       <Badge variant={passed ? 'default' : 'destructive'} className={passed ? 'bg-green-600' : ''}>
-                        {scorePercent}%
+                        {result.score}%
                       </Badge>
+                      <Button variant="ghost" size="sm" asChild>
+                        <Link href={`/learner/modules/${result.progress.module.id}?quiz=review`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
                     </div>
                   </div>
                 </CardContent>

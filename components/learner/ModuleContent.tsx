@@ -3,8 +3,62 @@
 import ReactMarkdown from 'react-markdown'
 import rehypeRaw from 'rehype-raw'
 import remarkGfm from 'remark-gfm'
-import { Check } from 'lucide-react'
-import { getVideoEmbedUrl } from '@/lib/utils/media'
+import { Check, ExternalLink, Play } from 'lucide-react'
+import { getVideoEmbedUrl, isEmbeddableVideo } from '@/lib/utils/media'
+
+function VideoLinkCard({ src, title }: { src: string; title?: string }) {
+  return (
+    <figure className="my-8">
+      <a
+        href={src}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="flex items-center gap-4 p-6 rounded-lg border border-border bg-muted/30 hover:bg-muted/60 transition-colors group"
+      >
+        <div className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/10 text-primary group-hover:bg-primary/20 transition-colors">
+          <Play className="w-7 h-7" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-foreground truncate">{title || 'Voir la vidéo'}</p>
+          <p className="text-sm text-muted-foreground truncate">{src}</p>
+        </div>
+        <ExternalLink className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+      </a>
+      {title && (
+        <figcaption className="text-center text-sm text-muted-foreground mt-3 italic">
+          {title}
+        </figcaption>
+      )}
+    </figure>
+  )
+}
+
+function VideoEmbed({ src, title }: { src: string; title?: string }) {
+  // SharePoint/OneDrive links can't be iframed — show a link card instead
+  if (!isEmbeddableVideo(src)) {
+    return <VideoLinkCard src={src} title={title} />
+  }
+
+  const embedUrl = getVideoEmbedUrl(src)
+
+  return (
+    <figure className="my-8">
+      <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+        <iframe
+          src={embedUrl}
+          title={title || 'Vidéo'}
+          className="absolute inset-0 w-full h-full rounded-lg shadow-xl border border-border/50"
+          allow="autoplay; encrypted-media; fullscreen"
+        />
+      </div>
+      {title && (
+        <figcaption className="text-center text-sm text-muted-foreground mt-3 italic">
+          {title}
+        </figcaption>
+      )}
+    </figure>
+  )
+}
 
 interface ModuleContentProps {
   content: string
@@ -17,28 +71,10 @@ export function ModuleContent({ content }: ModuleContentProps) {
         rehypePlugins={[rehypeRaw]}
         remarkPlugins={[remarkGfm]}
         components={{
-          // Video embeds - responsive 16:9 iframe (custom HTML tag via rehype-raw)
+          // Video embeds - responsive 16:9 iframe with fallback to link card
           ...{ 'video-embed': ({ src, title }: { src?: string; title?: string }) => {
             if (!src) return null
-            const embedUrl = getVideoEmbedUrl(src)
-            return (
-              <figure className="my-8">
-                <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
-                  <iframe
-                    src={embedUrl}
-                    title={title || 'Vidéo'}
-                    className="absolute inset-0 w-full h-full rounded-lg shadow-xl border border-border/50"
-                    allowFullScreen
-                    allow="autoplay; encrypted-media; fullscreen"
-                  />
-                </div>
-                {title && (
-                  <figcaption className="text-center text-sm text-muted-foreground mt-3 italic">
-                    {title}
-                  </figcaption>
-                )}
-              </figure>
-            )
+            return <VideoEmbed src={src} title={title} />
           }},
           // Headings - Notion-like sizes and weights
           h1: ({ children, ...props }) => (
@@ -91,14 +127,23 @@ export function ModuleContent({ content }: ModuleContentProps) {
           ),
 
           // Paragraphs - proper spacing like Notion
-          p: ({ children, ...props }) => (
-            <p
-              className="text-[1.0625rem] leading-[1.8] my-[1.25em] text-foreground/90"
-              {...props}
-            >
-              {children}
-            </p>
-          ),
+          // If a paragraph contains an image or video-embed, render as div to avoid invalid <figure> inside <p>
+          p: ({ children, node, ...props }) => {
+            const hasBlockChild = node?.children?.some(
+              (child) => 'tagName' in child && (child.tagName === 'img' || child.tagName === 'video-embed')
+            )
+            if (hasBlockChild) {
+              return <div className="my-[1.25em]" {...props}>{children}</div>
+            }
+            return (
+              <p
+                className="text-[1.0625rem] leading-[1.8] my-[1.25em] text-foreground/90"
+                {...props}
+              >
+                {children}
+              </p>
+            )
+          },
 
           // Strong and emphasis
           strong: ({ children, ...props }) => (

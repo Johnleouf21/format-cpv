@@ -35,8 +35,8 @@ export async function POST(
 
     const result = await submitQuiz(quizId, session.user.id, { answers })
 
-    // If completeModule is true and moduleId is provided, save the progress with quiz result
-    if (completeModule && moduleId) {
+    // Save quiz result (creates Progress + QuizResult record, but doesn't trigger completion)
+    if (moduleId) {
       await saveQuizResultWithProgress(
         session.user.id,
         moduleId,

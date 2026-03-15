@@ -5,9 +5,10 @@ import { ModulePageClient } from '@/components/learner/ModulePageClient'
 
 interface ModulePageProps {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ [key: string]: string | undefined }>
 }
 
-export default async function ModulePage({ params }: ModulePageProps) {
+export default async function ModulePage({ params, searchParams }: ModulePageProps) {
   const session = await auth()
 
   if (!session?.user) {
@@ -15,11 +16,12 @@ export default async function ModulePage({ params }: ModulePageProps) {
   }
 
   const { id } = await params
+  const { quiz } = await searchParams
 
   try {
     const data = await getModuleById(id, session.user.id)
 
-    return <ModulePageClient data={data} />
+    return <ModulePageClient data={data} initialQuizReview={quiz === 'review'} />
   } catch {
     notFound()
   }

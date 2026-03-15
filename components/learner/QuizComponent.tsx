@@ -39,11 +39,18 @@ interface QuizResultData {
   }[]
 }
 
+interface PreviousQuizResult {
+  score: number
+  totalQuestions: number
+  results: { questionId: string; selectedAnswers: string[]; correctAnswers: string[] }[]
+}
+
 interface QuizComponentProps {
   quiz: Quiz
   moduleId: string
-  previousResult?: { score: number; totalQuestions: number } | null
+  previousResult?: PreviousQuizResult | null
   onQuizCompleted?: (result: QuizResultData) => void
+  showCorrectionDirectly?: boolean
 }
 
 export function QuizComponent({
@@ -51,11 +58,12 @@ export function QuizComponent({
   moduleId,
   previousResult,
   onQuizCompleted,
+  showCorrectionDirectly,
 }: QuizComponentProps) {
   const [answers, setAnswers] = useState<Record<string, string[]>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [result, setResult] = useState<QuizResultData | null>(null)
-  const [showQuiz, setShowQuiz] = useState(!previousResult)
+  const [showQuiz, setShowQuiz] = useState(!previousResult || !!showCorrectionDirectly)
 
   const handleAnswerChange = (questionId: string, answerIds: string[]) => {
     setAnswers((prev) => ({
@@ -80,7 +88,6 @@ export function QuizComponent({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           answers,
-          completeModule: true,
           moduleId,
         }),
       })
@@ -119,6 +126,50 @@ export function QuizComponent({
           </Button>
         </CardContent>
       </Card>
+    )
+  }
+
+  // Show previous result correction
+  if (previousResult && showQuiz) {
+    return (
+      <div className="space-y-6">
+        <QuizResult
+          score={previousResult.score}
+          totalQuestions={previousResult.totalQuestions}
+          correctAnswers={previousResult.results.filter(
+            (r) => r.selectedAnswers.length === r.correctAnswers.length &&
+              r.selectedAnswers.every((id) => r.correctAnswers.includes(id))
+          ).length}
+        />
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Correction</CardTitle>
+            <CardDescription>Voici le détail de vos réponses</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {quiz.questions.map((question, index) => {
+              const questionResult = previousResult.results.find(
+                (r) => r.questionId === question.id
+              )
+              return (
+                <QuizQuestion
+                  key={question.id}
+                  questionId={question.id}
+                  questionNumber={index + 1}
+                  text={question.text}
+                  type={question.type}
+                  answers={question.answers}
+                  selectedAnswers={questionResult?.selectedAnswers || []}
+                  onAnswerChange={() => {}}
+                  showResult
+                  correctAnswers={questionResult?.correctAnswers}
+                />
+              )
+            })}
+          </CardContent>
+        </Card>
+      </div>
     )
   }
 

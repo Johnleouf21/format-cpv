@@ -36,7 +36,7 @@ async function getLearnerStats(userId: string) {
 
   const quizzesTaken = quizResults.length
   const avgScore = quizzesTaken > 0
-    ? Math.round(quizResults.reduce((sum, q) => sum + (q.score / q.totalQuestions) * 100, 0) / quizzesTaken)
+    ? Math.round(quizResults.reduce((sum, q) => sum + q.score, 0) / quizzesTaken)
     : 0
 
   return { completedModules, quizzesTaken, avgScore, totalAssignments }

@@ -105,23 +105,6 @@ export async function markModuleAsCompleted(userId: string, moduleId: string, st
     }
   }
 
-  // Validate quiz completion if module has a quiz
-  const quiz = await prisma.quiz.findUnique({
-    where: { moduleId },
-    select: { id: true },
-  })
-
-  if (quiz) {
-    // QuizResult is linked via Progress, check if a progress record with quiz result exists
-    const progressWithQuiz = await prisma.progress.findUnique({
-      where: { userId_moduleId: { userId, moduleId } },
-      include: { quizResult: true },
-    })
-    if (!progressWithQuiz?.quizResult) {
-      throw new ApiError(400, 'Vous devez compléter le quiz avant de valider ce module', 'QUIZ_NOT_COMPLETED')
-    }
-  }
-
   // Check if already completed
   const existingProgress = await prisma.progress.findUnique({
     where: {

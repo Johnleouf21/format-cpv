@@ -2,7 +2,7 @@ import { prisma } from '@/lib/db'
 import { BadgeType } from '@prisma/client'
 
 export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> {
-  const [completedModules, quizResults, assignments, existingBadges] = await Promise.all([
+  const [completedModules, quizResults, userParcoursAssignments, user, existingBadges] = await Promise.all([
     prisma.progress.count({ where: { userId } }),
     prisma.quizResult.findMany({
       where: { progress: { userId } },
@@ -12,17 +12,25 @@ export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> 
       where: { userId },
       select: { parcoursId: true },
     }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { parcoursId: true },
+    }),
     prisma.earnedBadge.findMany({
       where: { userId },
       select: { badgeType: true },
     }),
   ])
 
+  // Merge UserParcours + legacy parcoursId (deduplicate)
+  const parcoursIds = new Set(userParcoursAssignments.map((a) => a.parcoursId))
+  if (user?.parcoursId) parcoursIds.add(user.parcoursId)
+  const assignments = Array.from(parcoursIds).map((parcoursId) => ({ parcoursId }))
+
   const earnedSet = new Set(existingBadges.map((b) => b.badgeType))
   const quizzesTaken = quizResults.length
-  const avgScore = quizzesTaken > 0
-    ? Math.round(quizResults.reduce((sum, r) => sum + r.score, 0) / quizzesTaken)
-    : 0
+  const hasQuizAbove80 = quizResults.some((r) => r.score >= 80)
+  const hasPerfectQuiz = quizResults.some((r) => r.score === 100)
 
   // Calculate completed parcours
   let completedParcours = 0
@@ -49,13 +57,13 @@ export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> 
     [BadgeType.FIRST_MODULE, completedModules >= 1],
     [BadgeType.FIVE_MODULES, completedModules >= 5],
     [BadgeType.TEN_MODULES, completedModules >= 10],
-    [BadgeType.QUIZ_ACE, quizzesTaken >= 1 && avgScore >= 80],
-    [BadgeType.PERFECT_QUIZ, quizzesTaken >= 1 && avgScore === 100],
+    [BadgeType.FIRST_QUIZ, quizzesTaken >= 1],
+    [BadgeType.QUIZ_ACE, hasQuizAbove80],
+    [BadgeType.PERFECT_QUIZ, hasPerfectQuiz],
     [BadgeType.FIVE_QUIZZES, quizzesTaken >= 5],
     [BadgeType.PARCOURS_COMPLETE, completedParcours >= 1],
     [BadgeType.MULTI_PARCOURS, totalParcours >= 3],
     [BadgeType.CHAMPION, totalParcours > 0 && completedParcours === totalParcours],
-    [BadgeType.SPEEDSTER, completedModules >= 3], // Complete 3+ modules (fast learner)
   ]
 
   const newBadges: BadgeType[] = []

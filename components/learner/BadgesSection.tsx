@@ -72,7 +72,7 @@ const BADGES: BadgeDefinition[] = [
   {
     id: 'quiz-ace',
     label: 'As du quiz',
-    description: 'Obtenir un score moyen ≥ 80%',
+    description: 'Obtenir 80% ou plus à un quiz',
     icon: Target,
     color: 'text-orange-600',
     bgColor: 'bg-orange-100',
@@ -81,7 +81,7 @@ const BADGES: BadgeDefinition[] = [
   {
     id: 'perfect-score',
     label: 'Perfectionniste',
-    description: 'Obtenir un score moyen de 100%',
+    description: 'Obtenir 100% à un quiz',
     icon: Crown,
     color: 'text-amber-600',
     bgColor: 'bg-amber-100',
@@ -130,13 +130,13 @@ const BADGE_TYPE_MAP: Record<string, string> = {
   FIRST_MODULE: 'first-module',
   FIVE_MODULES: 'five-modules',
   TEN_MODULES: 'ten-modules',
+  FIRST_QUIZ: 'first-quiz',
   QUIZ_ACE: 'quiz-ace',
   PERFECT_QUIZ: 'perfect-score',
   FIVE_QUIZZES: 'five-quizzes',
   PARCOURS_COMPLETE: 'first-parcours',
   MULTI_PARCOURS: 'multi-parcours',
   CHAMPION: 'all-parcours',
-  SPEEDSTER: 'first-quiz',
 }
 
 interface EarnedBadgeData {

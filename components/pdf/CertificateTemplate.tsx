@@ -4,141 +4,223 @@ import {
   Text,
   View,
   StyleSheet,
+  Svg,
+  Circle,
+  Path,
 } from '@react-pdf/renderer'
 import type { CertificateData } from '@/lib/services/certificate.service'
+
+const colors = {
+  primary: '#2563EB',
+  primaryLight: '#DBEAFE',
+  primaryDark: '#1E40AF',
+  accent: '#F59E0B',
+  accentLight: '#FEF3C7',
+  green: '#10B981',
+  greenLight: '#D1FAE5',
+  text: '#1F2937',
+  textLight: '#6B7280',
+  bg: '#FFFFFF',
+  bgSoft: '#F8FAFC',
+}
 
 const styles = StyleSheet.create({
   page: {
     flexDirection: 'column',
-    backgroundColor: '#FFFFFF',
-    padding: 40,
+    backgroundColor: colors.bg,
     fontFamily: 'Helvetica',
+    position: 'relative',
+    overflow: 'hidden',
   },
-  border: {
-    border: '3pt solid #2563EB',
-    padding: 30,
-    height: '100%',
+  // Top colored banner
+  banner: {
+    backgroundColor: colors.primary,
+    height: 100,
+    width: '100%',
     position: 'relative',
   },
-  innerBorder: {
-    border: '1pt solid #93C5FD',
-    padding: 25,
-    height: '100%',
-    display: 'flex',
-    flexDirection: 'column',
+  bannerWave: {
+    position: 'absolute',
+    bottom: -1,
+    left: 0,
+    width: '100%',
+  },
+  // Content area
+  content: {
+    flex: 1,
+    paddingHorizontal: 60,
+    paddingTop: 30,
+    paddingBottom: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  // Logo on banner
+  logoArea: {
+    position: 'absolute',
+    top: 25,
+    left: 0,
+    right: 0,
     alignItems: 'center',
   },
-  header: {
-    marginBottom: 20,
-    alignItems: 'center',
-  },
-  logo: {
-    fontSize: 28,
+  logoText: {
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#2563EB',
-    marginBottom: 5,
+    color: colors.bg,
+    letterSpacing: 1,
   },
-  subtitle: {
-    fontSize: 10,
-    color: '#6B7280',
-    letterSpacing: 2,
+  logoSub: {
+    fontSize: 9,
+    color: '#93C5FD',
+    letterSpacing: 3,
+    marginTop: 3,
+  },
+  // Trophy icon area
+  trophyArea: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  trophyCircle: {
+    width: 70,
+    height: 70,
+    borderRadius: 35,
+    backgroundColor: colors.accentLight,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -35,
+    borderWidth: 3,
+    borderColor: colors.bg,
+  },
+  // Main title
+  titleLabel: {
+    fontSize: 11,
+    color: colors.accent,
+    letterSpacing: 4,
+    fontWeight: 'bold',
+    marginBottom: 8,
   },
   title: {
-    fontSize: 32,
+    fontSize: 26,
     fontWeight: 'bold',
-    color: '#1F2937',
-    marginTop: 30,
-    marginBottom: 10,
+    color: colors.text,
     textAlign: 'center',
+    marginBottom: 20,
   },
-  certificateOf: {
-    fontSize: 14,
-    color: '#6B7280',
-    marginBottom: 30,
-    textTransform: 'uppercase',
-    letterSpacing: 3,
+  // Recipient
+  awardedTo: {
+    fontSize: 11,
+    color: colors.textLight,
+    marginBottom: 6,
   },
-  recipient: {
-    fontSize: 28,
-    color: '#2563EB',
-    marginBottom: 25,
-    textAlign: 'center',
+  recipientName: {
+    fontSize: 30,
+    color: colors.primary,
     fontWeight: 'bold',
-  },
-  description: {
-    fontSize: 12,
-    color: '#4B5563',
     textAlign: 'center',
-    marginBottom: 10,
-    lineHeight: 1.5,
+    marginBottom: 20,
+  },
+  // Parcours
+  parcoursLabel: {
+    fontSize: 11,
+    color: colors.textLight,
+    marginBottom: 6,
   },
   parcoursTitle: {
     fontSize: 18,
-    color: '#1F2937',
-    marginBottom: 30,
-    textAlign: 'center',
+    color: colors.text,
     fontWeight: 'bold',
-  },
-  details: {
-    fontSize: 11,
-    color: '#6B7280',
     textAlign: 'center',
-    marginBottom: 5,
+    marginBottom: 25,
   },
-  date: {
-    fontSize: 12,
-    color: '#4B5563',
-    marginTop: 20,
-    textAlign: 'center',
-  },
-  footer: {
-    marginTop: 'auto',
-    paddingTop: 30,
-    borderTop: '1pt solid #E5E7EB',
-    width: '100%',
-  },
-  footerContent: {
+  // Stats row
+  statsRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-end',
+    gap: 20,
+    marginBottom: 25,
+    justifyContent: 'center',
   },
-  signature: {
+  statCard: {
     alignItems: 'center',
-    width: '40%',
+    backgroundColor: colors.bgSoft,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    minWidth: 100,
   },
-  signatureLine: {
-    borderTop: '1pt solid #1F2937',
-    width: 150,
-    marginBottom: 5,
+  statValue: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.primary,
   },
-  signatureText: {
-    fontSize: 10,
-    color: '#6B7280',
+  statLabel: {
+    fontSize: 8,
+    color: colors.textLight,
+    marginTop: 3,
+    textTransform: 'uppercase',
+    letterSpacing: 1,
   },
-  decorativeElement: {
+  // Date
+  dateText: {
+    fontSize: 11,
+    color: colors.textLight,
+    textAlign: 'center',
+    marginBottom: 15,
+  },
+  // Decorative confetti dots
+  confettiDot: {
     position: 'absolute',
-    width: 40,
-    height: 40,
-    backgroundColor: '#DBEAFE',
-    borderRadius: 20,
+    borderRadius: 50,
   },
-  topLeft: {
-    top: -5,
-    left: -5,
+  // Footer
+  footer: {
+    paddingHorizontal: 60,
+    paddingBottom: 20,
+    alignItems: 'center',
   },
-  topRight: {
-    top: -5,
-    right: -5,
+  footerLine: {
+    width: 200,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+    marginBottom: 8,
   },
-  bottomLeft: {
-    bottom: -5,
-    left: -5,
-  },
-  bottomRight: {
-    bottom: -5,
-    right: -5,
+  footerText: {
+    fontSize: 8,
+    color: '#9CA3AF',
+    textAlign: 'center',
   },
 })
+
+// Confetti decoration
+function ConfettiDots() {
+  const dots = [
+    { top: 110, left: 45, size: 8, color: colors.accent },
+    { top: 130, left: 80, size: 5, color: colors.primaryLight },
+    { top: 115, right: 50, size: 7, color: colors.greenLight },
+    { top: 140, right: 90, size: 4, color: colors.accentLight },
+    { top: 105, left: 150, size: 6, color: colors.greenLight },
+    { top: 125, right: 160, size: 5, color: colors.accent },
+  ]
+
+  return (
+    <>
+      {dots.map((dot, i) => (
+        <View
+          key={i}
+          style={[
+            styles.confettiDot,
+            {
+              top: dot.top,
+              ...(dot.left !== undefined ? { left: dot.left } : {}),
+              ...(dot.right !== undefined ? { right: dot.right } : {}),
+              width: dot.size,
+              height: dot.size,
+              backgroundColor: dot.color,
+            },
+          ]}
+        />
+      ))}
+    </>
+  )
+}
 
 interface CertificateTemplateProps {
   data: CertificateData
@@ -154,60 +236,91 @@ export function CertificateTemplate({ data }: CertificateTemplateProps) {
   return (
     <Document>
       <Page size="A4" orientation="landscape" style={styles.page}>
-        <View style={styles.border}>
-          {/* Decorative corners */}
-          <View style={[styles.decorativeElement, styles.topLeft]} />
-          <View style={[styles.decorativeElement, styles.topRight]} />
-          <View style={[styles.decorativeElement, styles.bottomLeft]} />
-          <View style={[styles.decorativeElement, styles.bottomRight]} />
+        {/* Top banner */}
+        <View style={styles.banner}>
+          <View style={styles.logoArea}>
+            <Text style={styles.logoText}>FormaCPV</Text>
+            <Text style={styles.logoSub}>PLATEFORME DE FORMATION</Text>
+          </View>
+          {/* Wave separator */}
+          <Svg viewBox="0 0 842 40" style={styles.bannerWave}>
+            <Path
+              d="M0,20 C200,45 400,0 842,25 L842,40 L0,40 Z"
+              fill={colors.bg}
+            />
+          </Svg>
+        </View>
 
-          <View style={styles.innerBorder}>
-            {/* Header with logo */}
-            <View style={styles.header}>
-              <Text style={styles.logo}>FormaCPV</Text>
-              <Text style={styles.subtitle}>FORMATION PROFESSIONNELLE</Text>
-            </View>
+        {/* Confetti dots */}
+        <ConfettiDots />
 
-            {/* Certificate title */}
-            <Text style={styles.certificateOf}>CERTIFICAT DE RÉUSSITE</Text>
-            <Text style={styles.title}>Certificat de Formation</Text>
-
-            {/* Recipient */}
-            <Text style={styles.description}>
-              Ce certificat est décerné à
-            </Text>
-            <Text style={styles.recipient}>{data.userName}</Text>
-
-            {/* Course details */}
-            <Text style={styles.description}>
-              pour avoir complété avec succès le parcours de formation
-            </Text>
-            <Text style={styles.parcoursTitle}>{data.parcoursTitle}</Text>
-
-            {/* Stats */}
-            <Text style={styles.details}>
-              {data.modulesCompleted} modules complétés
-            </Text>
-
-            {/* Date */}
-            <Text style={styles.date}>
-              Délivré le {formattedDate}
-            </Text>
-
-            {/* Footer with signatures */}
-            <View style={styles.footer}>
-              <View style={styles.footerContent}>
-                <View style={styles.signature}>
-                  <View style={styles.signatureLine} />
-                  <Text style={styles.signatureText}>Le Responsable Formation</Text>
-                </View>
-                <View style={styles.signature}>
-                  <View style={styles.signatureLine} />
-                  <Text style={styles.signatureText}>Le Directeur</Text>
-                </View>
-              </View>
+        {/* Main content */}
+        <View style={styles.content}>
+          {/* Trophy */}
+          <View style={styles.trophyArea}>
+            <View style={styles.trophyCircle}>
+              <Svg viewBox="0 0 24 24" width={32} height={32}>
+                <Path
+                  d="M12 15a7 7 0 1 0 0-14 7 7 0 0 0 0 14Z"
+                  fill={colors.accent}
+                />
+                <Path
+                  d="M8.21 13.89 7 23l5-3 5 3-1.21-9.12"
+                  fill={colors.accent}
+                  stroke={colors.bg}
+                  strokeWidth={0.5}
+                />
+                <Circle cx={12} cy={8} r={3} fill={colors.bg} />
+                <Path
+                  d="M11.2 7.2L12 5.5l.8 1.7 1.7.3-1.2 1.2.3 1.8L12 9.8l-1.6.7.3-1.8-1.2-1.2z"
+                  fill={colors.accent}
+                />
+              </Svg>
             </View>
           </View>
+
+          <Text style={styles.titleLabel}>BRAVO !</Text>
+          <Text style={styles.title}>Parcours terminé avec succès</Text>
+
+          <Text style={styles.awardedTo}>Décerné à</Text>
+          <Text style={styles.recipientName}>{data.userName}</Text>
+
+          <Text style={styles.parcoursLabel}>pour avoir complété le parcours</Text>
+          <Text style={styles.parcoursTitle}>{data.parcoursTitle}</Text>
+
+          {/* Stats */}
+          <View style={styles.statsRow}>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{data.modulesCompleted}</Text>
+              <Text style={styles.statLabel}>Modules</Text>
+            </View>
+            {data.avgQuizScore !== null && (
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>{data.avgQuizScore}%</Text>
+                <Text style={styles.statLabel}>Score quiz</Text>
+              </View>
+            )}
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>
+                {data.totalDurationDays === 1 ? '1' : data.totalDurationDays}
+              </Text>
+              <Text style={styles.statLabel}>
+                {data.totalDurationDays === 1 ? 'Jour' : 'Jours'}
+              </Text>
+            </View>
+          </View>
+
+          <Text style={styles.dateText}>
+            Délivré le {formattedDate}
+          </Text>
+        </View>
+
+        {/* Footer */}
+        <View style={styles.footer}>
+          <View style={styles.footerLine} />
+          <Text style={styles.footerText}>
+            FormaCPV — Plateforme de formation interne
+          </Text>
         </View>
       </Page>
     </Document>

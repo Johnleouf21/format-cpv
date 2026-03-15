@@ -20,56 +20,56 @@ const STEPS: TourStep[] = [
     target: '[data-tour="usermenu"]',
     title: 'Votre profil',
     description:
-      'Accedez a vos parametres, notifications, et basculez entre le mode clair et sombre depuis votre menu profil.',
+      'Accédez à vos paramètres, notifications, et basculez entre le mode clair et sombre depuis votre menu profil.',
     position: 'right',
   },
   {
     target: '[data-tour="sidebar"]',
     title: 'Navigation',
     description:
-      'Utilisez la barre laterale pour acceder a vos formations, consulter vos quiz passes et telecharger vos certificats.',
+      'Utilisez la barre latérale pour accéder à vos formations, consulter vos quiz passés et télécharger vos certificats.',
     position: 'right',
   },
   {
     target: '[data-tour="stats"]',
     title: 'Vos statistiques',
     description:
-      'Suivez votre progression en temps reel : pourcentage d\'avancement, modules completes, quiz passes et score moyen.',
+      'Suivez votre progression en temps réel : pourcentage d\'avancement, modules complétés, quiz passés et score moyen.',
     position: 'bottom',
   },
   {
     target: '[data-tour="resume"]',
     title: 'Reprendre votre formation',
     description:
-      'Ce bouton vous emmene directement au prochain module a suivre. Cliquez pour reprendre la ou vous en etiez !',
+      'Ce bouton vous emmène directement au prochain module à suivre. Cliquez pour reprendre là où vous en étiez !',
     position: 'bottom',
   },
   {
     target: '[data-tour="modules"]',
     title: 'Liste des modules',
     description:
-      'Tous les modules de votre formation sont ici. Suivez-les dans l\'ordre, chacun se deverrouille apres le precedent. Un quiz peut vous attendre a la fin de certains modules.',
+      'Tous les modules de votre formation sont ici. Suivez-les dans l\'ordre, chacun se déverrouille après le précédent. Un quiz peut vous attendre à la fin de certains modules.',
     position: 'top',
   },
   {
     target: '[data-tour="badges"]',
     title: 'Vos badges',
     description:
-      'Debloquez des badges en completant des modules, en reussissant des quiz ou en terminant un parcours entier. Collectionnez-les tous !',
+      'Débloquez des badges en complétant des modules, en réussissant des quiz ou en terminant un parcours entier. Collectionnez-les tous !',
     position: 'top',
   },
   {
     target: '[data-tour="certificates"]',
-    title: 'Certificat de reussite',
+    title: 'Certificat de réussite',
     description:
-      'Une fois votre parcours termine, telechargez votre certificat officiel pour attester de votre formation.',
+      'Une fois votre parcours terminé, téléchargez votre certificat officiel pour attester de votre formation.',
     position: 'top',
   },
   {
     target: '[data-tour="chatbot"]',
     title: 'Besoin d\'aide ?',
     description:
-      'L\'assistant est disponible a tout moment. Posez-lui vos questions sur la plateforme, vos formations ou le fonctionnement des quiz. Vous pouvez aussi le deplacer en le maintenant appuye si il vous gene.',
+      'L\'assistant est disponible à tout moment. Posez-lui vos questions sur la plateforme, vos formations ou le fonctionnement des quiz. Vous pouvez aussi le déplacer en le maintenant appuyé s\'il vous gêne.',
     position: 'left',
   },
 ]

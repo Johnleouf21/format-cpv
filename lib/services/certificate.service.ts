@@ -7,6 +7,8 @@ export interface CertificateData {
   completedAt: Date
   modulesCompleted: number
   totalModules: number
+  avgQuizScore: number | null
+  totalDurationDays: number
 }
 
 async function resolveParcoursId(userId: string, parcoursId?: string): Promise<string | null> {
@@ -81,17 +83,38 @@ export async function getCertificateData(
     throw new ApiError(400, 'Le parcours n\'est pas encore complété', 'PARCOURS_NOT_COMPLETED')
   }
 
-  const lastProgress = await prisma.progress.findFirst({
-    where: { userId, module: { parcoursId: targetParcoursId } },
-    orderBy: { completedAt: 'desc' },
-    select: { completedAt: true },
-  })
+  const [lastProgress, firstProgress, quizResults] = await Promise.all([
+    prisma.progress.findFirst({
+      where: { userId, module: { parcoursId: targetParcoursId } },
+      orderBy: { completedAt: 'desc' },
+      select: { completedAt: true },
+    }),
+    prisma.progress.findFirst({
+      where: { userId, module: { parcoursId: targetParcoursId } },
+      orderBy: { completedAt: 'asc' },
+      select: { completedAt: true },
+    }),
+    prisma.quizResult.findMany({
+      where: { progress: { userId, module: { parcoursId: targetParcoursId } } },
+      select: { score: true },
+    }),
+  ])
+
+  const completedAt = lastProgress?.completedAt || new Date()
+  const startedAt = firstProgress?.completedAt || completedAt
+  const totalDurationDays = Math.max(1, Math.ceil((completedAt.getTime() - startedAt.getTime()) / (1000 * 60 * 60 * 24)))
+
+  const avgQuizScore = quizResults.length > 0
+    ? Math.round(quizResults.reduce((sum, q) => sum + q.score, 0) / quizResults.length)
+    : null
 
   return {
     userName: user.name,
     parcoursTitle: parcours.title,
-    completedAt: lastProgress?.completedAt || new Date(),
+    completedAt,
     modulesCompleted: completedCount,
     totalModules,
+    avgQuizScore,
+    totalDurationDays,
   }
 }

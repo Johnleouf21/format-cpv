@@ -128,7 +128,7 @@ export function FeedbackPageClient() {
             <MessageSquare className="h-12 w-12 text-muted-foreground/30 mb-4" />
             <p className="text-lg font-medium">Aucun avis pour le moment</p>
             <p className="text-sm text-muted-foreground mt-1">
-              Les apprenants pourront donner leur avis apres avoir complete leur premier module.
+              Les apprenants pourront donner leur avis après avoir complété leur parcours.
             </p>
           </CardContent>
         </Card>

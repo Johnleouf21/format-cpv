@@ -57,7 +57,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
             </div>
             <DialogTitle className="text-xl">Merci pour votre avis !</DialogTitle>
             <DialogDescription className="text-center">
-              Votre retour nous aide a ameliorer la plateforme.
+              Votre retour nous aide à améliorer la plateforme.
             </DialogDescription>
           </div>
         </DialogContent>
@@ -71,7 +71,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
         <DialogHeader>
           <DialogTitle>Donnez votre avis</DialogTitle>
           <DialogDescription>
-            Que pensez-vous de cette plateforme de formation ? Votre retour est precieux pour nous aider a l&apos;ameliorer.
+            Que pensez-vous de cette plateforme de formation ? Votre retour est précieux pour nous aider à l&apos;améliorer.
           </DialogDescription>
         </DialogHeader>
 
@@ -106,7 +106,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
                 {rating === 2 && 'Peu satisfait'}
                 {rating === 3 && 'Correct'}
                 {rating === 4 && 'Satisfait'}
-                {rating === 5 && 'Tres satisfait'}
+                {rating === 5 && 'Très satisfait'}
               </p>
             )}
           </div>
@@ -115,7 +115,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
           <div className="space-y-2">
             <label className="text-sm font-medium">Votre commentaire (optionnel)</label>
             <Textarea
-              placeholder="Ce que vous aimez, ce qui pourrait etre ameliore..."
+              placeholder="Ce que vous aimez, ce qui pourrait être amélioré..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               rows={4}

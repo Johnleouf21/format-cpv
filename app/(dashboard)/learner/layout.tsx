@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/shared/DashboardShell'
+import { OnboardingTour } from '@/components/learner/OnboardingTour'
 
 const navItems = [
   { href: '/learner', label: 'Mes formations', icon: 'BookOpen' },
@@ -34,6 +35,7 @@ export default async function LearnerLayout({
       maxWidth="max-w-4xl"
     >
       {children}
+      <OnboardingTour />
     </DashboardShell>
   )
 }

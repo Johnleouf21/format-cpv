@@ -14,6 +14,7 @@ import {
   GraduationCap,
   Users,
   ShieldCheck,
+  MessageSquare,
   PanelLeftClose,
   PanelLeft,
 } from 'lucide-react'
@@ -43,6 +44,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   GraduationCap,
   Users,
   ShieldCheck,
+  MessageSquare,
 }
 
 export function DashboardShell({
@@ -117,7 +119,7 @@ export function DashboardShell({
           </div>
 
           {/* User menu */}
-          <div className={`px-3 py-4 border-b ${sidebarCollapsed ? 'px-2 flex justify-center' : ''}`}>
+          <div data-tour="usermenu" className={`px-3 py-4 border-b ${sidebarCollapsed ? 'px-2 flex justify-center' : ''}`}>
             <UserMenu
               userName={userName}
               userEmail={userEmail}
@@ -130,7 +132,7 @@ export function DashboardShell({
           </div>
 
           {/* Nav */}
-          <nav className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
+          <nav data-tour="sidebar" className="flex-1 px-2 py-3 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const Icon = iconMap[item.icon] || LayoutDashboard
               const isActive = pathname === item.href || (item.href !== `/${currentSpace}` && pathname.startsWith(item.href))

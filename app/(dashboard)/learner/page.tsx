@@ -106,7 +106,7 @@ export default async function LearnerHomePage() {
           </div>
 
           {/* Stats cards */}
-          <div id="stats" className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+          <div id="stats" data-tour="stats" className="grid gap-4 grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-3">
@@ -163,7 +163,7 @@ export default async function LearnerHomePage() {
 
           {/* Resume card */}
           {nextParcours && (
-            <Card className="border-blue-200 bg-blue-50/30">
+            <Card data-tour="resume" className="border-blue-200 bg-blue-50/30">
               <CardContent className="pt-4 pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -189,7 +189,7 @@ export default async function LearnerHomePage() {
           )}
 
           {/* Parcours list */}
-          <div id="certificates">
+          <div id="certificates" data-tour="modules">
             <h2 className="text-lg font-semibold mb-3">Mes formations</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               {assignments.map((parcours) => {
@@ -332,7 +332,7 @@ export default async function LearnerHomePage() {
 
         {/* Continue button */}
         {data.nextModule && (
-          <Card className="border-blue-200 bg-blue-50/30">
+          <Card data-tour="resume" className="border-blue-200 bg-blue-50/30">
             <CardContent className="pt-4 pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
@@ -361,7 +361,7 @@ export default async function LearnerHomePage() {
 
         {/* Completion celebration */}
         {isParcoursCompleted && (
-          <Card id="certificates" className="border-2 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50">
+          <Card id="certificates" data-tour="certificates" className="border-2 border-green-500 bg-gradient-to-r from-green-50 to-emerald-50">
             <CardHeader className="text-center">
               <div className="mx-auto mb-4 flex items-center justify-center gap-4">
                 <PartyPopper className="h-10 w-10 text-yellow-500" />

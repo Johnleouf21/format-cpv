@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { ModuleContent } from './ModuleContent'
 import { CompleteModuleButton } from './CompleteModuleButton'
 import { QuizComponent } from './QuizComponent'
+import { FeedbackModal } from './FeedbackModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
@@ -69,6 +70,8 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
   const [quizCompleted, setQuizCompleted] = useState(false)
   // Show quiz full-screen (replaces module content after clicking "J'ai terminé" or via ?quiz=review)
   const [showQuizView, setShowQuizView] = useState(initialQuizReview && data.isCompleted)
+  const [showFeedback, setShowFeedback] = useState(false)
+  const [pendingNavigation, setPendingNavigation] = useState<string | null | undefined>(undefined)
 
   // Timer for minimum duration
   const [startedAt] = useState(() => new Date().toISOString())
@@ -130,13 +133,42 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
     finishAndNavigate(data.navigation.next?.id)
   }
 
-  const finishAndNavigate = (nextModuleId?: string | null) => {
+  const finishAndNavigate = async (nextModuleId?: string | null) => {
+    // Show feedback modal only at the end of a parcours (last module, no next)
+    if (!nextModuleId && !data.navigation.next) {
+      try {
+        const res = await fetch('/api/feedback')
+        const { hasGivenFeedback } = await res.json()
+        if (!hasGivenFeedback) {
+          setPendingNavigation(nextModuleId)
+          setShowFeedback(true)
+          return
+        }
+      } catch {
+        // If check fails, skip feedback
+      }
+    }
+
+    proceedToCompletion(nextModuleId)
+  }
+
+  const handleFeedbackClose = () => {
+    setShowFeedback(false)
+    proceedToCompletion(pendingNavigation)
+  }
+
+  const proceedToCompletion = (nextModuleId?: string | null) => {
     setShowCompletionMessage(true)
     if (nextModuleId) {
       setTimeout(() => {
         router.push(`/learner/modules/${nextModuleId}`)
       }, 2000)
     }
+  }
+
+  // Feedback modal
+  if (showFeedback) {
+    return <FeedbackModal open={showFeedback} onClose={handleFeedbackClose} />
   }
 
   // Completion celebration

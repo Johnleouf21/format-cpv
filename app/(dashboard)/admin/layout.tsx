@@ -10,6 +10,7 @@ const navItems = [
   { href: '/admin/trainers', label: 'Formateurs', icon: 'GraduationCap' },
   { href: '/admin/learners', label: 'Apprenants', icon: 'Users' },
   { href: '/admin/whitelist', label: 'Accès', icon: 'ShieldCheck' },
+  { href: '/admin/feedback', label: 'Avis', icon: 'MessageSquare' },
 ]
 
 export default async function AdminLayout({

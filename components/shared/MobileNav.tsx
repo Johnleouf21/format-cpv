@@ -18,6 +18,7 @@ import {
   GraduationCap,
   Users,
   ShieldCheck,
+  MessageSquare,
   UserPlus,
   Upload,
 } from 'lucide-react'
@@ -30,6 +31,7 @@ const iconMap: Record<string, LucideIcon> = {
   GraduationCap,
   Users,
   ShieldCheck,
+  MessageSquare,
   UserPlus,
   Upload,
 }

@@ -22,7 +22,7 @@ export function ModuleList({ modules }: ModuleListProps) {
   const completedCount = modules.filter((m) => m.isCompleted).length
 
   return (
-    <div className="bg-card rounded-xl p-6 shadow-sm border">
+    <div data-tour="modules" className="bg-card rounded-xl p-6 shadow-sm border">
       <div className="flex items-center gap-3 mb-6">
         <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
           <BookOpen className="w-5 h-5 text-primary" />

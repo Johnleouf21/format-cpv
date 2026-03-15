@@ -38,6 +38,7 @@ model User {
   usedInvitation          Invitation?              @relation("InvitationUser")
   notificationPreference  NotificationPreference?
   earnedBadges            EarnedBadge[]
+  feedbacks               Feedback[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -263,4 +264,19 @@ model EarnedBadge {
   @@unique([userId, badgeType])
   @@index([userId])
   @@map("earned_badges")
+}
+
+model Feedback {
+  id        String  @id @default(uuid())
+  rating    Int                          // 1-5 étoiles
+  comment   String  @db.Text
+  anonymous Boolean @default(false)
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId])
+  @@map("feedbacks")
 }

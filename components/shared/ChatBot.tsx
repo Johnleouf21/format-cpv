@@ -132,6 +132,64 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null)
 
+  // ─── Drag logic ──────────────────────────────────────────────────────────
+  const [position, setPosition] = useState<{ x: number; y: number } | null>(null)
+  const dragRef = useRef<{ startX: number; startY: number; startPosX: number; startPosY: number; dragging: boolean }>({
+    startX: 0, startY: 0, startPosX: 0, startPosY: 0, dragging: false,
+  })
+
+  const getDefaultPosition = useCallback(() => ({
+    x: window.innerWidth - 24 - 56, // right-6 (24px) - button width (56px)
+    y: window.innerHeight - 24 - 56, // bottom-6 (24px) - button height (56px)
+  }), [])
+
+  const getPanelPosition = useCallback(() => {
+    const pos = position || getDefaultPosition()
+    // Panel is 380px wide, 520px tall — anchor from bottom-right corner of button
+    const panelW = Math.min(380, window.innerWidth - 32)
+    const panelH = Math.min(520, window.innerHeight - 96)
+    let x = pos.x + 56 - panelW // align right edge with button right edge
+    let y = pos.y + 56 - panelH - 8 // above the button
+
+    // Clamp to viewport
+    x = Math.max(16, Math.min(x, window.innerWidth - panelW - 16))
+    y = Math.max(16, Math.min(y, window.innerHeight - panelH - 16))
+    return { x, y, w: panelW, h: panelH }
+  }, [position, getDefaultPosition])
+
+  const handlePointerDown = useCallback((e: React.PointerEvent) => {
+    const pos = position || getDefaultPosition()
+    dragRef.current = {
+      startX: e.clientX,
+      startY: e.clientY,
+      startPosX: pos.x,
+      startPosY: pos.y,
+      dragging: false,
+    }
+    ;(e.target as HTMLElement).setPointerCapture(e.pointerId)
+  }, [position, getDefaultPosition])
+
+  const handlePointerMove = useCallback((e: React.PointerEvent) => {
+    if (dragRef.current.startX === 0 && dragRef.current.startY === 0) return
+    const dx = e.clientX - dragRef.current.startX
+    const dy = e.clientY - dragRef.current.startY
+
+    // Only start dragging after 5px movement to distinguish from clicks
+    if (!dragRef.current.dragging && Math.abs(dx) + Math.abs(dy) < 5) return
+    dragRef.current.dragging = true
+
+    const newX = Math.max(0, Math.min(dragRef.current.startPosX + dx, window.innerWidth - 56))
+    const newY = Math.max(0, Math.min(dragRef.current.startPosY + dy, window.innerHeight - 56))
+    setPosition({ x: newX, y: newY })
+  }, [])
+
+  const wasDraggingRef = useRef(false)
+
+  const handlePointerUp = useCallback(() => {
+    wasDraggingRef.current = dragRef.current.dragging
+    dragRef.current = { startX: 0, startY: 0, startPosX: 0, startPosY: 0, dragging: false }
+  }, [])
+
   const handleNavigate = useCallback((href: string) => {
     router.push(href)
     setIsOpen(false)
@@ -297,12 +355,20 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
       {/* Floating button */}
       {!isOpen && (
         <button
-          onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-all duration-200 hover:scale-105 active:scale-95 group"
+          data-tour="chatbot"
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onClick={() => {
+            if (!wasDraggingRef.current) setIsOpen(true)
+            wasDraggingRef.current = false
+          }}
+          className="fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors duration-200 hover:scale-105 active:scale-95 group touch-none select-none cursor-grab active:cursor-grabbing"
+          style={position ? { left: position.x, top: position.y } : { bottom: 24, right: 24 }}
           aria-label="Ouvrir l'assistant"
         >
-          <MessageCircle className="h-6 w-6 transition-transform group-hover:scale-110" />
-          <span className="absolute -top-1 -right-1 flex h-4 w-4">
+          <MessageCircle className="h-6 w-6 transition-transform group-hover:scale-110 pointer-events-none" />
+          <span className="absolute -top-1 -right-1 flex h-4 w-4 pointer-events-none">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-500 items-center justify-center text-[9px] font-bold text-white">?</span>
           </span>
@@ -310,14 +376,16 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
       )}
 
       {/* Chat panel */}
-      {isOpen && (
+      {isOpen && (() => {
+        const pp = getPanelPosition()
+        return (
         <div
-          className={`fixed bottom-6 right-6 z-50 w-[380px] max-w-[calc(100vw-2rem)] flex flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden transition-all duration-300 ease-out ${
+          className={`fixed z-50 flex flex-col rounded-2xl border bg-background shadow-2xl overflow-hidden transition-all duration-300 ease-out ${
             showPanel
               ? 'opacity-100 translate-y-0 scale-100'
               : 'opacity-0 translate-y-4 scale-95'
           }`}
-          style={{ height: '520px', maxHeight: 'calc(100vh - 6rem)' }}
+          style={{ left: pp.x, top: pp.y, width: pp.w, height: pp.h }}
         >
           {/* Header */}
           <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white shrink-0">
@@ -498,7 +566,8 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
             </Button>
           </form>
         </div>
-      )}
+        )
+      })()}
     </>
   )
 }

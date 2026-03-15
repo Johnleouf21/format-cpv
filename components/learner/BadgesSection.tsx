@@ -159,7 +159,7 @@ export function BadgesSection({ stats, earnedBadges }: BadgesSectionProps) {
   const locked = BADGES.filter((b) => !earnedIds.has(b.id))
 
   return (
-    <Card>
+    <Card data-tour="badges">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
           <Medal className="h-5 w-5 text-amber-500" />

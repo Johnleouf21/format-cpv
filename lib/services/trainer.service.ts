@@ -236,7 +236,24 @@ export async function getLearnerDetails(
             include: {
               modules: {
                 orderBy: { order: 'asc' },
-                select: { id: true, title: true, order: true },
+                select: {
+                  id: true,
+                  title: true,
+                  order: true,
+                  quiz: {
+                    include: {
+                      questions: {
+                        orderBy: { order: 'asc' },
+                        include: {
+                          answers: {
+                            orderBy: { order: 'asc' },
+                            select: { id: true, text: true, isCorrect: true },
+                          },
+                        },
+                      },
+                    },
+                  },
+                },
               },
             },
           },
@@ -249,7 +266,7 @@ export async function getLearnerDetails(
             select: { id: true, title: true, order: true },
           },
           quizResult: {
-            select: { score: true, totalQuestions: true },
+            select: { score: true, totalQuestions: true, answers: true },
           },
         },
         orderBy: { completedAt: 'desc' },
@@ -274,16 +291,38 @@ export async function getLearnerDetails(
       const progress = learner.progress.find(
         (p) => p.moduleId === module.id
       )
+      const userAnswers = progress?.quizResult?.answers as Record<string, string[]> | null
+
+      // Build quiz detail with question text, user answers, correct answers
+      const quizDetail = module.quiz && progress?.quizResult
+        ? module.quiz.questions.map((q) => {
+            const selected = userAnswers?.[q.id] || []
+            return {
+              questionText: q.text,
+              type: q.type,
+              answers: q.answers.map((a) => ({
+                text: a.text,
+                isCorrect: a.isCorrect,
+                isSelected: selected.includes(a.id),
+              })),
+            }
+          })
+        : null
+
       return {
-        ...module,
+        id: module.id,
+        title: module.title,
+        order: module.order,
         isCompleted: completedModuleIds.has(module.id),
         completedAt: progress?.completedAt || null,
+        hasQuiz: !!module.quiz,
         quizScore: progress?.quizResult
           ? {
               score: progress.quizResult.score,
               total: progress.quizResult.totalQuestions,
             }
           : null,
+        quizDetail,
       }
     }) || []
 

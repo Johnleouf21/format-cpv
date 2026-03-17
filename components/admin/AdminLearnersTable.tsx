@@ -1,12 +1,13 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from './ConfirmDialog'
 import { ReassignDialog } from './ReassignDialog'
 import { ManageParcoursDialog } from '@/components/shared/ManageParcoursDialog'
 import { LearnersListView, type LearnerItem } from '@/components/shared/LearnersListView'
-import { Trash2, ArrowRightLeft, Settings } from 'lucide-react'
+import { Trash2, ArrowRightLeft, Settings, Eye } from 'lucide-react'
 
 interface Learner extends LearnerItem {
   progress: {
@@ -91,6 +92,12 @@ export function AdminLearnersTable({
         emptySubMessage="Ajoutez un apprenant ou modifiez vos filtres."
         actions={(learner) => (
           <>
+            <Button variant="outline" size="sm" asChild>
+              <Link href={`/admin/learners/${learner.id}`}>
+                <Eye className="h-3.5 w-3.5 mr-1.5" />
+                Voir
+              </Link>
+            </Button>
             <Button
               variant="outline"
               size="sm"

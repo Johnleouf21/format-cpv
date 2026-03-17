@@ -15,8 +15,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "FormaCPV - Plateforme de Formation",
-  description: "Plateforme d'onboarding et de formation pour les employés",
+  title: {
+    default: 'FormaCPV - Plateforme de Formation',
+    template: '%s | FormaCPV',
+  },
+  description: 'Plateforme de formation interne — parcours, quiz et suivi de progression',
+  robots: {
+    index: false,
+    follow: false,
+    googleBot: {
+      index: false,
+      follow: false,
+    },
+  },
+  openGraph: {
+    title: 'FormaCPV - Plateforme de Formation',
+    description: 'Plateforme de formation interne — parcours, quiz et suivi de progression',
+    type: 'website',
+    locale: 'fr_FR',
+    siteName: 'FormaCPV',
+  },
+  icons: {
+    icon: '/favicon.ico',
+  },
+  metadataBase: process.env.NEXTAUTH_URL ? new URL(process.env.NEXTAUTH_URL) : undefined,
 };
 
 export default function RootLayout({

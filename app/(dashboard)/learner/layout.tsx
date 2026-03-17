@@ -1,7 +1,12 @@
+import type { Metadata } from 'next'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/shared/DashboardShell'
 import { OnboardingTour } from '@/components/learner/OnboardingTour'
+
+export const metadata: Metadata = {
+  title: 'Mes Formations',
+}
 
 const navItems = [
   { href: '/learner', label: 'Mes formations', icon: 'BookOpen' },

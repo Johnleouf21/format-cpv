@@ -1,7 +1,12 @@
+import type { Metadata } from 'next'
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/shared/DashboardShell'
 import { MobileNav } from '@/components/shared/MobileNav'
+
+export const metadata: Metadata = {
+  title: 'Administration',
+}
 
 const navItems = [
   { href: '/admin', label: 'Dashboard', icon: 'LayoutDashboard' },

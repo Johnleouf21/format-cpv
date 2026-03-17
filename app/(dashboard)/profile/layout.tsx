@@ -1,4 +1,9 @@
+import type { Metadata } from 'next'
 import { auth } from '@/lib/auth'
+
+export const metadata: Metadata = {
+  title: 'Mon Profil',
+}
 import { redirect } from 'next/navigation'
 import { DashboardShell } from '@/components/shared/DashboardShell'
 import { MobileNav } from '@/components/shared/MobileNav'

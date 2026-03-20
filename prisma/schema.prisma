@@ -39,6 +39,7 @@ model User {
   notificationPreference  NotificationPreference?
   earnedBadges            EarnedBadge[]
   feedbacks               Feedback[]
+  activityLogs            ActivityLog[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -279,4 +280,22 @@ model Feedback {
 
   @@index([userId])
   @@map("feedbacks")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid())
+  action    String                        // ex: "USER_CREATED", "PARCOURS_ASSIGNED", "MODULE_COMPLETED"
+  details   String?  @db.Text             // description lisible
+
+  userId    String?  @map("user_id")
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  targetId  String?  @map("target_id")    // ID de l'entité concernée
+  targetType String? @map("target_type")  // ex: "user", "parcours", "module"
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@index([userId])
+  @@map("activity_logs")
 }

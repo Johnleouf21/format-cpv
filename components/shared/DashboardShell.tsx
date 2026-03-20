@@ -17,6 +17,8 @@ import {
   MessageSquare,
   PanelLeftClose,
   PanelLeft,
+  Trophy,
+  Activity,
 } from 'lucide-react'
 import { ChatBot } from '@/components/shared/ChatBot'
 
@@ -45,6 +47,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Users,
   ShieldCheck,
   MessageSquare,
+  Trophy,
+  Activity,
 }
 
 export function DashboardShell({

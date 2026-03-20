@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getTrainers, addTrainer } from '@/lib/services/admin.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const addTrainerSchema = z.object({
   email: z.string().email('Email invalide'),
@@ -43,6 +44,14 @@ export async function POST(request: NextRequest) {
     const { email, name } = addTrainerSchema.parse(body)
 
     const trainer = await addTrainer(email, name)
+
+    logActivity({
+      action: 'TRAINER_ADDED',
+      details: `Formateur "${name || email}" ajouté`,
+      userId: session.user.id,
+      targetId: trainer.id,
+      targetType: 'user',
+    })
 
     return NextResponse.json(trainer, { status: 201 })
   } catch (error) {

@@ -5,6 +5,7 @@ import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { sendContentUpdateEmailBulk } from '@/lib/services/email.service'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const updateParcoursSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').optional(),
@@ -52,6 +53,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const parcours = await updateParcours(id, data)
 
+    logActivity({
+      action: 'PARCOURS_UPDATED',
+      details: `Parcours "${parcours.title}" modifié`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'parcours',
+    })
+
     // Notify assigned learners (fire-and-forget)
     prisma.userParcours.findMany({
       where: { parcoursId: id },
@@ -85,6 +94,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params
     await deleteParcours(id)
+
+    logActivity({
+      action: 'PARCOURS_DELETED',
+      details: `Parcours supprimé`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'parcours',
+    })
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {

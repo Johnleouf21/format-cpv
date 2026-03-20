@@ -16,6 +16,7 @@ const navItems = [
   { href: '/admin/learners', label: 'Apprenants', icon: 'Users' },
   { href: '/admin/whitelist', label: 'Accès', icon: 'ShieldCheck' },
   { href: '/admin/feedback', label: 'Avis', icon: 'MessageSquare' },
+  { href: '/admin/activity', label: 'Journal', icon: 'Activity' },
 ]
 
 export default async function AdminLayout({

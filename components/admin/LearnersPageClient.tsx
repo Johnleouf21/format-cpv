@@ -10,6 +10,7 @@ import {
 } from '@/components/ui/select'
 import { AdminLearnersTable } from './AdminLearnersTable'
 import { AddUserDialog } from '@/components/shared/AddUserDialog'
+import { ExportButton } from './ExportButton'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import type { LearnerItem } from '@/components/shared/LearnersListView'
@@ -201,10 +202,13 @@ export function LearnersPageClient() {
             {learners.length} apprenant{learners.length !== 1 ? 's' : ''} trouvé{learners.length !== 1 ? 's' : ''}
           </p>
         </div>
-        <AddUserDialog
-          parcoursList={parcoursList}
-          onUserAdded={fetchLearners}
-        />
+        <div className="flex items-center gap-2">
+          <ExportButton />
+          <AddUserDialog
+            parcoursList={parcoursList}
+            onUserAdded={fetchLearners}
+          />
+        </div>
       </div>
 
       <AdminLearnersTable

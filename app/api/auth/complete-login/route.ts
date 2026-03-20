@@ -18,6 +18,10 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Redirect to a "you can close this tab" page
-  return NextResponse.redirect(new URL('/login/complete', request.url))
+  // Redirect to complete page with pendingId for auto-login attempt
+  const completeUrl = new URL('/login/complete', request.url)
+  if (pendingId) {
+    completeUrl.searchParams.set('pendingId', pendingId)
+  }
+  return NextResponse.redirect(completeUrl)
 }

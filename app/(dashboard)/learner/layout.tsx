@@ -11,6 +11,7 @@ export const metadata: Metadata = {
 const navItems = [
   { href: '/learner', label: 'Mes formations', icon: 'BookOpen' },
   { href: '/learner/quiz-history', label: 'Quiz', icon: 'ShieldCheck' },
+  { href: '/learner/leaderboard', label: 'Classement', icon: 'Trophy' },
   { href: '/learner/certificates', label: 'Certificats', icon: 'GraduationCap' },
 ]
 

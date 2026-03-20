@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { assignParcours } from '@/lib/services/user-management.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 type RouteParams = {
   params: Promise<{ id: string }>
@@ -39,6 +40,14 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (!parcoursId) {
       throw new ApiError(400, 'ID de parcours requis', 'MISSING_PARCOURS_ID')
     }
+
+    logActivity({
+      action: 'PARCOURS_ASSIGNED',
+      details: `Parcours assigné à l'apprenant`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'user',
+    })
 
     // Add parcours (keeps existing ones) + send notification email
     await assignParcours({

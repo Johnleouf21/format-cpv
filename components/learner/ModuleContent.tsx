@@ -137,7 +137,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
             }
             return (
               <p
-                className="text-[1.0625rem] leading-[1.8] my-[1.25em] text-foreground/90"
+                className="text-[1.0625rem] leading-[1.8] my-[1.25em] text-foreground"
                 {...props}
               >
                 {children}
@@ -176,7 +176,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
             const isTaskList = className?.includes('contains-task-list')
             return (
               <ul
-                className={`my-[1.25em] space-y-1 ${isTaskList ? 'list-none pl-0' : 'list-disc pl-6 marker:text-foreground/50'}`}
+                className={`my-[1.25em] space-y-1 ${isTaskList ? 'list-none pl-0' : 'list-disc pl-6 marker:text-foreground/70'}`}
                 {...props}
               >
                 {children}
@@ -185,7 +185,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
           },
           ol: ({ children, ...props }) => (
             <ol
-              className="my-[1.25em] space-y-1 pl-6 list-decimal marker:text-foreground/50 marker:font-medium"
+              className="my-[1.25em] space-y-1 pl-6 list-decimal marker:text-foreground/70 marker:font-medium"
               {...props}
             >
               {children}
@@ -218,7 +218,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
                   } flex items-center justify-center`}>
                     {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
                   </span>
-                  <span className={`text-[1.0625rem] leading-[1.8] ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground/90'}`}>
+                  <span className={`text-[1.0625rem] leading-[1.8] ${isChecked ? 'text-muted-foreground line-through' : 'text-foreground'}`}>
                     {filteredChildren}
                   </span>
                 </li>
@@ -228,7 +228,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
             // Default list item (works for both ul and ol)
             return (
               <li
-                className="py-0.5 text-[1.0625rem] leading-[1.8] text-foreground/90 pl-2"
+                className="py-0.5 text-[1.0625rem] leading-[1.8] text-foreground pl-2"
                 {...props}
               >
                 {children}
@@ -341,7 +341,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
           ),
           td: ({ children, ...props }) => (
             <td
-              className="px-4 py-3 text-foreground/90"
+              className="px-4 py-3 text-foreground"
               {...props}
             >
               {children}

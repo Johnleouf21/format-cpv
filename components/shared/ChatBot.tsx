@@ -447,14 +447,14 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
                               <button
                                 onClick={() => handleFeedback(msg.id, 'up')}
                                 className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-green-600"
-                                title="Utile"
+                                aria-label="Utile"
                               >
                                 <ThumbsUp className="h-3 w-3" />
                               </button>
                               <button
                                 onClick={() => handleFeedback(msg.id, 'down')}
                                 className="p-1 rounded hover:bg-muted transition-colors text-muted-foreground hover:text-red-500"
-                                title="Pas utile"
+                                aria-label="Pas utile"
                               >
                                 <ThumbsDown className="h-3 w-3" />
                               </button>
@@ -561,6 +561,7 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
               size="icon"
               className="rounded-full h-9 w-9 shrink-0 bg-blue-600 hover:bg-blue-700"
               disabled={!input.trim() || isTyping}
+              aria-label="Envoyer"
             >
               <Send className="h-4 w-4" />
             </Button>

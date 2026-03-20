@@ -66,14 +66,14 @@ export function ModuleCard({
             </Link>
           </Button>
           {editHref && (
-            <Button variant="ghost" size="icon" asChild>
+            <Button variant="ghost" size="icon" asChild aria-label="Modifier">
               <Link href={editHref}>
                 <Edit className="h-4 w-4" />
               </Link>
             </Button>
           )}
           {onDelete && (
-            <Button variant="ghost" size="icon" onClick={onDelete}>
+            <Button variant="ghost" size="icon" onClick={onDelete} aria-label="Supprimer">
               <Trash2 className="h-4 w-4 text-destructive" />
             </Button>
           )}

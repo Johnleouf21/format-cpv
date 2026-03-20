@@ -64,7 +64,7 @@ export function ParcoursCard({
             </Link>
           </Button>
           {onEdit && (
-            <Button variant="ghost" size="icon" onClick={onEdit}>
+            <Button variant="ghost" size="icon" onClick={onEdit} aria-label="Modifier">
               <Edit className="h-4 w-4" />
             </Button>
           )}
@@ -74,6 +74,7 @@ export function ParcoursCard({
               size="icon"
               onClick={onDelete}
               disabled={!canDelete}
+              aria-label="Supprimer"
             >
               <Trash2 className={`h-4 w-4 ${canDelete ? 'text-destructive' : 'text-muted-foreground'}`} />
             </Button>

@@ -117,6 +117,7 @@ export function DashboardShell({
               size="icon"
               className="h-8 w-8"
               onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+              aria-label={sidebarCollapsed ? 'Ouvrir le menu' : 'Réduire le menu'}
             >
               {sidebarCollapsed ? (
                 <PanelLeft className="h-4 w-4" />
@@ -253,7 +254,7 @@ export function DashboardShell({
             </nav>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+            <Button variant="ghost" size="icon" className="h-9 w-9" asChild aria-label="Aide">
               <Link href="/help">
                 <HelpCircle className="h-4 w-4" />
               </Link>

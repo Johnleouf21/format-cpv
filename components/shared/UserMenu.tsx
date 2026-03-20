@@ -213,9 +213,9 @@ export function UserMenu({
         {/* Help & sign out */}
         <DropdownMenuGroup>
           <DropdownMenuItem asChild className="cursor-pointer">
-            <Link href="/profile#help">
+            <Link href="/help">
               <HelpCircle className="mr-2 h-4 w-4" />
-              Aide / Support
+              Aide
             </Link>
           </DropdownMenuItem>
         </DropdownMenuGroup>

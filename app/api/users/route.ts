@@ -40,9 +40,15 @@ export async function POST(request: NextRequest) {
       const { prisma } = await import('@/lib/db')
       const existingUser = await prisma.user.findUnique({
         where: { email: data.email },
+        select: { id: true, trainerId: true, role: true },
       })
       if (!existingUser) {
-        throw new ApiError(403, 'Vous ne pouvez pas ajouter de nouveaux utilisateurs. Contactez votre administrateur.', 'TRAINER_CANNOT_CREATE')
+        throw new ApiError(403, 'Utilisateur inexistant. Contactez votre administrateur pour l\'ajouter.', 'TRAINER_CANNOT_CREATE')
+      }
+
+      // Vérifier que l'apprenant n'est pas déjà assigné à un autre formateur
+      if (existingUser.trainerId && existingUser.trainerId !== session.user.id) {
+        throw new ApiError(403, 'Cet apprenant est déjà assigné à un autre formateur.', 'ALREADY_ASSIGNED')
       }
 
       data.role = 'LEARNER'

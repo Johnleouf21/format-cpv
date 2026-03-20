@@ -12,16 +12,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = addUsersBulkSchema.parse(body)
 
-    // TRAINER: vérifier que tous les emails existent déjà
+    // TRAINER: vérifier que tous les emails existent et ne sont pas assignés à un autre formateur
     if (session.user.role === 'TRAINER') {
       const existingUsers = await prisma.user.findMany({
         where: { email: { in: data.emails } },
-        select: { email: true },
+        select: { email: true, trainerId: true },
       })
       const existingEmails = new Set(existingUsers.map((u) => u.email))
       const newEmails = data.emails.filter((e) => !existingEmails.has(e))
       if (newEmails.length > 0) {
-        throw new ApiError(403, `Impossible d'ajouter des utilisateurs inexistants : ${newEmails.join(', ')}. Contactez votre administrateur.`, 'TRAINER_CANNOT_CREATE')
+        throw new ApiError(403, `Utilisateur(s) inexistant(s) : ${newEmails.join(', ')}. Contactez votre administrateur.`, 'TRAINER_CANNOT_CREATE')
+      }
+
+      const alreadyAssigned = existingUsers.filter((u) => u.trainerId && u.trainerId !== session.user.id)
+      if (alreadyAssigned.length > 0) {
+        throw new ApiError(403, `Apprenant(s) déjà assigné(s) à un autre formateur : ${alreadyAssigned.map((u) => u.email).join(', ')}`, 'ALREADY_ASSIGNED')
       }
     }
 

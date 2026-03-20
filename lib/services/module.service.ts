@@ -14,7 +14,7 @@ export async function getModuleById(moduleId: string, userId: string) {
     },
   })
 
-  if (!module) {
+  if (!module || !module.published) {
     throw new ApiError(404, 'Module non trouvé', 'MODULE_NOT_FOUND')
   }
 
@@ -46,6 +46,7 @@ export async function getModuleById(moduleId: string, userId: string) {
     prisma.module.findFirst({
       where: {
         parcoursId: module.parcoursId,
+        published: true,
         order: { lt: module.order },
       },
       orderBy: { order: 'desc' },
@@ -54,6 +55,7 @@ export async function getModuleById(moduleId: string, userId: string) {
     prisma.module.findFirst({
       where: {
         parcoursId: module.parcoursId,
+        published: true,
         order: { gt: module.order },
       },
       orderBy: { order: 'asc' },
@@ -81,7 +83,7 @@ export async function getModuleById(moduleId: string, userId: string) {
 
 export async function getModulesForParcours(parcoursId: string) {
   return prisma.module.findMany({
-    where: { parcoursId },
+    where: { parcoursId, published: true },
     orderBy: { order: 'asc' },
     select: {
       id: true,

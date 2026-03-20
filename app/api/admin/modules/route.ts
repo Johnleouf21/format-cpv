@@ -10,6 +10,7 @@ const createModuleSchema = z.object({
   parcoursId: z.string().uuid('ID de parcours invalide'),
   order: z.number().int().min(0).optional(),
   minDuration: z.number().int().min(0).max(480).optional().default(0),
+  published: z.boolean().optional().default(false),
 })
 
 export async function GET(request: NextRequest) {

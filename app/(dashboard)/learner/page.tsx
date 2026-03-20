@@ -8,6 +8,7 @@ import { ProgressIndicator } from '@/components/learner/ProgressIndicator'
 import { ModuleList } from '@/components/learner/ModuleList'
 import { CertificateDownloadButton } from '@/components/learner/CertificateDownloadButton'
 import { BadgesSection } from '@/components/learner/BadgesSection'
+import { XPCard } from '@/components/learner/XPCard'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -160,6 +161,9 @@ export default async function LearnerHomePage() {
               </CardContent>
             </Card>
           </div>
+
+          {/* XP Card */}
+          <XPCard />
 
           {/* Resume card */}
           {nextParcours && (
@@ -329,6 +333,9 @@ export default async function LearnerHomePage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* XP Card */}
+        <XPCard />
 
         {/* Continue button */}
         {data.nextModule && (

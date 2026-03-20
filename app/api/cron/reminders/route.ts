@@ -5,25 +5,27 @@ import { sendReminderEmail } from '@/lib/services/email.service'
 const CRON_SECRET = process.env.CRON_SECRET
 
 // Nombre de jours d'inactivité avant rappel
-const INACTIVITY_DAYS = 7
+const INACTIVITY_DAYS = 3
 
 export async function GET(request: NextRequest) {
-  // Protection par secret pour éviter les appels non autorisés
+  // Protection : Vercel Cron envoie le secret via Authorization header
   const authHeader = request.headers.get('authorization')
   if (CRON_SECRET && authHeader !== `Bearer ${CRON_SECRET}`) {
     return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
+  }
+  if (!CRON_SECRET) {
+    return NextResponse.json({ error: 'CRON_SECRET non configuré' }, { status: 500 })
   }
 
   try {
     const cutoffDate = new Date()
     cutoffDate.setDate(cutoffDate.getDate() - INACTIVITY_DAYS)
 
-    // Trouver les apprenants avec des parcours qui n'ont pas complété de module depuis X jours
+    // Trouver les apprenants inactifs depuis X jours avec au moins un parcours
     const inactiveLearners = await prisma.user.findMany({
       where: {
         role: 'LEARNER',
         userParcours: { some: {} },
-        // Dernière activité (progress) avant la date limite
         progress: {
           none: {
             completedAt: { gte: cutoffDate },
@@ -40,13 +42,9 @@ export async function GET(request: NextRequest) {
               },
             },
           },
-          take: 1,
-          orderBy: { assignedAt: 'desc' },
         },
         progress: {
-          select: { completedAt: true },
-          orderBy: { completedAt: 'desc' },
-          take: 1,
+          select: { completedAt: true, moduleId: true },
         },
         notificationPreference: {
           select: { emailContentUpdate: true },
@@ -64,36 +62,45 @@ export async function GET(request: NextRequest) {
         continue
       }
 
-      const mainParcours = learner.userParcours[0]
-      if (!mainParcours) continue
+      // Trouver le premier parcours non terminé
+      const completedModuleIds = new Set(learner.progress.map((p) => p.moduleId))
+
+      const unfinishedParcours = learner.userParcours.find((up) => {
+        const totalModules = up.parcours.modules.length
+        const completed = up.parcours.modules.filter((m) => completedModuleIds.has(m.id)).length
+        return totalModules > 0 && completed < totalModules
+      })
+
+      // Pas de parcours non terminé → pas de rappel
+      if (!unfinishedParcours) {
+        skipped++
+        continue
+      }
+
+      const totalModules = unfinishedParcours.parcours.modules.length
+      const completedInParcours = unfinishedParcours.parcours.modules.filter(
+        (m) => completedModuleIds.has(m.id)
+      ).length
 
       // Calculer les jours depuis la dernière activité
-      const lastActivity = learner.progress[0]?.completedAt || learner.createdAt
+      const lastActivityDate = learner.progress.length > 0
+        ? learner.progress.reduce((latest, p) =>
+            new Date(p.completedAt) > new Date(latest.completedAt) ? p : latest
+          ).completedAt
+        : learner.createdAt
       const daysSince = Math.floor(
-        (Date.now() - new Date(lastActivity).getTime()) / (1000 * 60 * 60 * 24)
+        (Date.now() - new Date(lastActivityDate).getTime()) / (1000 * 60 * 60 * 24)
       )
 
       if (daysSince < INACTIVITY_DAYS) continue
-
-      // Compter les modules complétés dans ce parcours
-      const parcoursModuleIds = mainParcours.parcours.modules.map((m) => m.id)
-      const completedInParcours = await prisma.progress.count({
-        where: {
-          userId: learner.id,
-          moduleId: { in: parcoursModuleIds },
-        },
-      })
-
-      // Ne pas envoyer si le parcours est déjà terminé
-      if (completedInParcours >= parcoursModuleIds.length) continue
 
       await sendReminderEmail({
         to: learner.email,
         learnerName: learner.name,
         daysSinceLastActivity: daysSince,
         completedModules: completedInParcours,
-        totalModules: parcoursModuleIds.length,
-        parcoursTitle: mainParcours.parcours.title,
+        totalModules,
+        parcoursTitle: unfinishedParcours.parcours.title,
       })
 
       sent++

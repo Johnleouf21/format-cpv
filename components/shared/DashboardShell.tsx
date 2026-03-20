@@ -68,17 +68,17 @@ export function DashboardShell({
 
   useEffect(() => {
     const stored = localStorage.getItem('forma-cpv-layout')
-    setLayout(stored === 'sidebar' ? 'sidebar' : 'header')
+    setLayout(stored === 'header' ? 'header' : 'sidebar')
 
     // Listen for layout changes (cross-tab + same-tab)
     const handleStorage = (e: StorageEvent) => {
       if (e.key === 'forma-cpv-layout') {
-        setLayout(e.newValue === 'sidebar' ? 'sidebar' : 'header')
+        setLayout(e.newValue === 'header' ? 'header' : 'sidebar')
       }
     }
     const handleLayoutChange = (e: Event) => {
       const value = (e as CustomEvent).detail as string
-      setLayout(value === 'sidebar' ? 'sidebar' : 'header')
+      setLayout(value === 'header' ? 'header' : 'sidebar')
     }
     window.addEventListener('storage', handleStorage)
     window.addEventListener('layout-change', handleLayoutChange)

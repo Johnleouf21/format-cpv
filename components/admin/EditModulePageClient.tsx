@@ -11,6 +11,7 @@ interface Module {
   content: string
   order: number
   minDuration: number
+  published: boolean
   parcours: {
     id: string
     title: string
@@ -99,6 +100,7 @@ export function EditModulePageClient({ moduleId }: EditModulePageClientProps) {
           parcoursId: module.parcours.id,
           order: module.order,
           minDuration: module.minDuration,
+          published: module.published,
         }}
         parcoursList={parcoursList}
       />

@@ -15,7 +15,8 @@ import {
 } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, ExternalLink, Eye, Code, AlertCircle, ImageIcon, Video, Clock } from 'lucide-react'
+import { Loader2, ExternalLink, Eye, Code, AlertCircle, ImageIcon, Video, Clock, Globe } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import { ModuleContent } from '@/components/learner/ModuleContent'
 
 interface Parcours {
@@ -31,6 +32,7 @@ interface ModuleFormProps {
     parcoursId: string
     order: number
     minDuration?: number
+    published?: boolean
   }
   parcoursList: Parcours[]
 }
@@ -45,6 +47,7 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
   const [parcoursId, setParcoursId] = useState(module?.parcoursId || '')
   const [order, setOrder] = useState(module?.order?.toString() || '0')
   const [minDuration, setMinDuration] = useState(module?.minDuration?.toString() || '0')
+  const [published, setPublished] = useState(module?.published ?? false)
 
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const cursorPositionRef = useRef<number>(0)
@@ -86,6 +89,7 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
           parcoursId,
           order: parseInt(order, 10),
           minDuration: parseInt(minDuration, 10) || 0,
+          published,
         }),
       })
 
@@ -198,6 +202,23 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
                 0 = pas de minimum
               </p>
             </div>
+          </div>
+
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <Label htmlFor="published" className="flex items-center gap-1.5 cursor-pointer">
+                <Globe className="h-3.5 w-3.5" />
+                Publier le module
+              </Label>
+              <p className="text-[11px] text-muted-foreground">
+                Les modules non publiés sont invisibles pour les apprenants
+              </p>
+            </div>
+            <Switch
+              id="published"
+              checked={published}
+              onCheckedChange={setPublished}
+            />
           </div>
         </CardContent>
       </Card>

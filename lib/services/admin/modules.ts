@@ -7,6 +7,7 @@ export interface ModuleWithDetails {
   content: string
   order: number
   minDuration: number
+  published: boolean
   parcours: {
     id: string
     title: string
@@ -22,6 +23,7 @@ export interface CreateModuleInput {
   parcoursId: string
   order?: number
   minDuration?: number
+  published?: boolean
 }
 
 export interface UpdateModuleInput {
@@ -30,6 +32,7 @@ export interface UpdateModuleInput {
   parcoursId?: string
   order?: number
   minDuration?: number
+  published?: boolean
 }
 
 export async function getModules(parcoursId?: string): Promise<ModuleWithDetails[]> {
@@ -53,6 +56,7 @@ export async function getModules(parcoursId?: string): Promise<ModuleWithDetails
     content: m.content,
     order: m.order,
     minDuration: m.minDuration,
+    published: m.published,
     parcours: m.parcours,
     hasQuiz: !!m.quiz,
     createdAt: m.createdAt,
@@ -81,6 +85,7 @@ export async function getModuleById(id: string): Promise<ModuleWithDetails | nul
     content: module.content,
     order: module.order,
     minDuration: module.minDuration,
+    published: module.published,
     parcours: module.parcours,
     hasQuiz: !!module.quiz,
     createdAt: module.createdAt,
@@ -113,6 +118,7 @@ export async function createModule(input: CreateModuleInput) {
       parcoursId: input.parcoursId,
       order,
       minDuration: input.minDuration ?? 0,
+      published: input.published ?? false,
     },
     include: {
       parcours: {
@@ -150,6 +156,7 @@ export async function updateModule(id: string, input: UpdateModuleInput) {
       ...(input.parcoursId !== undefined && { parcoursId: input.parcoursId }),
       ...(input.order !== undefined && { order: input.order }),
       ...(input.minDuration !== undefined && { minDuration: input.minDuration }),
+      ...(input.published !== undefined && { published: input.published }),
     },
     include: {
       parcours: {

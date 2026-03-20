@@ -19,6 +19,7 @@ interface Module {
   id: string
   title: string
   order: number
+  published?: boolean
   parcours: {
     id: string
     title: string
@@ -79,7 +80,16 @@ export function ModulesTable({ modules, onDelete }: ModulesTableProps) {
                     {module.order + 1}
                   </div>
                 </TableCell>
-                <TableCell className="font-medium">{module.title}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {module.title}
+                    {!module.published && (
+                      <Badge variant="outline" className="text-orange-600 border-orange-300 bg-orange-50 text-[10px] px-1.5 py-0">
+                        Brouillon
+                      </Badge>
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell>
                   <Badge variant="secondary">{module.parcours.title}</Badge>
                 </TableCell>

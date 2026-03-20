@@ -70,6 +70,7 @@ model Module {
   content String @db.Text
   order       Int    @default(0)
   minDuration Int    @default(0) @map("min_duration")
+  published   Boolean @default(false)
 
   parcoursId String   @map("parcours_id")
   parcours   Parcours @relation(fields: [parcoursId], references: [id], onDelete: Cascade)

@@ -20,6 +20,7 @@ import {
   Trophy,
   Activity,
   Building2,
+  HelpCircle,
 } from 'lucide-react'
 import { ChatBot } from '@/components/shared/ChatBot'
 import { NotificationBell } from '@/components/shared/NotificationBell'
@@ -191,9 +192,19 @@ export function DashboardShell({
                 </Link>
               </div>
               <div className="hidden md:flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+                  <Link href="/help">
+                    <HelpCircle className="h-4 w-4" />
+                  </Link>
+                </Button>
                 <NotificationBell />
               </div>
               <div className="flex items-center gap-2 md:hidden">
+                <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+                  <Link href="/help">
+                    <HelpCircle className="h-4 w-4" />
+                  </Link>
+                </Button>
                 <NotificationBell />
                 <UserMenu
                   userName={userName}
@@ -242,6 +253,11 @@ export function DashboardShell({
             </nav>
           </div>
           <div className="flex items-center gap-2 shrink-0">
+            <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+              <Link href="/help">
+                <HelpCircle className="h-4 w-4" />
+              </Link>
+            </Button>
             <NotificationBell />
             <SpaceSwitcher currentSpace={currentSpace} userRole={userRole} />
             <UserMenu

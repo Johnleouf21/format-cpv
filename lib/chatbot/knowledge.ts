@@ -118,7 +118,7 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['inviter', 'ajouter', 'apprenant', 'inscrire', 'nouvel', 'nouveau'],
     question: 'Comment ajouter un apprenant ?',
-    answer: 'Allez dans [Apprenants](/trainer/learners) :\n\n- Cliquez sur **"Ajouter"**\n- **Recherchez un utilisateur existant** ou entrez un nouvel email\n- Sélectionnez le(s) **parcours** à assigner\n- L\'apprenant recevra un **email d\'invitation**\n\nVous pouvez aussi ajouter plusieurs apprenants d\'un coup.',
+    answer: 'Allez dans [Apprenants](/trainer/learners) :\n\n- Cliquez sur **"Ajouter"**\n- **Recherchez un utilisateur existant** dans la plateforme\n- Sélectionnez le(s) **parcours** à assigner\n- L\'apprenant recevra un **email de notification**\n\n**Note** : en tant que formateur, vous ne pouvez ajouter que des utilisateurs **déjà existants**. Pour un nouvel email, contactez votre administrateur.',
     category: 'Gestion',
     roles: ['TRAINER', 'ADMIN'],
   },
@@ -226,11 +226,115 @@ export const KNOWLEDGE_BASE: QA[] = [
     answer: 'Oui ! FormaCPV est **entièrement responsive** :\n\n- Fonctionne sur **smartphone** et **tablette**\n- Menu adapté avec **navigation mobile**\n- Vidéos et contenus **redimensionnés** automatiquement\n- Utilisez le navigateur de votre téléphone (Chrome, Safari)',
     category: 'Problèmes',
   },
+  // ── XP & Classement ──
+  {
+    keywords: ['xp', 'experience', 'points', 'gagner', 'obtenir'],
+    question: 'Comment gagner des points XP ?',
+    answer: 'Vous gagnez des **points d\'expérience** en progressant :\n\n- **10 XP** par module terminé\n- **20 XP** par quiz réussi (score ≥ 80%)\n- **30 XP** bonus pour un quiz parfait (100%)\n- **15 XP** par badge obtenu\n- **50 XP** par parcours complété\n\nVos XP sont visibles sur votre [tableau de bord](/learner) et dans le [classement](/learner/leaderboard).',
+    category: 'Gamification',
+    roles: ['LEARNER'],
+  },
+  {
+    keywords: ['niveau', 'level', 'monter', 'progresser', 'barre'],
+    question: 'Comment fonctionnent les niveaux ?',
+    answer: 'Vos XP déterminent votre **niveau**. Chaque niveau demande un peu plus d\'XP que le précédent.\n\n- La **barre de progression** sur votre tableau de bord montre votre avancement\n- Votre niveau est visible dans le [classement](/learner/leaderboard)\n- Plus vous progressez, plus vous montez de niveau !',
+    category: 'Gamification',
+    roles: ['LEARNER'],
+  },
+  {
+    keywords: ['classement', 'leaderboard', 'rang', 'position', 'comparer', 'premier'],
+    question: 'Comment fonctionne le classement ?',
+    answer: 'Le [classement](/learner/leaderboard) compare votre progression avec les **apprenants de votre centre**.\n\n- Classé par **XP total**\n- Affiche votre **niveau** et votre **position**\n- Les 3 premiers ont des médailles\n- Vous ne voyez que les collègues de votre centre',
+    category: 'Gamification',
+    roles: ['LEARNER'],
+  },
+  {
+    keywords: ['classement', 'leaderboard', 'formateur', 'centre', 'filtre'],
+    question: 'Comment voir le classement de mes apprenants ?',
+    answer: 'Allez dans [Classement](/trainer/leaderboard) depuis votre espace formateur.\n\n- Tableau détaillé avec **XP, niveau et breakdown** par catégorie\n- **Filtrez par centre** en cochant les centres souhaités\n- Stats résumées : XP moyen, niveau moyen, XP total du groupe',
+    category: 'Gestion',
+    roles: ['TRAINER', 'ADMIN'],
+  },
+  // ── Centres ──
+  {
+    keywords: ['centre', 'site', 'selas', 'gie', 'siege', 'structure', 'rattacher'],
+    question: 'Comment fonctionnent les centres ?',
+    answer: 'Les centres organisent vos apprenants par **site géographique**.\n\n- Créez des **structures parentes** (GIE, SELAS) et des **sous-centres**\n- Un apprenant peut être rattaché à **plusieurs centres**\n- Le classement est filtré par centre\n- Gérez les centres dans [Admin > Centres](/admin/centers)',
+    category: 'Administration',
+    roles: ['ADMIN'],
+  },
+  {
+    keywords: ['centre', 'assigner', 'rattacher', 'apprenant', 'affecter'],
+    question: 'Comment assigner un centre à un apprenant ?',
+    answer: 'Dans la page [Apprenants](/admin/learners), cliquez sur **"Centre"** à côté de l\'apprenant.\n\n- Cochez les centres de rattachement (hiérarchie affichée)\n- Un apprenant peut être dans **plusieurs centres**\n- Vous pouvez aussi assigner les centres à la **création** de l\'apprenant',
+    category: 'Administration',
+    roles: ['ADMIN'],
+  },
+  // ── Notifications in-app ──
+  {
+    keywords: ['cloche', 'notification', 'alerte', 'badge obtenu', 'parcours assigne'],
+    question: 'Comment fonctionnent les notifications in-app ?',
+    answer: 'La **cloche** en haut de page affiche vos notifications :\n\n- **Nouveau parcours assigné**\n- **Badge obtenu**\n- Cliquez sur la cloche pour les consulter\n- **"Tout marquer comme lu"** pour effacer le compteur\n\nLes notifications sont vérifiées toutes les 30 secondes.',
+    category: 'Mon compte',
+  },
+  // ── Export & Journal ──
+  {
+    keywords: ['export', 'csv', 'excel', 'telecharger', 'donnees', 'rapport'],
+    question: 'Comment exporter les données ?',
+    answer: 'Allez dans [Apprenants](/admin/learners) et cliquez sur **"Exporter CSV"**.\n\nTrois types d\'export :\n- **Apprenants et progression** — liste complète avec pourcentage\n- **Modules complétés** — détail par apprenant et date\n- **Résultats quiz** — scores et réussite par quiz\n\nLe fichier s\'ouvre dans Excel avec les accents corrects.',
+    category: 'Administration',
+    roles: ['ADMIN'],
+  },
+  {
+    keywords: ['journal', 'activite', 'historique', 'log', 'qui a fait quoi'],
+    question: 'Où voir l\'historique des actions ?',
+    answer: 'Allez dans [Journal](/admin/activity) pour voir toutes les actions :\n\n- Création/modification/suppression de parcours, modules, quiz\n- Connexions utilisateurs\n- Quiz soumis avec score\n- Badges obtenus\n- Assignation de parcours et centres\n- Invitations envoyées\n\nChaque action affiche l\'auteur et l\'heure relative.',
+    category: 'Administration',
+    roles: ['ADMIN'],
+  },
+  // ── Module brouillon ──
+  {
+    keywords: ['brouillon', 'publier', 'publié', 'invisible', 'masquer', 'cacher'],
+    question: 'Comment fonctionne le mode brouillon ?',
+    answer: 'Les modules ont un toggle **"Publier"** dans le formulaire d\'édition.\n\n- **Non publié** = invisible pour les apprenants (badge orange "Brouillon" dans la liste admin)\n- **Publié** = visible et accessible\n- Utilisez-le pour **préparer du contenu** à l\'avance sans le rendre visible',
+    category: 'Administration',
+    roles: ['ADMIN'],
+  },
+  // ── Avis / Feedback ──
+  {
+    keywords: ['avis', 'feedback', 'note', 'etoile', 'commentaire', 'opinion'],
+    question: 'Comment fonctionnent les avis ?',
+    answer: 'À la fin du **dernier module** d\'un parcours, un formulaire d\'avis apparaît :\n\n- Note de **1 à 5 étoiles**\n- **Commentaire** libre\n- Choix entre **nominatif ou anonyme**\n\nL\'admin peut consulter tous les avis dans [Admin > Avis](/admin/feedback) avec la note moyenne et la répartition.',
+    category: 'Formation',
+  },
+  // ── Rappels email ──
+  {
+    keywords: ['rappel', 'relance', 'inactif', 'email automatique', 'cron'],
+    question: 'Comment fonctionnent les rappels automatiques ?',
+    answer: 'Un email de rappel est envoyé **automatiquement** aux apprenants :\n\n- Inactifs depuis **3 jours**\n- Qui ont au moins un **parcours non terminé**\n- Avec un bouton **"Reprendre ma formation"**\n\nLes apprenants peuvent désactiver ces emails dans leurs [préférences](/profile#notifications).',
+    category: 'Administration',
+    roles: ['ADMIN'],
+  },
+  // ── Sécurité formateur ──
+  {
+    keywords: ['ajouter', 'nouveau', 'email', 'inexistant', 'créer', 'formateur'],
+    question: 'Pourquoi je ne peux pas ajouter un nouvel email ?',
+    answer: 'Par mesure de **sécurité**, seul l\'administrateur peut :\n\n- Créer de **nouveaux comptes**\n- Autoriser de **nouvelles adresses email**\n- Modifier la **liste d\'accès**\n\nEn tant que formateur, vous pouvez uniquement **ajouter des utilisateurs existants**. Contactez votre administrateur via [Profil > Contacter](/profile#help) pour demander l\'ajout d\'un nouvel email.',
+    category: 'Gestion',
+    roles: ['TRAINER'],
+  },
+  // ── Page aide ──
+  {
+    keywords: ['aide', 'help', 'guide', 'documentation', 'notice', 'tutoriel'],
+    question: 'Où trouver de l\'aide ?',
+    answer: 'Plusieurs ressources à votre disposition :\n\n- **Cette conversation** — posez vos questions ici !\n- La [page Aide](/help) — guide complet par rôle avec FAQ\n- Le bouton **?** en haut de page — accès direct à l\'aide\n- [Contacter](/profile#help) votre formateur ou admin',
+    category: 'Aide',
+  },
   // ── Fallback ──
   {
     keywords: ['aide', 'help', 'support', 'probleme', 'bug', 'contact', 'autre'],
     question: "J'ai un autre problème",
-    answer: "Si vous ne trouvez pas la réponse à votre question :\n\n- Essayez de **reformuler** votre question\n- Contactez votre **formateur** par email\n- Ou l'**administrateur** de la plateforme\n\nIls pourront vous aider directement.",
+    answer: "Si vous ne trouvez pas la réponse à votre question :\n\n- Consultez la [page Aide](/help) pour un guide complet\n- Essayez de **reformuler** votre question\n- Contactez votre **formateur** ou **administrateur** via [Profil > Contacter](/profile#help)",
     category: 'Aide',
   },
 ]
@@ -254,23 +358,23 @@ export function getTopSuggestions(role: string): string[] {
     case 'LEARNER':
       return [
         'Comment accéder à ma formation ?',
-        'Comment fonctionnent les quiz ?',
+        'Comment gagner des points XP ?',
+        'Comment fonctionne le classement ?',
         'Comment débloquer des badges ?',
-        'Comment modifier mon profil ?',
       ]
     case 'TRAINER':
       return [
         'Comment ajouter un apprenant ?',
         'Comment suivre la progression de mes apprenants ?',
-        'Comment assigner un parcours ?',
-        'Comment me connecter ?',
+        'Comment voir le classement de mes apprenants ?',
+        'Pourquoi je ne peux pas ajouter un nouvel email ?',
       ]
     case 'ADMIN':
       return [
         'Comment créer un parcours ?',
-        'Comment ajouter un formateur ?',
-        'Comment gérer les accès ?',
-        "Comment changer le rôle d'un utilisateur ?",
+        'Comment fonctionnent les centres ?',
+        'Comment exporter les données ?',
+        'Où voir l\'historique des actions ?',
       ]
     default:
       return [

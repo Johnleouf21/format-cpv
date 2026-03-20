@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/db'
+import { checkRateLimit } from '@/lib/utils/rate-limit'
 
 export async function GET(request: NextRequest) {
+  const rateLimited = checkRateLimit(request, 'poll-login', { maxRequests: 60, windowSeconds: 60 })
+  if (rateLimited) return rateLimited
   const id = request.nextUrl.searchParams.get('id')
 
   if (!id) {
@@ -23,7 +26,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ verified: pending.verified })
   } catch (error) {
-    console.error('Error polling login:', error)
+    if (process.env.NODE_ENV !== 'production') console.error('Error polling login:', error)
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
 }

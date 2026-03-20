@@ -13,7 +13,13 @@ export class ApiError extends Error {
 }
 
 export function handleApiError(error: unknown): NextResponse {
-  console.error('API Error:', error)
+  // En prod, ne loguer que le message (pas la stack trace complète)
+  if (process.env.NODE_ENV === 'production') {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('[API Error]', message)
+  } else {
+    console.error('API Error:', error)
+  }
 
   if (error instanceof ApiError) {
     return NextResponse.json(

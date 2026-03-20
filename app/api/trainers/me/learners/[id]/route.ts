@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { getLearnerDetails } from '@/lib/services/trainer.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { UserRole } from '@prisma/client'
 
 export async function GET(
   request: Request,
@@ -19,7 +20,7 @@ export async function GET(
 
     const { id } = await params
 
-    const details = await getLearnerDetails(session.user.id, id)
+    const details = await getLearnerDetails(session.user.id, id, session.user.role as UserRole)
 
     return NextResponse.json(details)
   } catch (error) {

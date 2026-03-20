@@ -15,12 +15,25 @@ export async function middleware(request: NextRequest) {
 
   // Add security headers
   const response = NextResponse.next()
+  const isDev = process.env.NODE_ENV === 'development'
+
   response.headers.set('X-Frame-Options', 'DENY')
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('X-Permitted-Cross-Domain-Policies', 'none')
+  response.headers.set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+
+  if (!isDev) {
+    response.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains')
+  }
+
+  // CSP : unsafe-eval uniquement en dev (hot reload), unsafe-inline nécessaire pour Tailwind/Radix
+  const scriptSrc = isDev
+    ? "'self' 'unsafe-inline' 'unsafe-eval'"
+    : "'self' 'unsafe-inline'"
   response.headers.set(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; frame-src https://*.sharepoint.com https://*.youtube.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com;"
+    `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self'; frame-src https://*.sharepoint.com https://*.youtube.com https://www.youtube.com https://www.youtube-nocookie.com https://player.vimeo.com;`
   )
 
   // Skip auth check for public routes

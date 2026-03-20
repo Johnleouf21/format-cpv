@@ -7,6 +7,7 @@ import { z } from 'zod'
 const createCenterSchema = z.object({
   name: z.string().min(1, 'Le nom est requis'),
   region: z.string().optional(),
+  parentId: z.string().uuid().optional().nullable(),
 })
 
 export async function GET() {
@@ -21,7 +22,12 @@ export async function GET() {
 
     const centers = await prisma.center.findMany({
       include: {
-        _count: { select: { users: true } },
+        _count: { select: { userCenters: true, children: true } },
+        parent: { select: { id: true, name: true } },
+        children: {
+          select: { id: true, name: true, _count: { select: { userCenters: true } } },
+          orderBy: { name: 'asc' },
+        },
       },
       orderBy: { name: 'asc' },
     })
@@ -46,7 +52,11 @@ export async function POST(request: NextRequest) {
     const data = createCenterSchema.parse(body)
 
     const center = await prisma.center.create({
-      data: { name: data.name, region: data.region },
+      data: {
+        name: data.name,
+        region: data.region,
+        parentId: data.parentId || null,
+      },
     })
 
     return NextResponse.json(center, { status: 201 })

@@ -19,10 +19,10 @@ export interface LearnerWithDetails {
     name: string
     email: string
   } | null
-  center: {
+  centers: {
     id: string
     name: string
-  } | null
+  }[]
   parcours: LearnerParcoursDetail[]
   progress: {
     completed: number
@@ -48,8 +48,8 @@ export async function getLearners(options?: GetLearnersOptions): Promise<Learner
       trainer: {
         select: { id: true, name: true, email: true },
       },
-      center: {
-        select: { id: true, name: true },
+      userCenters: {
+        include: { center: { select: { id: true, name: true } } },
       },
       userParcours: {
         include: {
@@ -104,7 +104,7 @@ export async function getLearners(options?: GetLearnersOptions): Promise<Learner
       name: learner.name,
       email: learner.email,
       trainer: learner.trainer,
-      center: learner.center,
+      centers: learner.userCenters.map((uc) => uc.center),
       parcours: parcoursDetails,
       progress: {
         completed: totalCompleted,

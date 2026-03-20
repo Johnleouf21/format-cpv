@@ -32,6 +32,10 @@ interface ApiLearner {
     name: string
     email: string
   } | null
+  centers: {
+    id: string
+    name: string
+  }[]
   parcours: LearnerParcours[]
   progress: {
     completed: number

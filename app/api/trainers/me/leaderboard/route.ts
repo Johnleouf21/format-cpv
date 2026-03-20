@@ -24,12 +24,17 @@ export async function GET(request: NextRequest) {
       trainerId: session.user.id,
     }
     if (centerId) {
-      where.centerId = centerId
+      where.userCenters = { some: { centerId } }
     }
 
     const learners = await prisma.user.findMany({
       where,
-      select: { id: true, name: true, email: true, center: { select: { id: true, name: true } } },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        userCenters: { include: { center: { select: { id: true, name: true } } } },
+      },
     })
 
     const leaderboard = await Promise.all(
@@ -39,7 +44,7 @@ export async function GET(request: NextRequest) {
           id: l.id,
           name: l.name,
           email: l.email,
-          center: l.center,
+          centers: l.userCenters.map((uc) => uc.center),
           xp: xp.total,
           level: xp.level,
           levelProgress: xp.levelProgress,

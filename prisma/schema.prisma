@@ -29,8 +29,7 @@ model User {
   trainer    User?    @relation("TrainerLearners", fields: [trainerId], references: [id])
   learners   User[]   @relation("TrainerLearners")
 
-  centerId   String?  @map("center_id")
-  center     Center?  @relation(fields: [centerId], references: [id])
+  userCenters         UserCenter[]
 
   parcoursId String?   @map("parcours_id")
   parcours   Parcours? @relation("LegacyUserParcours", fields: [parcoursId], references: [id])
@@ -326,9 +325,29 @@ model Center {
   id        String   @id @default(uuid())
   name      String
   region    String?
-  users     User[]
+
+  parentId  String?  @map("parent_id")
+  parent    Center?  @relation("CenterHierarchy", fields: [parentId], references: [id])
+  children  Center[] @relation("CenterHierarchy")
+
+  userCenters UserCenter[]
 
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@index([parentId])
   @@map("centers")
+}
+
+model UserCenter {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  centerId  String   @map("center_id")
+  center    Center   @relation(fields: [centerId], references: [id], onDelete: Cascade)
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  @@unique([userId, centerId])
+  @@index([userId])
+  @@index([centerId])
+  @@map("user_centers")
 }

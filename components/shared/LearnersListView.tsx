@@ -29,6 +29,7 @@ export interface LearnerItem {
   parcours: LearnerParcours[]
   progressSummary: { total: number; completed: number }
   trainer?: { id: string; name: string; email?: string } | null
+  centers?: { id: string; name: string }[]
 }
 
 interface LearnersListViewProps {

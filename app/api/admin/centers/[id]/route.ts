@@ -7,6 +7,7 @@ import { z } from 'zod'
 const updateCenterSchema = z.object({
   name: z.string().min(1).optional(),
   region: z.string().optional(),
+  parentId: z.string().uuid().optional().nullable(),
 })
 
 interface RouteParams {
@@ -42,10 +43,10 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params
 
-    // Détacher les utilisateurs du centre avant suppression
-    await prisma.user.updateMany({
-      where: { centerId: id },
-      data: { centerId: null },
+    // Détacher les sous-centres avant suppression (UserCenter cascade via onDelete)
+    await prisma.center.updateMany({
+      where: { parentId: id },
+      data: { parentId: null },
     })
 
     await prisma.center.delete({ where: { id } })

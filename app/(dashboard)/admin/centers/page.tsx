@@ -5,14 +5,24 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
-import { Building2, Loader2, MapPin, Plus, Trash2, Users, Pencil } from 'lucide-react'
+import { Building2, Loader2, MapPin, Plus, Trash2, Users, Pencil, ChevronRight } from 'lucide-react'
 
 interface Center {
   id: string
   name: string
   region: string | null
-  _count: { users: number }
+  parentId: string | null
+  parent: { id: string; name: string } | null
+  children: { id: string; name: string; _count: { userCenters: number } }[]
+  _count: { userCenters: number; children: number }
 }
 
 export default function CentersPage() {
@@ -22,6 +32,7 @@ export default function CentersPage() {
   const [editingCenter, setEditingCenter] = useState<Center | null>(null)
   const [name, setName] = useState('')
   const [region, setRegion] = useState('')
+  const [parentId, setParentId] = useState<string>('none')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
@@ -40,6 +51,19 @@ export default function CentersPage() {
     fetchCenters()
   }, [])
 
+  // Centres parents (sans parent) pour le select
+  const parentCenters = centers.filter((c) => !c.parentId)
+
+  // Organiser : parents d'abord, puis enfants groupés
+  const organizedCenters = parentCenters.map((parent) => ({
+    ...parent,
+    subCenters: centers.filter((c) => c.parentId === parent.id),
+  }))
+  // Centres orphelins (qui ont un parentId mais dont le parent n'est pas dans la liste)
+  const orphans = centers.filter(
+    (c) => c.parentId && !parentCenters.some((p) => p.id === c.parentId)
+  )
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setIsSubmitting(true)
@@ -53,14 +77,15 @@ export default function CentersPage() {
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, region: region || undefined }),
+        body: JSON.stringify({
+          name,
+          region: region || undefined,
+          parentId: parentId !== 'none' ? parentId : null,
+        }),
       })
 
       if (res.ok) {
-        setName('')
-        setRegion('')
-        setShowForm(false)
-        setEditingCenter(null)
+        cancelForm()
         fetchCenters()
       }
     } finally {
@@ -81,6 +106,7 @@ export default function CentersPage() {
     setEditingCenter(center)
     setName(center.name)
     setRegion(center.region || '')
+    setParentId(center.parentId || 'none')
     setShowForm(true)
   }
 
@@ -89,6 +115,7 @@ export default function CentersPage() {
     setEditingCenter(null)
     setName('')
     setRegion('')
+    setParentId('none')
   }
 
   if (isLoading) {
@@ -96,7 +123,7 @@ export default function CentersPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Centres</h1>
-          <p className="text-sm text-muted-foreground mt-0.5">Gestion des sites</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Gestion des sites et structures</p>
         </div>
         <Card>
           <CardContent className="flex items-center justify-center py-12">
@@ -113,13 +140,13 @@ export default function CentersPage() {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Centres</h1>
           <p className="text-sm text-muted-foreground mt-0.5">
-            {centers.length} centre{centers.length !== 1 ? 's' : ''}
+            {parentCenters.length} structure{parentCenters.length !== 1 ? 's' : ''}, {centers.length} centre{centers.length !== 1 ? 's' : ''} au total
           </p>
         </div>
         {!showForm && (
           <Button onClick={() => setShowForm(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Ajouter un centre
+            Ajouter
           </Button>
         )}
       </div>
@@ -132,27 +159,45 @@ export default function CentersPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
-              <div className="flex-1 space-y-1.5">
-                <Label htmlFor="name">Nom du centre</Label>
-                <Input
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Ex: Centre Paris Nord"
-                  required
-                />
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="name">Nom</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Ex: Centre Paris Nord"
+                    required
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label htmlFor="region">Région (optionnel)</Label>
+                  <Input
+                    id="region"
+                    value={region}
+                    onChange={(e) => setRegion(e.target.value)}
+                    placeholder="Ex: Île-de-France"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Rattaché à (optionnel)</Label>
+                  <Select value={parentId} onValueChange={setParentId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Aucune structure parente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Aucune (structure principale)</SelectItem>
+                      {parentCenters
+                        .filter((c) => c.id !== editingCenter?.id)
+                        .map((c) => (
+                          <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-              <div className="flex-1 space-y-1.5">
-                <Label htmlFor="region">Région (optionnel)</Label>
-                <Input
-                  id="region"
-                  value={region}
-                  onChange={(e) => setRegion(e.target.value)}
-                  placeholder="Ex: Île-de-France"
-                />
-              </div>
-              <div className="flex items-end gap-2">
+              <div className="flex gap-2">
                 <Button type="submit" disabled={isSubmitting}>
                   {isSubmitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {editingCenter ? 'Modifier' : 'Créer'}
@@ -166,27 +211,104 @@ export default function CentersPage() {
         </Card>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {centers.map((center) => (
-          <Card key={center.id}>
+      {/* Liste hiérarchique */}
+      <div className="space-y-4">
+        {organizedCenters.map((parent) => (
+          <Card key={parent.id}>
             <CardContent className="pt-4 pb-4">
+              {/* Centre parent */}
               <div className="flex items-start justify-between">
                 <div className="flex items-start gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 shrink-0">
                     <Building2 className="h-5 w-5 text-blue-600" />
                   </div>
                   <div>
+                    <p className="font-medium">{parent.name}</p>
+                    <div className="flex items-center gap-3 mt-0.5">
+                      {parent.region && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <MapPin className="h-3 w-3" />
+                          {parent.region}
+                        </span>
+                      )}
+                      <span className="text-xs text-muted-foreground flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {parent._count.userCenters} apprenant{parent._count.userCenters !== 1 ? 's' : ''}
+                      </span>
+                      {parent._count.children > 0 && (
+                        <span className="text-xs text-blue-600 font-medium">
+                          {parent._count.children} sous-centre{parent._count.children !== 1 ? 's' : ''}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => startEdit(parent)}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-8 w-8 text-red-600 hover:text-red-700 hover:bg-red-50"
+                    onClick={() => setDeleteId(parent.id)}
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+
+              {/* Sous-centres */}
+              {parent.subCenters.length > 0 && (
+                <div className="mt-3 ml-6 pl-4 border-l-2 border-blue-100 space-y-2">
+                  {parent.subCenters.map((sub) => (
+                    <div key={sub.id} className="flex items-center justify-between py-1.5">
+                      <div className="flex items-center gap-2">
+                        <ChevronRight className="h-3.5 w-3.5 text-blue-400" />
+                        <span className="text-sm font-medium">{sub.name}</span>
+                        {sub.region && (
+                          <span className="text-xs text-muted-foreground">({sub.region})</span>
+                        )}
+                        <span className="text-xs text-muted-foreground">
+                          · {sub._count.userCenters} apprenant{sub._count.userCenters !== 1 ? 's' : ''}
+                        </span>
+                      </div>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => startEdit(sub)}>
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          onClick={() => setDeleteId(sub.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
+
+        {/* Centres orphelins (sans parent valide) */}
+        {orphans.map((center) => (
+          <Card key={center.id}>
+            <CardContent className="pt-4 pb-4">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-gray-100 shrink-0">
+                    <Building2 className="h-5 w-5 text-gray-500" />
+                  </div>
+                  <div>
                     <p className="font-medium">{center.name}</p>
-                    {center.region && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                        <MapPin className="h-3 w-3" />
-                        {center.region}
-                      </p>
-                    )}
-                    <p className="text-xs text-muted-foreground flex items-center gap-1 mt-1">
+                    <span className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                       <Users className="h-3 w-3" />
-                      {center._count.users} apprenant{center._count.users !== 1 ? 's' : ''}
-                    </p>
+                      {center._count.userCenters} apprenant{center._count.userCenters !== 1 ? 's' : ''}
+                    </span>
                   </div>
                 </div>
                 <div className="flex gap-1">
@@ -206,13 +328,14 @@ export default function CentersPage() {
             </CardContent>
           </Card>
         ))}
+
         {centers.length === 0 && (
-          <Card className="sm:col-span-2 lg:col-span-3">
+          <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
               <Building2 className="h-10 w-10 text-muted-foreground mb-3" />
               <p className="text-sm text-muted-foreground">Aucun centre créé</p>
               <p className="text-xs text-muted-foreground mt-1">
-                Créez des centres pour organiser vos apprenants par site
+                Créez des structures (SELAS, groupes) puis ajoutez-y des sous-centres
               </p>
             </CardContent>
           </Card>
@@ -223,7 +346,7 @@ export default function CentersPage() {
         open={!!deleteId}
         onOpenChange={(open) => !open && setDeleteId(null)}
         title="Supprimer le centre"
-        description="Les apprenants rattachés à ce centre seront détachés mais pas supprimés."
+        description="Les sous-centres seront détachés et les apprenants rattachés seront aussi détachés (mais pas supprimés)."
         confirmLabel="Supprimer"
         onConfirm={handleDelete}
         variant="destructive"

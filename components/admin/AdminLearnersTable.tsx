@@ -6,8 +6,9 @@ import { Button } from '@/components/ui/button'
 import { ConfirmDialog } from './ConfirmDialog'
 import { ReassignDialog } from './ReassignDialog'
 import { ManageParcoursDialog } from '@/components/shared/ManageParcoursDialog'
+import { AssignCenterDialog } from '@/components/shared/AssignCenterDialog'
 import { LearnersListView, type LearnerItem } from '@/components/shared/LearnersListView'
-import { Trash2, ArrowRightLeft, Settings, Eye } from 'lucide-react'
+import { Trash2, ArrowRightLeft, Settings, Eye, Building2 } from 'lucide-react'
 
 interface Learner extends LearnerItem {
   progress: {
@@ -57,6 +58,7 @@ export function AdminLearnersTable({
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [reassignId, setReassignId] = useState<string | null>(null)
   const [manageParcoursLearner, setManageParcoursLearner] = useState<LearnerItem | null>(null)
+  const [centerLearner, setCenterLearner] = useState<LearnerItem | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
   const learnerToDelete = learners.find((l) => l.id === deleteId)
@@ -109,6 +111,14 @@ export function AdminLearnersTable({
             <Button
               variant="outline"
               size="sm"
+              onClick={() => setCenterLearner(learner)}
+            >
+              <Building2 className="h-3.5 w-3.5 mr-1.5" />
+              Centre
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
               onClick={() => setReassignId(learner.id)}
             >
               <ArrowRightLeft className="h-3.5 w-3.5 mr-1.5" />
@@ -154,6 +164,17 @@ export function AdminLearnersTable({
           userName={manageParcoursLearner.name}
           parcoursList={parcoursList}
           currentParcoursIds={manageParcoursLearner.parcours.map((p) => p.id)}
+          onUpdated={onRefresh}
+        />
+      )}
+
+      {centerLearner && (
+        <AssignCenterDialog
+          open={!!centerLearner}
+          onOpenChange={(open) => !open && setCenterLearner(null)}
+          userId={centerLearner.id}
+          userName={centerLearner.name}
+          currentCenterIds={centerLearner.centers?.map((c) => c.id) || []}
           onUpdated={onRefresh}
         />
       )}

@@ -32,7 +32,7 @@ interface LeaderboardEntry {
   rank: number
   name: string
   email: string
-  center: Center | null
+  centers: Center[]
   xp: number
   level: number
   levelProgress: number
@@ -206,10 +206,14 @@ export default function TrainerLeaderboardPage() {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {entry.center ? (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
-                          {entry.center.name}
-                        </span>
+                      {entry.centers.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {entry.centers.map((c) => (
+                            <span key={c.id} className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                              {c.name}
+                            </span>
+                          ))}
+                        </div>
                       ) : (
                         <span className="text-xs text-muted-foreground">-</span>
                       )}

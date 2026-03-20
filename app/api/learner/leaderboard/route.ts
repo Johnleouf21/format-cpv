@@ -11,23 +11,26 @@ export async function GET() {
       throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
     }
 
-    // Récupérer le centre et le formateur de l'utilisateur connecté
+    // Récupérer les centres et le formateur de l'utilisateur connecté
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
       select: {
         trainerId: true,
-        centerId: true,
-        center: { select: { name: true } },
+        userCenters: { include: { center: { select: { id: true, name: true } } } },
       },
     })
 
-    // Priorité : centre > formateur > tous
+    const userCenterIds = currentUser?.userCenters.map((uc) => uc.center.id) || []
+
+    // Priorité : centres > formateur > tous
     let where: Record<string, unknown> = { role: 'LEARNER' }
     let groupLabel = 'tous les apprenants'
 
-    if (currentUser?.centerId) {
-      where = { role: 'LEARNER', centerId: currentUser.centerId }
-      groupLabel = currentUser.center?.name || 'votre centre'
+    if (userCenterIds.length > 0) {
+      // Apprenants qui partagent au moins un centre
+      where = { role: 'LEARNER', userCenters: { some: { centerId: { in: userCenterIds } } } }
+      const centerNames = currentUser!.userCenters.map((uc) => uc.center.name)
+      groupLabel = centerNames.join(', ')
     } else if (currentUser?.trainerId) {
       where = { role: 'LEARNER', trainerId: currentUser.trainerId }
       groupLabel = 'votre groupe'

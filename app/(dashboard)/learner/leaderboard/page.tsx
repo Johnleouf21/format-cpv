@@ -74,7 +74,7 @@ export default function LeaderboardPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Classement</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Gagnez de l&apos;XP en complétant des modules, réussissant des quiz et obtenant des badges
+          Classement entre apprenants de votre groupe
         </p>
       </div>
 

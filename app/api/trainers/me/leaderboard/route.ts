@@ -11,20 +11,14 @@ export async function GET() {
       throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
     }
 
-    // Récupérer le formateur de l'utilisateur connecté
-    const currentUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { trainerId: true },
-    })
+    if (session.user.role !== 'TRAINER' && session.user.role !== 'ADMIN') {
+      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    }
 
-    // Filtrer par même formateur si l'apprenant en a un
-    const where = currentUser?.trainerId
-      ? { role: 'LEARNER' as const, trainerId: currentUser.trainerId }
-      : { role: 'LEARNER' as const }
-
+    // Récupérer les apprenants du formateur
     const learners = await prisma.user.findMany({
-      where,
-      select: { id: true, name: true },
+      where: { role: 'LEARNER', trainerId: session.user.id },
+      select: { id: true, name: true, email: true },
     })
 
     const leaderboard = await Promise.all(
@@ -33,10 +27,16 @@ export async function GET() {
         return {
           id: l.id,
           name: l.name,
+          email: l.email,
           xp: xp.total,
           level: xp.level,
           levelProgress: xp.levelProgress,
-          isCurrentUser: l.id === session.user.id,
+          breakdown: {
+            modules: xp.modules,
+            quizzes: xp.quizzes,
+            badges: xp.badges,
+            parcours: xp.parcours,
+          },
         }
       })
     )

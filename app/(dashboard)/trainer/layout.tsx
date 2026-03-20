@@ -12,6 +12,7 @@ const navItems = [
   { href: '/trainer', label: 'Dashboard', icon: 'LayoutDashboard' },
   { href: '/trainer/parcours', label: 'Parcours', icon: 'Route' },
   { href: '/trainer/learners', label: 'Mes apprenants', icon: 'Users' },
+  { href: '/trainer/leaderboard', label: 'Classement', icon: 'Trophy' },
 ]
 
 export default async function TrainerLayout({

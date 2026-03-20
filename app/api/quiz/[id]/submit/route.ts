@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { submitQuiz, saveQuizResultWithProgress } from '@/lib/services/quiz.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const submitQuizSchema = z.object({
   answers: z.record(z.string(), z.array(z.string())),
@@ -44,6 +45,14 @@ export async function POST(
         { answers }
       )
     }
+
+    logActivity({
+      action: 'QUIZ_SUBMITTED',
+      details: `Quiz soumis — score ${result.score}%`,
+      userId: session.user.id,
+      targetId: quizId,
+      targetType: 'quiz',
+    })
 
     return NextResponse.json({
       success: true,

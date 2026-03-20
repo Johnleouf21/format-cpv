@@ -4,6 +4,7 @@ import { createBulkInvitations } from '@/lib/services/invitation.service'
 import { sendBulkInvitationEmails } from '@/lib/services/email.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const bulkInvitationSchema = z.object({
   emails: z.array(z.string().email('Email invalide')).min(1, 'Au moins un email requis'),
@@ -58,6 +59,13 @@ export async function POST(request: Request) {
     const failedEmails = emailResults
       ? emailResults.filter((r) => !r.success).map((r) => r.email)
       : []
+
+    logActivity({
+      action: 'INVITATIONS_SENT',
+      details: `${invitations.length} invitation(s) envoyée(s)`,
+      userId: session.user.id,
+      targetType: 'invitation',
+    })
 
     return NextResponse.json({
       success: true,

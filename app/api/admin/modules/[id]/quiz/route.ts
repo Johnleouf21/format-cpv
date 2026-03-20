@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { prisma } from '@/lib/db'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 // GET quiz for a module (admin view with correct answers)
 export async function GET(
@@ -104,6 +105,14 @@ export async function PUT(
       },
     })
 
+    logActivity({
+      action: 'QUIZ_UPDATED',
+      details: `Quiz du module mis à jour (${questions.length} questions)`,
+      userId: session.user.id,
+      targetId: moduleId,
+      targetType: 'module',
+    })
+
     return NextResponse.json(quiz)
   } catch (error) {
     return handleApiError(error)
@@ -123,6 +132,14 @@ export async function DELETE(
     const { id: moduleId } = await params
 
     await prisma.quiz.deleteMany({ where: { moduleId } })
+
+    logActivity({
+      action: 'QUIZ_DELETED',
+      details: `Quiz du module supprimé`,
+      userId: session.user.id,
+      targetId: moduleId,
+      targetType: 'module',
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {

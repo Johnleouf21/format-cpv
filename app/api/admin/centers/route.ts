@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const createCenterSchema = z.object({
   name: z.string().min(1, 'Le nom est requis'),
@@ -57,6 +58,14 @@ export async function POST(request: NextRequest) {
         region: data.region,
         parentId: data.parentId || null,
       },
+    })
+
+    logActivity({
+      action: 'CENTER_CREATED',
+      details: `Centre "${data.name}" créé`,
+      userId: session.user.id,
+      targetId: center.id,
+      targetType: 'center',
     })
 
     return NextResponse.json(center, { status: 201 })

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 interface RouteParams {
   params: Promise<{ id: string }>
@@ -50,6 +51,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const updated = await prisma.userCenter.findMany({
       where: { userId: id },
       include: { center: { select: { id: true, name: true } } },
+    })
+
+    logActivity({
+      action: 'CENTER_ASSIGNED',
+      details: `${centerIds.length} centre(s) assigné(s) à l'apprenant`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'user',
     })
 
     return NextResponse.json(updated.map((uc) => uc.center))

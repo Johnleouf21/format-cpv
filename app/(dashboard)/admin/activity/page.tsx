@@ -5,8 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   Activity,
   BookOpen,
+  Building2,
   GraduationCap,
+  HelpCircle,
   Loader2,
+  LogIn,
+  Mail,
   Route,
   Trash2,
   UserPlus,
@@ -42,6 +46,15 @@ const ACTION_CONFIG: Record<string, { icon: React.ElementType; color: string; la
   MODULE_CREATED: { icon: BookOpen, color: 'text-green-600 bg-green-100', label: 'Module créé' },
   MODULE_UPDATED: { icon: BookOpen, color: 'text-blue-600 bg-blue-100', label: 'Module modifié' },
   MODULE_DELETED: { icon: Trash2, color: 'text-red-600 bg-red-100', label: 'Module supprimé' },
+  QUIZ_UPDATED: { icon: HelpCircle, color: 'text-blue-600 bg-blue-100', label: 'Quiz mis à jour' },
+  QUIZ_DELETED: { icon: Trash2, color: 'text-red-600 bg-red-100', label: 'Quiz supprimé' },
+  QUIZ_SUBMITTED: { icon: HelpCircle, color: 'text-teal-600 bg-teal-100', label: 'Quiz soumis' },
+  CENTER_CREATED: { icon: Building2, color: 'text-green-600 bg-green-100', label: 'Centre créé' },
+  CENTER_UPDATED: { icon: Building2, color: 'text-blue-600 bg-blue-100', label: 'Centre modifié' },
+  CENTER_DELETED: { icon: Trash2, color: 'text-red-600 bg-red-100', label: 'Centre supprimé' },
+  CENTER_ASSIGNED: { icon: Building2, color: 'text-purple-600 bg-purple-100', label: 'Centre assigné' },
+  INVITATIONS_SENT: { icon: Mail, color: 'text-orange-600 bg-orange-100', label: 'Invitations envoyées' },
+  USER_LOGIN: { icon: LogIn, color: 'text-sky-600 bg-sky-100', label: 'Connexion' },
 }
 
 const DEFAULT_CONFIG = { icon: Activity, color: 'text-gray-600 bg-gray-100', label: 'Action' }

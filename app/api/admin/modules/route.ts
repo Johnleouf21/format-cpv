@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { getModules, createModule } from '@/lib/services/admin.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const createModuleSchema = z.object({
   title: z.string().min(1, 'Le titre est requis'),
@@ -50,6 +51,14 @@ export async function POST(request: NextRequest) {
     const data = createModuleSchema.parse(body)
 
     const module = await createModule(data)
+
+    logActivity({
+      action: 'MODULE_CREATED',
+      details: `Module "${data.title}" créé`,
+      userId: session.user.id,
+      targetId: module.id,
+      targetType: 'module',
+    })
 
     return NextResponse.json(module, { status: 201 })
   } catch (error) {

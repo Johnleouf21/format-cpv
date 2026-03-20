@@ -5,6 +5,7 @@ import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { sendContentUpdateEmailBulk } from '@/lib/services/email.service'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const updateModuleSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').optional(),
@@ -60,6 +61,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
     const module = await updateModule(id, data)
 
+    logActivity({
+      action: 'MODULE_UPDATED',
+      details: `Module "${module.title}" modifié`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'module',
+    })
+
     // Notify assigned learners (fire-and-forget)
     if (module.parcours) {
       const parcoursId = module.parcours.id
@@ -97,6 +106,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params
     await deleteModule(id)
+
+    logActivity({
+      action: 'MODULE_DELETED',
+      details: `Module supprimé`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'module',
+    })
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {

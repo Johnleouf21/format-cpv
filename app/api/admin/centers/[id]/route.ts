@@ -3,6 +3,7 @@ import { auth } from '@/lib/auth'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
+import { logActivity } from '@/lib/services/activity-log.service'
 
 const updateCenterSchema = z.object({
   name: z.string().min(1).optional(),
@@ -29,6 +30,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       data,
     })
 
+    logActivity({
+      action: 'CENTER_UPDATED',
+      details: `Centre "${center.name}" modifié`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'center',
+    })
+
     return NextResponse.json(center)
   } catch (error) {
     return handleApiError(error)
@@ -50,6 +59,14 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     })
 
     await prisma.center.delete({ where: { id } })
+
+    logActivity({
+      action: 'CENTER_DELETED',
+      details: `Centre supprimé`,
+      userId: session.user.id,
+      targetId: id,
+      targetType: 'center',
+    })
 
     return new NextResponse(null, { status: 204 })
   } catch (error) {

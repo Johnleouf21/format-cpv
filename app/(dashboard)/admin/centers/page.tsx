@@ -172,13 +172,33 @@ export default function CentersPage() {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label htmlFor="region">Région (optionnel)</Label>
-                  <Input
-                    id="region"
-                    value={region}
-                    onChange={(e) => setRegion(e.target.value)}
-                    placeholder="Ex: Île-de-France"
-                  />
+                  <Label>Région (optionnel)</Label>
+                  <Select value={region || 'none'} onValueChange={(v) => setRegion(v === 'none' ? '' : v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionner une région" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Aucune</SelectItem>
+                      <SelectItem value="Auvergne-Rhône-Alpes">Auvergne-Rhône-Alpes</SelectItem>
+                      <SelectItem value="Bourgogne-Franche-Comté">Bourgogne-Franche-Comté</SelectItem>
+                      <SelectItem value="Bretagne">Bretagne</SelectItem>
+                      <SelectItem value="Centre-Val de Loire">Centre-Val de Loire</SelectItem>
+                      <SelectItem value="Corse">Corse</SelectItem>
+                      <SelectItem value="Grand Est">Grand Est</SelectItem>
+                      <SelectItem value="Hauts-de-France">Hauts-de-France</SelectItem>
+                      <SelectItem value="Île-de-France">Île-de-France</SelectItem>
+                      <SelectItem value="Normandie">Normandie</SelectItem>
+                      <SelectItem value="Nouvelle-Aquitaine">Nouvelle-Aquitaine</SelectItem>
+                      <SelectItem value="Occitanie">Occitanie</SelectItem>
+                      <SelectItem value="Pays de la Loire">Pays de la Loire</SelectItem>
+                      <SelectItem value="Provence-Alpes-Côte d'Azur">Provence-Alpes-Côte d&apos;Azur</SelectItem>
+                      <SelectItem value="Guadeloupe">Guadeloupe</SelectItem>
+                      <SelectItem value="Guyane">Guyane</SelectItem>
+                      <SelectItem value="Martinique">Martinique</SelectItem>
+                      <SelectItem value="Mayotte">Mayotte</SelectItem>
+                      <SelectItem value="La Réunion">La Réunion</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="space-y-1.5">
                   <Label>Rattaché à (optionnel)</Label>

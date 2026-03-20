@@ -29,6 +29,9 @@ model User {
   trainer    User?    @relation("TrainerLearners", fields: [trainerId], references: [id])
   learners   User[]   @relation("TrainerLearners")
 
+  centerId   String?  @map("center_id")
+  center     Center?  @relation(fields: [centerId], references: [id])
+
   parcoursId String?   @map("parcours_id")
   parcours   Parcours? @relation("LegacyUserParcours", fields: [parcoursId], references: [id])
 
@@ -317,4 +320,15 @@ model Notification {
   @@index([userId, read])
   @@index([createdAt])
   @@map("notifications")
+}
+
+model Center {
+  id        String   @id @default(uuid())
+  name      String
+  region    String?
+  users     User[]
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("centers")
 }

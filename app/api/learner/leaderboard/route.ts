@@ -11,16 +11,27 @@ export async function GET() {
       throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
     }
 
-    // Récupérer le formateur de l'utilisateur connecté
+    // Récupérer le centre et le formateur de l'utilisateur connecté
     const currentUser = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { trainerId: true },
+      select: {
+        trainerId: true,
+        centerId: true,
+        center: { select: { name: true } },
+      },
     })
 
-    // Filtrer par même formateur si l'apprenant en a un
-    const where = currentUser?.trainerId
-      ? { role: 'LEARNER' as const, trainerId: currentUser.trainerId }
-      : { role: 'LEARNER' as const }
+    // Priorité : centre > formateur > tous
+    let where: Record<string, unknown> = { role: 'LEARNER' }
+    let groupLabel = 'tous les apprenants'
+
+    if (currentUser?.centerId) {
+      where = { role: 'LEARNER', centerId: currentUser.centerId }
+      groupLabel = currentUser.center?.name || 'votre centre'
+    } else if (currentUser?.trainerId) {
+      where = { role: 'LEARNER', trainerId: currentUser.trainerId }
+      groupLabel = 'votre groupe'
+    }
 
     const learners = await prisma.user.findMany({
       where,
@@ -48,7 +59,7 @@ export async function GET() {
       rank: index + 1,
     }))
 
-    return NextResponse.json(ranked)
+    return NextResponse.json({ entries: ranked, groupLabel })
   } catch (error) {
     return handleApiError(error)
   }

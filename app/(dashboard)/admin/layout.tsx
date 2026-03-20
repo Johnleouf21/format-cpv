@@ -13,6 +13,7 @@ const navItems = [
   { href: '/admin/modules', label: 'Modules', icon: 'BookOpen' },
   { href: '/admin/parcours', label: 'Parcours', icon: 'Route' },
   { href: '/admin/trainers', label: 'Formateurs', icon: 'GraduationCap' },
+  { href: '/admin/centers', label: 'Centres', icon: 'Building2' },
   { href: '/admin/learners', label: 'Apprenants', icon: 'Users' },
   { href: '/admin/whitelist', label: 'Accès', icon: 'ShieldCheck' },
   { href: '/admin/feedback', label: 'Avis', icon: 'MessageSquare' },

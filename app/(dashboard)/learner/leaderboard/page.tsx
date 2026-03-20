@@ -18,6 +18,7 @@ interface LeaderboardEntry {
 
 export default function LeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
+  const [groupLabel, setGroupLabel] = useState('')
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
@@ -25,7 +26,9 @@ export default function LeaderboardPage() {
       try {
         const res = await fetch('/api/learner/leaderboard')
         if (res.ok) {
-          setEntries(await res.json())
+          const data = await res.json()
+          setEntries(data.entries)
+          setGroupLabel(data.groupLabel)
         }
       } catch (error) {
         console.error('Error fetching leaderboard:', error)
@@ -74,7 +77,7 @@ export default function LeaderboardPage() {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Classement</h1>
         <p className="text-sm text-muted-foreground mt-0.5">
-          Classement entre apprenants de votre groupe
+          Classement entre apprenants de {groupLabel || 'votre groupe'}
         </p>
       </div>
 

@@ -1,10 +1,10 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { getUserXP } from '@/lib/services/xp.service'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await auth()
     if (!session?.user?.id) {
@@ -15,10 +15,21 @@ export async function GET() {
       throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
     }
 
-    // Récupérer les apprenants du formateur
+    const { searchParams } = new URL(request.url)
+    const centerId = searchParams.get('centerId') || undefined
+
+    // Filtrer les apprenants du formateur, optionnellement par centre
+    const where: Record<string, unknown> = {
+      role: 'LEARNER',
+      trainerId: session.user.id,
+    }
+    if (centerId) {
+      where.centerId = centerId
+    }
+
     const learners = await prisma.user.findMany({
-      where: { role: 'LEARNER', trainerId: session.user.id },
-      select: { id: true, name: true, email: true },
+      where,
+      select: { id: true, name: true, email: true, center: { select: { id: true, name: true } } },
     })
 
     const leaderboard = await Promise.all(
@@ -28,6 +39,7 @@ export async function GET() {
           id: l.id,
           name: l.name,
           email: l.email,
+          center: l.center,
           xp: xp.total,
           level: xp.level,
           levelProgress: xp.levelProgress,

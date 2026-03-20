@@ -11,14 +11,28 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Trophy, Medal, Award, Loader2, Zap, Star } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useCallback } from 'react'
+
+interface Center {
+  id: string
+  name: string
+}
 
 interface LeaderboardEntry {
   id: string
   rank: number
   name: string
   email: string
+  center: Center | null
   xp: number
   level: number
   levelProgress: number
@@ -32,23 +46,43 @@ interface LeaderboardEntry {
 
 export default function TrainerLeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
+  const [centers, setCenters] = useState<Center[]>([])
+  const [selectedCenter, setSelectedCenter] = useState('all')
   const [isLoading, setIsLoading] = useState(true)
 
+  const fetchLeaderboard = useCallback(async (centerId?: string) => {
+    try {
+      const params = centerId && centerId !== 'all' ? `?centerId=${centerId}` : ''
+      const res = await fetch(`/api/trainers/me/leaderboard${params}`)
+      if (res.ok) {
+        setEntries(await res.json())
+      }
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error)
+    }
+  }, [])
+
   useEffect(() => {
-    async function fetchLeaderboard() {
+    async function init() {
       try {
-        const res = await fetch('/api/trainers/me/leaderboard')
-        if (res.ok) {
-          setEntries(await res.json())
+        const [, centersRes] = await Promise.all([
+          fetchLeaderboard(),
+          fetch('/api/admin/centers'),
+        ])
+        if (centersRes.ok) {
+          setCenters(await centersRes.json())
         }
-      } catch (error) {
-        console.error('Error fetching leaderboard:', error)
       } finally {
         setIsLoading(false)
       }
     }
-    fetchLeaderboard()
-  }, [])
+    init()
+  }, [fetchLeaderboard])
+
+  function handleCenterChange(value: string) {
+    setSelectedCenter(value)
+    fetchLeaderboard(value)
+  }
 
   function getRankIcon(rank: number) {
     if (rank === 1) return <Trophy className="h-4 w-4 text-yellow-500" />
@@ -79,11 +113,26 @@ export default function TrainerLeaderboardPage() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Classement</h1>
-        <p className="text-sm text-muted-foreground mt-0.5">
-          {entries.length} apprenant{entries.length !== 1 ? 's' : ''} dans votre groupe
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Classement</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            {entries.length} apprenant{entries.length !== 1 ? 's' : ''}
+          </p>
+        </div>
+        {centers.length > 0 && (
+          <Select value={selectedCenter} onValueChange={handleCenterChange}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Filtrer par centre" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les centres</SelectItem>
+              {centers.map((c) => (
+                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
       </div>
 
       {/* Stats résumé */}
@@ -133,6 +182,7 @@ export default function TrainerLeaderboardPage() {
                 <TableRow>
                   <TableHead className="w-12">#</TableHead>
                   <TableHead>Apprenant</TableHead>
+                  <TableHead>Centre</TableHead>
                   <TableHead className="text-center">Niveau</TableHead>
                   <TableHead className="text-center">Modules</TableHead>
                   <TableHead className="text-center">Quiz</TableHead>
@@ -154,6 +204,15 @@ export default function TrainerLeaderboardPage() {
                         <p className="font-medium">{entry.name}</p>
                         <p className="text-xs text-muted-foreground">{entry.email}</p>
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      {entry.center ? (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                          {entry.center.name}
+                        </span>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">-</span>
+                      )}
                     </TableCell>
                     <TableCell className="text-center">
                       <div className="flex flex-col items-center gap-1">

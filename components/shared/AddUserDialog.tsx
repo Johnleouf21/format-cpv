@@ -36,9 +36,10 @@ interface AddUserDialogProps {
   parcoursList: Parcours[]
   onUserAdded: () => void
   trigger?: React.ReactNode
+  existingOnly?: boolean
 }
 
-export function AddUserDialog({ parcoursList, onUserAdded, trigger }: AddUserDialogProps) {
+export function AddUserDialog({ parcoursList, onUserAdded, trigger, existingOnly }: AddUserDialogProps) {
   const [open, setOpen] = useState(false)
   const [mode, setMode] = useState<'existing' | 'new'>('existing')
   // New user mode
@@ -252,18 +253,24 @@ export function AddUserDialog({ parcoursList, onUserAdded, trigger }: AddUserDia
         </DialogHeader>
 
         {/* Mode toggle */}
-        <Tabs value={mode} onValueChange={(v) => { setMode(v as 'existing' | 'new'); setError(null); setResult(null); if (v === 'existing') setSelectedUser(null) }}>
-          <TabsList className="w-full">
-            <TabsTrigger value="existing" className="flex-1 gap-2">
-              <Users className="h-4 w-4" />
-              Existant
-            </TabsTrigger>
-            <TabsTrigger value="new" className="flex-1 gap-2">
-              <UserPlus className="h-4 w-4" />
-              Nouvel email
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
+        {existingOnly ? (
+          <p className="text-xs text-muted-foreground bg-blue-50 text-blue-700 px-3 py-2 rounded-md">
+            Recherchez un utilisateur existant. Pour ajouter un nouvel email, contactez votre administrateur.
+          </p>
+        ) : (
+          <Tabs value={mode} onValueChange={(v) => { setMode(v as 'existing' | 'new'); setError(null); setResult(null); if (v === 'existing') setSelectedUser(null) }}>
+            <TabsList className="w-full">
+              <TabsTrigger value="existing" className="flex-1 gap-2">
+                <Users className="h-4 w-4" />
+                Existant
+              </TabsTrigger>
+              <TabsTrigger value="new" className="flex-1 gap-2">
+                <UserPlus className="h-4 w-4" />
+                Nouvel email
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        )}
 
         {error && (
           <Alert variant="destructive">

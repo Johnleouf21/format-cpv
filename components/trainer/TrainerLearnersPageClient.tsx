@@ -91,6 +91,7 @@ export function TrainerLearnersPageClient({
         <AddUserDialog
           parcoursList={parcoursList}
           onUserAdded={fetchUsers}
+          existingOnly
         />
       </div>
 

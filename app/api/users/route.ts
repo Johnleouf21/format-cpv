@@ -30,11 +30,21 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const data = addUserSchema.parse(body)
 
-    // TRAINER can only create LEARNER and auto-assigns as their learner
+    // TRAINER: can only assign existing users, not create new ones
     if (session.user.role === 'TRAINER') {
       if (data.role && data.role !== 'LEARNER') {
-        throw new ApiError(403, 'Un formateur ne peut créer que des apprenants', 'FORBIDDEN')
+        throw new ApiError(403, 'Un formateur ne peut gérer que des apprenants', 'FORBIDDEN')
       }
+
+      // Vérifier que l'utilisateur existe déjà
+      const { prisma } = await import('@/lib/db')
+      const existingUser = await prisma.user.findUnique({
+        where: { email: data.email },
+      })
+      if (!existingUser) {
+        throw new ApiError(403, 'Vous ne pouvez pas ajouter de nouveaux utilisateurs. Contactez votre administrateur.', 'TRAINER_CANNOT_CREATE')
+      }
+
       data.role = 'LEARNER'
       data.trainerId = session.user.id
     }

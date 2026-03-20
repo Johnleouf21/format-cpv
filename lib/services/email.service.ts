@@ -7,6 +7,7 @@ import {
   parcoursAssignmentTemplate,
   contentUpdateTemplate,
   contactTemplate,
+  reminderTemplate,
 } from './email-templates'
 
 const FROM_EMAIL = process.env.EMAIL_FROM || 'FormaCPV <onboarding@resend.dev>'
@@ -291,5 +292,40 @@ export async function sendContentUpdateEmailBulk(
   for (const to of recipients) {
     await sendContentUpdateEmail({ ...params, to })
     await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+}
+
+interface SendReminderEmailParams {
+  to: string
+  learnerName: string
+  daysSinceLastActivity: number
+  completedModules: number
+  totalModules: number
+  parcoursTitle: string
+}
+
+export async function sendReminderEmail(params: SendReminderEmailParams): Promise<EmailResult> {
+  const resend = getResendClient()
+  if (!resend) return { success: false, error: 'Email service not configured' }
+
+  const { html, text } = reminderTemplate({
+    learnerName: params.learnerName,
+    daysSinceLastActivity: params.daysSinceLastActivity,
+    completedModules: params.completedModules,
+    totalModules: params.totalModules,
+    parcoursTitle: params.parcoursTitle,
+  })
+
+  try {
+    await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.to,
+      subject: `Vos formations vous attendent sur FormaCPV !`,
+      html,
+      text,
+    })
+    return { success: true }
+  } catch (error) {
+    return { success: false, error: String(error) }
   }
 }

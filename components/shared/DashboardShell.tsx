@@ -21,6 +21,7 @@ import {
   Activity,
 } from 'lucide-react'
 import { ChatBot } from '@/components/shared/ChatBot'
+import { NotificationBell } from '@/components/shared/NotificationBell'
 
 interface NavItem {
   href: string
@@ -187,8 +188,11 @@ export function DashboardShell({
                   FormaCPV
                 </Link>
               </div>
-              <div className="hidden md:block" />
-              <div className="flex items-center gap-3 md:hidden">
+              <div className="hidden md:flex items-center gap-2">
+                <NotificationBell />
+              </div>
+              <div className="flex items-center gap-2 md:hidden">
+                <NotificationBell />
                 <UserMenu
                   userName={userName}
                   userEmail={userEmail}
@@ -235,7 +239,8 @@ export function DashboardShell({
               ))}
             </nav>
           </div>
-          <div className="flex items-center gap-3 shrink-0">
+          <div className="flex items-center gap-2 shrink-0">
+            <NotificationBell />
             <SpaceSwitcher currentSpace={currentSpace} userRole={userRole} />
             <UserMenu
               userName={userName}

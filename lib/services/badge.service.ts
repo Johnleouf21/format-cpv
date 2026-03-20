@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/db'
 import { BadgeType } from '@prisma/client'
+import { createNotification } from './notification.service'
 
 export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> {
   const [completedModules, quizResults, userParcoursAssignments, user, existingBadges] = await Promise.all([
@@ -79,6 +80,16 @@ export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> 
         // Unique constraint violation = already earned, skip
       }
     }
+  }
+
+  // Notifications in-app pour les nouveaux badges
+  for (const badge of newBadges) {
+    createNotification({
+      userId,
+      title: 'Nouveau badge obtenu !',
+      message: `Félicitations, vous avez obtenu le badge "${badge.replace(/_/g, ' ').toLowerCase()}" !`,
+      link: '/learner',
+    })
   }
 
   return newBadges

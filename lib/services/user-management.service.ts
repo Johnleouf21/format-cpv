@@ -181,6 +181,15 @@ export async function assignParcours(data: {
     })
   }
 
+  // Notification in-app
+  const { createNotification } = await import('./notification.service')
+  createNotification({
+    userId: data.userId,
+    title: 'Nouveau parcours assigné',
+    message: `Le parcours "${parcours.title}" vous a été assigné.`,
+    link: '/learner',
+  })
+
   return assignment
 }
 

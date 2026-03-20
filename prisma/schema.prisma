@@ -40,6 +40,7 @@ model User {
   earnedBadges            EarnedBadge[]
   feedbacks               Feedback[]
   activityLogs            ActivityLog[]
+  notifications           Notification[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -298,4 +299,21 @@ model ActivityLog {
   @@index([createdAt])
   @@index([userId])
   @@map("activity_logs")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String   @db.Text
+  link      String?                         // lien cliquable (ex: /learner/modules/xxx)
+  read      Boolean  @default(false)
+
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([userId, read])
+  @@index([createdAt])
+  @@map("notifications")
 }

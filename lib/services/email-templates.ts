@@ -165,3 +165,39 @@ export function contactTemplate(p: {
 
   return { html, text }
 }
+
+export function reminderTemplate(p: {
+  learnerName: string
+  daysSinceLastActivity: number
+  completedModules: number
+  totalModules: number
+  parcoursTitle: string
+}): { html: string; text: string } {
+  const progressPercent = p.totalModules > 0 ? Math.round((p.completedModules / p.totalModules) * 100) : 0
+  const loginUrl = `${APP_URL}/learner`
+
+  const html = layout(`
+    <h2 style="margin-top: 0; color: #1F2937;">Vos formations vous attendent !</h2>
+    <p>Bonjour <strong>${p.learnerName}</strong>,</p>
+    <p>Cela fait <strong>${p.daysSinceLastActivity} jour${p.daysSinceLastActivity > 1 ? 's' : ''}</strong> que vous ne vous êtes pas connecté à FormaCPV.</p>
+    <div style="background: white; border-radius: 6px; padding: 15px; margin: 20px 0;">
+      <p style="margin: 0 0 5px 0; font-weight: bold;">${p.parcoursTitle}</p>
+      <p style="margin: 0; color: #6B7280;">
+        ${p.completedModules}/${p.totalModules} modules complétés (${progressPercent}%)
+      </p>
+      <div style="background: #E5E7EB; border-radius: 999px; height: 8px; margin-top: 10px;">
+        <div style="background: #2563EB; border-radius: 999px; height: 8px; width: ${progressPercent}%;"></div>
+      </div>
+    </div>
+    <p>Continuez votre progression et terminez votre parcours !</p>
+    <div style="text-align: center; margin: 25px 0;">
+      <a href="${loginUrl}" style="display: inline-block; padding: 12px 30px; background: #2563EB; color: white; text-decoration: none; border-radius: 6px; font-weight: bold;">
+        Reprendre ma formation
+      </a>
+    </div>
+  `, unsubscribeFooter())
+
+  const text = `Bonjour ${p.learnerName},\n\nCela fait ${p.daysSinceLastActivity} jours que vous ne vous êtes pas connecté à FormaCPV.\n\n${p.parcoursTitle} : ${p.completedModules}/${p.totalModules} modules (${progressPercent}%)\n\nReprenez votre formation : ${loginUrl}`
+
+  return { html, text }
+}

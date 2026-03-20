@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { getModules, createModule } from '@/lib/services/admin.service'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 import { z } from 'zod'
 import { logActivity } from '@/lib/services/activity-log.service'
 
@@ -16,14 +16,7 @@ const createModuleSchema = z.object({
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    await requireAuth('ADMIN')
 
     const { searchParams } = new URL(request.url)
     const parcoursId = searchParams.get('parcoursId') || undefined
@@ -38,14 +31,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN')
 
     const body = await request.json()
     const data = createModuleSchema.parse(body)

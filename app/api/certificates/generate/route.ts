@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { renderToBuffer } from '@react-pdf/renderer'
 import { getCertificateData, canGenerateCertificate } from '@/lib/services/certificate.service'
 import { CertificateTemplate } from '@/components/pdf/CertificateTemplate'
@@ -7,13 +7,7 @@ import { handleApiError, ApiError } from '@/lib/errors/api-error'
 
 export async function GET(request: Request) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
-      )
-    }
+    const session = await requireAuth()
 
     const { searchParams } = new URL(request.url)
     const parcoursId = searchParams.get('parcoursId') || undefined

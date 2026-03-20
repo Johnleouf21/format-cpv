@@ -1,14 +1,11 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { getAllFeedback, getFeedbackStats } from '@/lib/services/feedback.service'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user || session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès non autorisé', 'FORBIDDEN')
-    }
+    await requireAuth('ADMIN')
 
     const [feedbacks, stats] = await Promise.all([
       getAllFeedback(),

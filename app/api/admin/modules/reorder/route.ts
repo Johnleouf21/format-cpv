@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { reorderModules } from '@/lib/services/admin.service'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 import { z } from 'zod'
 
 const reorderSchema = z.object({
@@ -16,14 +16,7 @@ const reorderSchema = z.object({
 
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    await requireAuth('ADMIN')
 
     const body = await request.json()
     const { parcoursId, moduleOrders } = reorderSchema.parse(body)

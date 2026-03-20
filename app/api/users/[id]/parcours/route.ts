@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { assignParcours, unassignParcours } from '@/lib/services/user-management.service'
 import { assignParcoursSchema, unassignParcoursSchema } from '@/lib/validations/user-management.schema'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
@@ -11,9 +11,7 @@ interface RouteParams {
 
 export async function POST(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role === 'LEARNER') throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id: userId } = await params
     const body = await request.json()
@@ -42,9 +40,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role === 'LEARNER') throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id: userId } = await params
     const body = await request.json()

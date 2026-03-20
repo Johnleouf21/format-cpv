@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { getUserNotifications, getUnreadCount, markAllAsRead } from '@/lib/services/notification.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
+    const session = await requireAuth()
 
     const [notifications, unreadCount] = await Promise.all([
       getUserNotifications(session.user.id),
@@ -24,10 +21,7 @@ export async function GET() {
 // Marquer toutes comme lues
 export async function PATCH(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
+    const session = await requireAuth()
 
     const body = await request.json().catch(() => ({}))
 

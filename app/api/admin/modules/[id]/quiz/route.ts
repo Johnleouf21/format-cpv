@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { prisma } from '@/lib/db'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { logActivity } from '@/lib/services/activity-log.service'
@@ -10,9 +10,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role !== 'ADMIN') throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
+    await requireAuth('ADMIN')
 
     const { id: moduleId } = await params
 
@@ -42,9 +40,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role !== 'ADMIN') throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN')
 
     const { id: moduleId } = await params
     const body = await request.json()
@@ -125,9 +121,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role !== 'ADMIN') throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN')
 
     const { id: moduleId } = await params
 

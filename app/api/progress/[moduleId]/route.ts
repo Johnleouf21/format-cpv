@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { markModuleAsCompleted } from '@/lib/services/progress.service'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 import { logActivity } from '@/lib/services/activity-log.service'
 
 interface RouteParams {
@@ -10,11 +10,7 @@ interface RouteParams {
 
 export async function POST(_request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-
-    if (!session?.user) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
+    const session = await requireAuth()
 
     const { moduleId } = await params
     const body = await _request.json().catch(() => ({}))

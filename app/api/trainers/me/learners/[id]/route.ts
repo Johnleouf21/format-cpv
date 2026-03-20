@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { getLearnerDetails } from '@/lib/services/trainer.service'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 import { UserRole } from '@prisma/client'
 
 export async function GET(
@@ -9,14 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'TRAINER' && session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
 

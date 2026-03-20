@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { removeUser, updateUserRole } from '@/lib/services/user-management.service'
 import { updateUserRoleSchema } from '@/lib/validations/user-management.schema'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
@@ -12,9 +12,7 @@ interface RouteParams {
 
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role === 'LEARNER') throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
 
@@ -40,9 +38,7 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role === 'LEARNER') throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
     const body = await request.json()

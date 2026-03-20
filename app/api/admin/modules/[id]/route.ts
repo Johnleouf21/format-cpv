@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { getModuleById, updateModule, deleteModule } from '@/lib/services/admin.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
@@ -22,14 +22,7 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    await requireAuth('ADMIN')
 
     const { id } = await params
     const module = await getModuleById(id)
@@ -46,14 +39,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN')
 
     const { id } = await params
     const body = await request.json()
@@ -95,14 +81,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN')
 
     const { id } = await params
     await deleteModule(id)

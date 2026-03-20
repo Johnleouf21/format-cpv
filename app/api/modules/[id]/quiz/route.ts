@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { getModuleQuiz, getUserQuizResult } from '@/lib/services/quiz.service'
 import { handleApiError } from '@/lib/errors/api-error'
 
@@ -8,13 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Non authentifié' },
-        { status: 401 }
-      )
-    }
+    const session = await requireAuth()
 
     const { id: moduleId } = await params
 

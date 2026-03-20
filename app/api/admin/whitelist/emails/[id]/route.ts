@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { updateAllowedEmailRole, removeAllowedEmail } from '@/lib/services/whitelist.service'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 import { updateEmailRoleSchema } from '@/lib/validations/whitelist.schema'
 import { UserRole } from '@prisma/client'
 import { prisma } from '@/lib/db'
@@ -11,14 +11,7 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    await requireAuth('ADMIN')
 
     const { id } = await params
     const body = await request.json()
@@ -43,14 +36,7 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    await requireAuth('ADMIN')
 
     const { id } = await params
     await removeAllowedEmail(id)

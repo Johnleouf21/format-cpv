@@ -1,21 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { createInvitation, getTrainerInvitations } from '@/lib/services/invitation.service'
 import { sendInvitationEmail } from '@/lib/services/email.service'
 import { createInvitationSchema } from '@/lib/validations/invitation.schema'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 
 export async function GET() {
   try {
-    const session = await auth()
-
-    if (!session?.user) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'TRAINER' && session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const invitations = await getTrainerInvitations(session.user.id)
     return NextResponse.json(invitations)
@@ -26,15 +18,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-
-    if (!session?.user) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'TRAINER' && session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const body = await request.json()
     const data = createInvitationSchema.parse(body)

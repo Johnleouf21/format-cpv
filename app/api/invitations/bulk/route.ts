@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { createBulkInvitations } from '@/lib/services/invitation.service'
 import { sendBulkInvitationEmails } from '@/lib/services/email.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
@@ -14,14 +14,7 @@ const bulkInvitationSchema = z.object({
 
 export async function POST(request: Request) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'TRAINER' && session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const body = await request.json()
     const validation = bulkInvitationSchema.safeParse(body)

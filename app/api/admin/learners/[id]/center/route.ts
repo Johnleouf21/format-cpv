@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { requireAuth } from '@/lib/auth/require-auth'
+import { handleApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { logActivity } from '@/lib/services/activity-log.service'
 
@@ -10,8 +10,7 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
+    await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
     const userCenters = await prisma.userCenter.findMany({
@@ -28,11 +27,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 // Remplace tous les centres d'un apprenant
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'TRAINER') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
     const { centerIds } = await request.json() as { centerIds: string[] }

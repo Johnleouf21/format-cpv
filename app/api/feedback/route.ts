@@ -1,14 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { submitFeedback, hasUserGivenFeedback } from '@/lib/services/feedback.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
+    const session = await requireAuth()
 
     const body = await request.json()
     const { rating, comment, anonymous } = body
@@ -31,10 +28,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
+    const session = await requireAuth()
 
     const hasGiven = await hasUserGivenFeedback(session.user.id)
     return NextResponse.json({ hasGivenFeedback: hasGiven })

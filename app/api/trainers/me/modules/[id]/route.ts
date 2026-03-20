@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { getModuleById } from '@/lib/services/admin.service'
 
@@ -9,14 +9,7 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'TRAINER' && session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux formateurs', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
     const module = await getModuleById(id)

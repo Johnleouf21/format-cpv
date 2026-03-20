@@ -1,15 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { prisma } from '@/lib/db'
 import { sendContactEmail } from '@/lib/services/email.service'
 
 // GET: return contact info (trainer + admins)
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-    }
+    const session = await requireAuth()
 
     const user = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -57,10 +54,7 @@ export async function GET() {
 // POST: send a contact message
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Non autorisé' }, { status: 401 })
-    }
+    const session = await requireAuth()
 
     const { recipientId, subject, message } = await request.json()
 

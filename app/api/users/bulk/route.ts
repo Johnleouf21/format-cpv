@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { addUsersBulk } from '@/lib/services/user-management.service'
 import { addUsersBulkSchema } from '@/lib/validations/user-management.schema'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-
-    if (session.user.role === 'LEARNER') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const body = await request.json()
     const data = addUsersBulkSchema.parse(body)

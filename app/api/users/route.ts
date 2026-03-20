@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { addUser, getUsers } from '@/lib/services/user-management.service'
 import { addUserSchema } from '@/lib/validations/user-management.schema'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { searchParams } = request.nextUrl
     const parcoursId = searchParams.get('parcoursId') || undefined
@@ -16,10 +15,6 @@ export async function GET(request: NextRequest) {
 
     // TRAINER can only see their own learners
     const trainerId = session.user.role === 'TRAINER' ? session.user.id : searchParams.get('trainerId') || undefined
-
-    if (session.user.role === 'LEARNER') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
 
     const users = await getUsers({ trainerId, parcoursId, role, search })
     return NextResponse.json(users)
@@ -30,12 +25,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-
-    if (session.user.role === 'LEARNER') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const body = await request.json()
     const data = addUserSchema.parse(body)

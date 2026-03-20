@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { prisma } from '@/lib/db'
 import { assignParcours } from '@/lib/services/user-management.service'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
@@ -11,15 +11,7 @@ type RouteParams = {
 
 export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-
-    if (!session?.user) {
-      throw new ApiError(401, 'Non autorisé', 'UNAUTHORIZED')
-    }
-
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'TRAINER') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
     const { parcoursId } = await request.json()

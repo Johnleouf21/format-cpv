@@ -1,15 +1,11 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
+import { requireAuth } from '@/lib/auth/require-auth'
 import { getUserProgress } from '@/lib/services/progress.service'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { handleApiError } from '@/lib/errors/api-error'
 
 export async function GET() {
   try {
-    const session = await auth()
-
-    if (!session?.user) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
+    const session = await requireAuth()
 
     const result = await getUserProgress(session.user.id)
 

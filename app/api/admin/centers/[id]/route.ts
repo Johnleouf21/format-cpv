@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { requireAuth } from '@/lib/auth/require-auth'
+import { handleApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { logActivity } from '@/lib/services/activity-log.service'
@@ -17,9 +17,7 @@ interface RouteParams {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role !== 'ADMIN') throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN')
 
     const { id } = await params
     const body = await request.json()
@@ -46,9 +44,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    if (session.user.role !== 'ADMIN') throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
+    const session = await requireAuth('ADMIN')
 
     const { id } = await params
 

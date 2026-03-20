@@ -1,15 +1,12 @@
 import { NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { requireAuth } from '@/lib/auth/require-auth'
+import { handleApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { getBulkUserXP } from '@/lib/services/xp.service'
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
+    const session = await requireAuth()
 
     // Récupérer les centres et le formateur de l'utilisateur connecté
     const currentUser = await prisma.user.findUnique({

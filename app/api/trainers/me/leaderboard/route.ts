@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
-import { getUserXP } from '@/lib/services/xp.service'
+import { getBulkUserXP } from '@/lib/services/xp.service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -37,26 +37,26 @@ export async function GET(request: NextRequest) {
       },
     })
 
-    const leaderboard = await Promise.all(
-      learners.map(async (l) => {
-        const xp = await getUserXP(l.id)
-        return {
-          id: l.id,
-          name: l.name,
-          email: l.email,
-          centers: l.userCenters.map((uc) => uc.center),
-          xp: xp.total,
-          level: xp.level,
-          levelProgress: xp.levelProgress,
-          breakdown: {
-            modules: xp.modules,
-            quizzes: xp.quizzes,
-            badges: xp.badges,
-            parcours: xp.parcours,
-          },
-        }
-      })
-    )
+    const xpMap = await getBulkUserXP(learners.map((l) => l.id))
+
+    const leaderboard = learners.map((l) => {
+      const xp = xpMap.get(l.id)
+      return {
+        id: l.id,
+        name: l.name,
+        email: l.email,
+        centers: l.userCenters.map((uc) => uc.center),
+        xp: xp?.total || 0,
+        level: xp?.level || 1,
+        levelProgress: xp?.levelProgress || 0,
+        breakdown: {
+          modules: xp?.modules || 0,
+          quizzes: xp?.quizzes || 0,
+          badges: xp?.badges || 0,
+          parcours: xp?.parcours || 0,
+        },
+      }
+    })
 
     leaderboard.sort((a, b) => b.xp - a.xp)
 

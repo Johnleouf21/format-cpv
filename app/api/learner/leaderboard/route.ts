@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
-import { getUserXP } from '@/lib/services/xp.service'
+import { getBulkUserXP } from '@/lib/services/xp.service'
 
 export async function GET() {
   try {
@@ -41,19 +41,19 @@ export async function GET() {
       select: { id: true, name: true },
     })
 
-    const leaderboard = await Promise.all(
-      learners.map(async (l) => {
-        const xp = await getUserXP(l.id)
-        return {
-          id: l.id,
-          name: l.name,
-          xp: xp.total,
-          level: xp.level,
-          levelProgress: xp.levelProgress,
-          isCurrentUser: l.id === session.user.id,
-        }
-      })
-    )
+    const xpMap = await getBulkUserXP(learners.map((l) => l.id))
+
+    const leaderboard = learners.map((l) => {
+      const xp = xpMap.get(l.id)
+      return {
+        id: l.id,
+        name: l.name,
+        xp: xp?.total || 0,
+        level: xp?.level || 1,
+        levelProgress: xp?.levelProgress || 0,
+        isCurrentUser: l.id === session.user.id,
+      }
+    })
 
     leaderboard.sort((a, b) => b.xp - a.xp)
 

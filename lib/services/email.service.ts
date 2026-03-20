@@ -40,6 +40,41 @@ function getResendClient(): Resend | null {
 
 type EmailResult = { success: boolean; error?: string }
 
+/**
+ * Helper pour envoyer un email via Resend avec gestion d'erreur centralisée.
+ */
+async function sendEmail(config: {
+  to: string
+  subject: string
+  html: string
+  text: string
+  replyTo?: string
+}): Promise<EmailResult> {
+  const resend = getResendClient()
+  if (!resend) {
+    return { success: true }
+  }
+
+  try {
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: [config.to],
+      subject: config.subject,
+      html: config.html,
+      text: config.text,
+      ...(config.replyTo && { replyTo: [config.replyTo] }),
+    })
+    if (error) {
+      if (process.env.NODE_ENV !== 'production') console.error('Email send error:', error)
+      return { success: false, error: error.message }
+    }
+    return { success: true }
+  } catch (error) {
+    if (process.env.NODE_ENV !== 'production') console.error('Email send error:', error)
+    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
+  }
+}
+
 // ─── Send helpers ───────────────────────────────────────────────────────────
 
 export interface SendInvitationEmailParams {
@@ -51,12 +86,6 @@ export interface SendInvitationEmailParams {
 }
 
 export async function sendInvitationEmail(params: SendInvitationEmailParams): Promise<EmailResult> {
-  const resend = getResendClient()
-  if (!resend) {
-    console.log('Email not sent (Resend not configured):', params.to)
-    return { success: true }
-  }
-
   const { to, inviteToken, parcoursTitle, trainerName, expiresAt } = params
   const inviteLink = `${APP_URL}/invite/${inviteToken}`
   const expirationDate = new Intl.DateTimeFormat('fr-FR', {
@@ -65,21 +94,7 @@ export async function sendInvitationEmail(params: SendInvitationEmailParams): Pr
 
   const { html, text } = invitationTemplate({ inviteLink, parcoursTitle, trainerName, expirationDate })
 
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM_EMAIL, to: [to],
-      subject: `Invitation à la formation: ${parcoursTitle}`,
-      html, text,
-    })
-    if (error) {
-      console.error('Error sending email:', error)
-      return { success: false, error: error.message }
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('Error sending invitation email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
+  return sendEmail({ to, subject: `Invitation à la formation: ${parcoursTitle}`, html, text })
 }
 
 export interface SendWelcomeEmailParams {
@@ -91,59 +106,19 @@ export interface SendWelcomeEmailParams {
 export async function sendWelcomeEmail(params: SendWelcomeEmailParams): Promise<EmailResult> {
   if (!(await shouldSendEmail(params.to, 'emailWelcome'))) return { success: true }
 
-  const resend = getResendClient()
-  if (!resend) {
-    console.log('Email not sent (Resend not configured):', params.to)
-    return { success: true }
-  }
-
   const loginLink = `${APP_URL}/login`
   const { html, text } = welcomeTemplate({ parcoursTitles: params.parcoursTitles, trainerName: params.trainerName, loginLink })
 
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM_EMAIL, to: [params.to],
-      subject: 'Bienvenue sur FormaCPV - Vos formations vous attendent',
-      html, text,
-    })
-    if (error) {
-      console.error('Error sending welcome email:', error)
-      return { success: false, error: error.message }
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('Error sending welcome email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
+  return sendEmail({ to: params.to, subject: 'Bienvenue sur FormaCPV - Vos formations vous attendent', html, text })
 }
 
 export async function sendTrainerWelcomeEmail(params: { to: string }): Promise<EmailResult> {
   if (!(await shouldSendEmail(params.to, 'emailWelcome'))) return { success: true }
 
-  const resend = getResendClient()
-  if (!resend) {
-    console.log('Email not sent (Resend not configured):', params.to)
-    return { success: true }
-  }
-
   const loginLink = `${APP_URL}/login`
   const { html, text } = trainerWelcomeTemplate({ loginLink })
 
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM_EMAIL, to: [params.to],
-      subject: 'Bienvenue sur FormaCPV - Votre espace formateur est prêt',
-      html, text,
-    })
-    if (error) {
-      console.error('Error sending trainer welcome email:', error)
-      return { success: false, error: error.message }
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('Error sending trainer welcome email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
+  return sendEmail({ to: params.to, subject: 'Bienvenue sur FormaCPV - Votre espace formateur est prêt', html, text })
 }
 
 export interface SendParcoursAssignmentEmailParams {
@@ -155,12 +130,6 @@ export interface SendParcoursAssignmentEmailParams {
 export async function sendParcoursAssignmentEmail(params: SendParcoursAssignmentEmailParams): Promise<EmailResult> {
   if (!(await shouldSendEmail(params.to, 'emailAssignment'))) return { success: true }
 
-  const resend = getResendClient()
-  if (!resend) {
-    console.log('Email not sent (Resend not configured):', params.to)
-    return { success: true }
-  }
-
   const { to, parcoursTitles, trainerName } = params
   const loginLink = `${APP_URL}/login`
   const subject = parcoursTitles.length === 1
@@ -169,19 +138,7 @@ export async function sendParcoursAssignmentEmail(params: SendParcoursAssignment
 
   const { html, text } = parcoursAssignmentTemplate({ parcoursTitles, trainerName, loginLink })
 
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM_EMAIL, to: [to], subject, html, text,
-    })
-    if (error) {
-      console.error('Error sending parcours assignment email:', error)
-      return { success: false, error: error.message }
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('Error sending parcours assignment email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
+  return sendEmail({ to, subject, html, text })
 }
 
 export interface BulkEmailResult {
@@ -210,12 +167,6 @@ export interface SendContentUpdateEmailParams {
 export async function sendContentUpdateEmail(params: SendContentUpdateEmailParams): Promise<EmailResult> {
   if (!(await shouldSendEmail(params.to, 'emailContentUpdate'))) return { success: true }
 
-  const resend = getResendClient()
-  if (!resend) {
-    console.log('Email not sent (Resend not configured):', params.to)
-    return { success: true }
-  }
-
   const { to, contentType, contentTitle, parcoursTitle } = params
   const loginLink = `${APP_URL}/login`
   const isModule = contentType === 'module'
@@ -231,19 +182,7 @@ export async function sendContentUpdateEmail(params: SendContentUpdateEmailParam
 
   const { html, text } = contentUpdateTemplate({ description, loginLink })
 
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM_EMAIL, to: [to], subject, html, text,
-    })
-    if (error) {
-      console.error('Error sending content update email:', error)
-      return { success: false, error: error.message }
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('Error sending content update email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
+  return sendEmail({ to, subject, html, text })
 }
 
 export interface SendContactEmailParams {
@@ -256,33 +195,13 @@ export interface SendContactEmailParams {
 }
 
 export async function sendContactEmail(params: SendContactEmailParams): Promise<EmailResult> {
-  const resend = getResendClient()
-  if (!resend) {
-    console.log('Email not sent (Resend not configured):', params.to)
-    return { success: true }
-  }
-
   const { to, fromName, fromEmail, fromRole, subject, message } = params
   const roleLabel = fromRole === 'ADMIN' ? 'Administrateur' : fromRole === 'TRAINER' ? 'Formateur' : 'Apprenant'
   const escapedMessage = message.replace(/\n/g, '<br>')
 
   const { html, text } = contactTemplate({ subject, fromName, fromEmail, roleLabel, escapedMessage })
 
-  try {
-    const { error } = await resend.emails.send({
-      from: FROM_EMAIL, to: [to], replyTo: fromEmail,
-      subject: `[FormaCPV] ${subject}`,
-      html, text,
-    })
-    if (error) {
-      console.error('Error sending contact email:', error)
-      return { success: false, error: error.message }
-    }
-    return { success: true }
-  } catch (error) {
-    console.error('Error sending contact email:', error)
-    return { success: false, error: error instanceof Error ? error.message : 'Unknown error' }
-  }
+  return sendEmail({ to, subject: `[FormaCPV] ${subject}`, html, text, replyTo: fromEmail })
 }
 
 export async function sendContentUpdateEmailBulk(
@@ -305,9 +224,6 @@ interface SendReminderEmailParams {
 }
 
 export async function sendReminderEmail(params: SendReminderEmailParams): Promise<EmailResult> {
-  const resend = getResendClient()
-  if (!resend) return { success: false, error: 'Email service not configured' }
-
   const { html, text } = reminderTemplate({
     learnerName: params.learnerName,
     daysSinceLastActivity: params.daysSinceLastActivity,
@@ -316,16 +232,5 @@ export async function sendReminderEmail(params: SendReminderEmailParams): Promis
     parcoursTitle: params.parcoursTitle,
   })
 
-  try {
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to: params.to,
-      subject: `Vos formations vous attendent sur FormaCPV !`,
-      html,
-      text,
-    })
-    return { success: true }
-  } catch (error) {
-    return { success: false, error: String(error) }
-  }
+  return sendEmail({ to: params.to, subject: 'Vos formations vous attendent sur FormaCPV !', html, text })
 }

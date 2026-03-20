@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
-import { handleApiError, ApiError } from '@/lib/errors/api-error'
+import { requireAuth } from '@/lib/auth/require-auth'
+import { handleApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
 import { z } from 'zod'
 import { logActivity } from '@/lib/services/activity-log.service'
@@ -13,13 +13,7 @@ const createCenterSchema = z.object({
 
 export async function GET() {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-    if (session.user.role !== 'ADMIN' && session.user.role !== 'TRAINER') {
-      throw new ApiError(403, 'Accès refusé', 'FORBIDDEN')
-    }
+    await requireAuth('ADMIN', 'TRAINER')
 
     const centers = await prisma.center.findMany({
       include: {
@@ -41,13 +35,7 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await auth()
-    if (!session?.user?.id) {
-      throw new ApiError(401, 'Non authentifié', 'UNAUTHORIZED')
-    }
-    if (session.user.role !== 'ADMIN') {
-      throw new ApiError(403, 'Accès réservé aux administrateurs', 'FORBIDDEN')
-    }
+    const session = await requireAuth('ADMIN')
 
     const body = await request.json()
     const data = createCenterSchema.parse(body)

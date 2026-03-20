@@ -18,75 +18,124 @@ export interface XPBreakdown {
 }
 
 /**
- * Calcule les XP d'un utilisateur à la volée (pas stocké en base).
+ * Calcule les XP d'un utilisateur unique (pour l'API /learner/xp).
  */
 export async function getUserXP(userId: string): Promise<XPBreakdown> {
-  const [completedModules, quizResults, badges, userParcours] = await Promise.all([
-    prisma.progress.count({ where: { userId } }),
-    prisma.quizResult.findMany({
-      where: { progress: { userId } },
-      select: { score: true },
-    }),
-    prisma.earnedBadge.count({ where: { userId } }),
-    prisma.userParcours.findMany({
-      where: { userId },
-      include: {
-        parcours: {
-          select: { modules: { select: { id: true } } },
-        },
-      },
-    }),
-  ])
+  const result = await getBulkUserXP([userId])
+  return result.get(userId) || emptyXP()
+}
 
-  // XP modules
-  const modulesXP = completedModules * XP_MODULE_COMPLETED
+/**
+ * Calcule les XP de plusieurs utilisateurs en batch (2-3 requêtes au lieu de N*4).
+ */
+export async function getBulkUserXP(userIds: string[]): Promise<Map<string, XPBreakdown>> {
+  if (userIds.length === 0) return new Map()
 
-  // XP quizzes
-  let quizzesXP = 0
-  for (const qr of quizResults) {
-    if (qr.score >= 80) quizzesXP += XP_QUIZ_PASSED
-    if (qr.score === 100) quizzesXP += XP_QUIZ_PERFECT
-  }
-
-  // XP badges
-  const badgesXP = badges * XP_BADGE
-
-  // XP parcours complétés
-  const completedModuleIds = await prisma.progress.findMany({
-    where: { userId },
-    select: { moduleId: true },
+  // 1. Modules complétés par user (groupBy)
+  const progressCounts = await prisma.progress.groupBy({
+    by: ['userId'],
+    where: { userId: { in: userIds } },
+    _count: true,
   })
-  const completedSet = new Set(completedModuleIds.map((p) => p.moduleId))
+  const moduleCountByUser = new Map(progressCounts.map((p) => [p.userId, p._count]))
 
-  let parcoursXP = 0
-  for (const up of userParcours) {
-    const totalModules = up.parcours.modules.length
-    if (totalModules > 0) {
-      const done = up.parcours.modules.filter((m) => completedSet.has(m.id)).length
-      if (done >= totalModules) parcoursXP += XP_PARCOURS_COMPLETE
+  // 2. Quiz scores par user
+  const quizResults = await prisma.quizResult.findMany({
+    where: { progress: { userId: { in: userIds } } },
+    select: { score: true, progress: { select: { userId: true } } },
+  })
+  const quizScoresByUser = new Map<string, number[]>()
+  for (const qr of quizResults) {
+    const uid = qr.progress.userId
+    if (!quizScoresByUser.has(uid)) quizScoresByUser.set(uid, [])
+    quizScoresByUser.get(uid)!.push(qr.score)
+  }
+
+  // 3. Badges par user (groupBy)
+  const badgeCounts = await prisma.earnedBadge.groupBy({
+    by: ['userId'],
+    where: { userId: { in: userIds } },
+    _count: true,
+  })
+  const badgeCountByUser = new Map(badgeCounts.map((b) => [b.userId, b._count]))
+
+  // 4. Parcours complétés — charger les assignments + modules en une seule requête
+  const userParcoursData = await prisma.userParcours.findMany({
+    where: { userId: { in: userIds } },
+    select: {
+      userId: true,
+      parcours: {
+        select: { modules: { select: { id: true } } },
+      },
+    },
+  })
+
+  // 5. Tous les progress (moduleIds) pour vérifier la complétion des parcours
+  const allProgress = await prisma.progress.findMany({
+    where: { userId: { in: userIds } },
+    select: { userId: true, moduleId: true },
+  })
+  const completedModulesByUser = new Map<string, Set<string>>()
+  for (const p of allProgress) {
+    if (!completedModulesByUser.has(p.userId)) completedModulesByUser.set(p.userId, new Set())
+    completedModulesByUser.get(p.userId)!.add(p.moduleId)
+  }
+
+  // Calculer les XP pour chaque user
+  const result = new Map<string, XPBreakdown>()
+
+  for (const userId of userIds) {
+    const completedModules = moduleCountByUser.get(userId) || 0
+    const scores = quizScoresByUser.get(userId) || []
+    const badges = badgeCountByUser.get(userId) || 0
+    const completedSet = completedModulesByUser.get(userId) || new Set()
+
+    // XP modules
+    const modulesXP = completedModules * XP_MODULE_COMPLETED
+
+    // XP quizzes
+    let quizzesXP = 0
+    for (const score of scores) {
+      if (score >= 80) quizzesXP += XP_QUIZ_PASSED
+      if (score === 100) quizzesXP += XP_QUIZ_PERFECT
     }
+
+    // XP badges
+    const badgesXP = badges * XP_BADGE
+
+    // XP parcours complétés
+    let parcoursXP = 0
+    const userAssignments = userParcoursData.filter((up) => up.userId === userId)
+    for (const up of userAssignments) {
+      const totalModules = up.parcours.modules.length
+      if (totalModules > 0) {
+        const done = up.parcours.modules.filter((m) => completedSet.has(m.id)).length
+        if (done >= totalModules) parcoursXP += XP_PARCOURS_COMPLETE
+      }
+    }
+
+    const total = modulesXP + quizzesXP + badgesXP + parcoursXP
+    const { level, progress } = calculateLevel(total)
+
+    result.set(userId, {
+      total,
+      modules: modulesXP,
+      quizzes: quizzesXP,
+      badges: badgesXP,
+      parcours: parcoursXP,
+      level,
+      levelProgress: progress,
+    })
   }
 
-  const total = modulesXP + quizzesXP + badgesXP + parcoursXP
+  return result
+}
 
-  // Système de niveaux : chaque niveau demande un peu plus d'XP
-  // Niveau 1 = 0 XP, Niveau 2 = 100 XP, Niveau 3 = 250 XP, etc.
-  const { level, progress } = calculateLevel(total)
-
-  return {
-    total,
-    modules: modulesXP,
-    quizzes: quizzesXP,
-    badges: badgesXP,
-    parcours: parcoursXP,
-    level,
-    levelProgress: progress,
-  }
+function emptyXP(): XPBreakdown {
+  return { total: 0, modules: 0, quizzes: 0, badges: 0, parcours: 0, level: 1, levelProgress: 0 }
 }
 
 function calculateLevel(totalXP: number): { level: number; progress: number } {
-  // Paliers : 0, 100, 250, 450, 700, 1000, 1400, ...
-  // Formule : xpNeeded(n) = 50 * n * (n + 1)
   let level = 1
   let xpForCurrentLevel = 0
   let xpForNextLevel = 100
@@ -94,8 +143,6 @@ function calculateLevel(totalXP: number): { level: number; progress: number } {
   while (totalXP >= xpForNextLevel) {
     level++
     xpForCurrentLevel = xpForNextLevel
-    xpForNextLevel = xpForCurrentLevel + 50 * (level) * (level + 1) / level
-    // Simplified: each level needs ~50 more XP than the previous increment
     xpForNextLevel = Math.round(50 * level * (level + 1) / 2)
   }
 

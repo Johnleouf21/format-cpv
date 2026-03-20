@@ -11,14 +11,10 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
-import { Trophy, Medal, Award, Loader2, Zap, Star } from 'lucide-react'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Label } from '@/components/ui/label'
+import { Badge } from '@/components/ui/badge'
+import { Trophy, Medal, Award, Loader2, Zap, Star, Filter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useCallback } from 'react'
 
@@ -47,12 +43,14 @@ interface LeaderboardEntry {
 export default function TrainerLeaderboardPage() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([])
   const [centers, setCenters] = useState<Center[]>([])
-  const [selectedCenter, setSelectedCenter] = useState('all')
+  const [selectedCenters, setSelectedCenters] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
-  const fetchLeaderboard = useCallback(async (centerId?: string) => {
+  const fetchLeaderboard = useCallback(async (centerIds: string[] = []) => {
     try {
-      const params = centerId && centerId !== 'all' ? `?centerId=${centerId}` : ''
+      const params = centerIds.length > 0
+        ? '?' + centerIds.map((id) => `centerId=${id}`).join('&')
+        : ''
       const res = await fetch(`/api/trainers/me/leaderboard${params}`)
       if (res.ok) {
         setEntries(await res.json())
@@ -79,9 +77,14 @@ export default function TrainerLeaderboardPage() {
     init()
   }, [fetchLeaderboard])
 
-  function handleCenterChange(value: string) {
-    setSelectedCenter(value)
-    fetchLeaderboard(value)
+  function toggleCenter(centerId: string) {
+    setSelectedCenters((prev) => {
+      const next = prev.includes(centerId)
+        ? prev.filter((id) => id !== centerId)
+        : [...prev, centerId]
+      fetchLeaderboard(next)
+      return next
+    })
   }
 
   function getRankIcon(rank: number) {
@@ -121,17 +124,23 @@ export default function TrainerLeaderboardPage() {
           </p>
         </div>
         {centers.length > 0 && (
-          <Select value={selectedCenter} onValueChange={handleCenterChange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Filtrer par centre" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les centres</SelectItem>
-              {centers.map((c) => (
-                <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="flex flex-wrap items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            {centers.map((c) => (
+              <label key={c.id} className="flex items-center gap-1.5 cursor-pointer">
+                <Checkbox
+                  checked={selectedCenters.includes(c.id)}
+                  onCheckedChange={() => toggleCenter(c.id)}
+                />
+                <span className="text-xs">{c.name}</span>
+              </label>
+            ))}
+            {selectedCenters.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {selectedCenters.length} filtre{selectedCenters.length > 1 ? 's' : ''}
+              </Badge>
+            )}
+          </div>
         )}
       </div>
 

@@ -29,7 +29,7 @@ import {
 } from '@/components/ui/select'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Plus, Trash2, Globe, Mail, AlertCircle } from 'lucide-react'
+import { Plus, Trash2, Globe, Mail, AlertCircle, Search } from 'lucide-react'
 
 interface AllowedDomain {
   id: string
@@ -59,6 +59,7 @@ export function WhitelistPageClient() {
   const [newDomain, setNewDomain] = useState('')
   const [newEmail, setNewEmail] = useState('')
   const [newEmailRole, setNewEmailRole] = useState('LEARNER')
+  const [emailSearch, setEmailSearch] = useState('')
   const [error, setError] = useState('')
 
   const fetchData = useCallback(async () => {
@@ -300,6 +301,9 @@ export function WhitelistPageClient() {
                 <Mail className="h-4.5 w-4.5 text-blue-600" />
               </div>
               Emails individuels
+              <span className="text-sm font-normal text-muted-foreground">
+                ({emails.length})
+              </span>
             </CardTitle>
             <CardDescription>
               Emails spécifiques avec rôle assigné (prioritaire sur le domaine)
@@ -311,15 +315,30 @@ export function WhitelistPageClient() {
           </Button>
         </CardHeader>
         <CardContent>
-          {emails.length === 0 ? (
+          {emails.length > 5 && (
+            <div className="relative mb-4">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher un email..."
+                value={emailSearch}
+                onChange={(e) => setEmailSearch(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+          )}
+          {(() => {
+            const filteredEmails = emailSearch
+              ? emails.filter((e) => e.email.toLowerCase().includes(emailSearch.toLowerCase()))
+              : emails
+            return filteredEmails.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
-              Aucun email individuel autorisé
+              {emailSearch ? 'Aucun résultat' : 'Aucun email individuel autorisé'}
             </p>
           ) : (
             <>
               {/* Mobile: Cards */}
               <div className="space-y-2 md:hidden">
-                {emails.map((email) => (
+                {filteredEmails.map((email) => (
                   <div key={email.id} className="border rounded-lg p-3 space-y-2">
                     <div className="flex items-start justify-between gap-2">
                       <p className="text-sm font-medium truncate min-w-0">{email.email}</p>
@@ -363,7 +382,7 @@ export function WhitelistPageClient() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {emails.map((email) => (
+                    {filteredEmails.map((email) => (
                       <TableRow key={email.id}>
                         <TableCell className="font-mono">{email.email}</TableCell>
                         <TableCell>
@@ -396,7 +415,8 @@ export function WhitelistPageClient() {
                 </Table>
               </div>
             </>
-          )}
+          )
+          })()}
         </CardContent>
       </Card>
 

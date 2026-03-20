@@ -16,15 +16,15 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url)
-    const centerId = searchParams.get('centerId') || undefined
+    const centerIds = searchParams.getAll('centerId')
 
-    // Filtrer les apprenants du formateur, optionnellement par centre
+    // Filtrer les apprenants du formateur, optionnellement par centres
     const where: Record<string, unknown> = {
       role: 'LEARNER',
       trainerId: session.user.id,
     }
-    if (centerId) {
-      where.userCenters = { some: { centerId } }
+    if (centerIds.length > 0) {
+      where.userCenters = { some: { centerId: { in: centerIds } } }
     }
 
     const learners = await prisma.user.findMany({

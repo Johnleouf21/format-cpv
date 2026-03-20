@@ -6,6 +6,7 @@ export const addUserSchema = z.object({
   role: z.enum(['LEARNER', 'TRAINER', 'ADMIN']).optional().default('LEARNER'),
   trainerId: z.string().uuid().optional(),
   parcoursIds: z.array(z.string().uuid()).optional().default([]),
+  centerIds: z.array(z.string().uuid()).optional().default([]),
   sendEmail: z.boolean().optional().default(true),
 })
 

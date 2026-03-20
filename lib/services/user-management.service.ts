@@ -48,6 +48,17 @@ export async function addUser(
       }
     }
 
+    // Assign centers if provided
+    if (data.centerIds && data.centerIds.length > 0) {
+      await prisma.userCenter.createMany({
+        data: data.centerIds.map((centerId) => ({
+          userId: existingUser.id,
+          centerId,
+        })),
+        skipDuplicates: true,
+      })
+    }
+
     return {
       user: {
         id: existingUser.id,
@@ -85,6 +96,16 @@ export async function addUser(
         data: data.parcoursIds.map((parcoursId) => ({
           userId: newUser.id,
           parcoursId,
+        })),
+      })
+    }
+
+    // Assign centers
+    if (data.centerIds && data.centerIds.length > 0) {
+      await tx.userCenter.createMany({
+        data: data.centerIds.map((centerId) => ({
+          userId: newUser.id,
+          centerId,
         })),
       })
     }
@@ -132,6 +153,7 @@ export async function addUsersBulk(
         email,
         role: 'LEARNER',
         parcoursIds: data.parcoursIds,
+        centerIds: [],
         sendEmail: data.sendEmails,
         trainerId: data.trainerId,
         addedBy: data.addedBy,

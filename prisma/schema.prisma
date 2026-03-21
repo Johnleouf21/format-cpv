@@ -24,6 +24,7 @@ model User {
   email          String    @unique
   name           String
   role           UserRole  @default(LEARNER)
+  isSuperAdmin   Boolean   @default(false) @map("is_super_admin")
   azureAdId      String?   @unique @map("azure_ad_id")
   emailVerified  DateTime? @map("email_verified")
 

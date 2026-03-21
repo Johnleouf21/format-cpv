@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth/require-auth'
+import { requireAuth, requireSuperAdmin } from '@/lib/auth/require-auth'
 import { getParcoursById, updateParcours, deleteParcours } from '@/lib/services/admin.service'
 import { handleApiError } from '@/lib/errors/api-error'
 import { prisma } from '@/lib/db'
@@ -69,7 +69,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await requireAuth('ADMIN')
+    const session = await requireSuperAdmin()
 
     const { id } = await params
     await deleteParcours(id)

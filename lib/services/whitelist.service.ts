@@ -52,6 +52,10 @@ export async function getAllowedEmails() {
   return prisma.allowedEmail.findMany({ orderBy: { email: 'asc' } })
 }
 
+export async function getAllowedEmailById(id: string) {
+  return prisma.allowedEmail.findUnique({ where: { id } })
+}
+
 export async function addAllowedEmail(email: string, role: UserRole = UserRole.LEARNER) {
   return prisma.allowedEmail.create({
     data: { email: email.toLowerCase().trim(), role },

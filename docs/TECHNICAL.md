@@ -342,6 +342,44 @@ Avant chaque commit, les hooks vérifient automatiquement :
 
 Cela empêche de commiter du code avec des erreurs de lint ou de typage.
 
+### Convention de commits (Commitlint)
+
+Les messages de commit suivent la convention [Conventional Commits](https://www.conventionalcommits.org/) :
+
+| Préfixe | Usage | Exemple |
+|---|---|---|
+| `feat:` | Nouvelle fonctionnalité | `feat: ajout drag & drop quiz` |
+| `fix:` | Correction de bug | `fix: contraste dark mode certificats` |
+| `docs:` | Documentation | `docs: mise à jour aide chatbot` |
+| `refactor:` | Refactoring | `refactor: extraction helper auth` |
+| `perf:` | Performance | `perf: batch XP queries` |
+| `chore:` | Maintenance | `chore: mise à jour dépendances` |
+
+Un hook `commit-msg` vérifie automatiquement le format avant chaque commit.
+
+### Gestion de projet (GitHub Issues)
+
+Le projet utilise **GitHub Issues** pour le suivi des tâches :
+
+- **Templates structurés** : Bug Report et Feature Request pré-formatés
+- **Labels** : `bug`, `enhancement`, `dependencies`, `ci`
+- **Workflow** : Issue → Branche → PR → Merge → Issue fermée automatiquement
+
+Exemple de workflow :
+1. Issue `#42` créée : "Ajouter export PDF des résultats"
+2. Branche `feature/42-export-pdf` créée depuis `dev`
+3. PR ouverte avec référence `fixes #42`
+4. CI passe → Review → Merge
+5. Issue `#42` fermée automatiquement
+
+### Maintenance des dépendances (Dependabot)
+
+**Dependabot** scanne automatiquement les dépendances chaque lundi :
+- PRs automatiques pour les mises à jour de sécurité
+- Mises à jour mineures/patch groupées en une seule PR
+- Mises à jour majeures en PRs individuelles
+- Couvre npm et GitHub Actions
+
 ### Déploiement Vercel
 
 | Événement | Action |

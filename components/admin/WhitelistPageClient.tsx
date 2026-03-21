@@ -1,6 +1,8 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { toast } from 'sonner'
+import { ConfirmDialog } from './ConfirmDialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
@@ -55,6 +57,8 @@ export function WhitelistPageClient() {
   const [newEmailRole, setNewEmailRole] = useState('LEARNER')
   const [emailSearch, setEmailSearch] = useState('')
   const [error, setError] = useState('')
+  const [deleteDomainId, setDeleteDomainId] = useState<string | null>(null)
+  const [deleteEmailId, setDeleteEmailId] = useState<string | null>(null)
 
   const fetchData = useCallback(async () => {
     try {
@@ -96,13 +100,19 @@ export function WhitelistPageClient() {
     setDomains((prev) => [...prev, domain].sort((a, b) => a.domain.localeCompare(b.domain)))
     setNewDomain('')
     setIsDomainDialogOpen(false)
+    toast.success(`Domaine @${newDomain} ajouté`)
   }
 
-  async function handleRemoveDomain(id: string) {
-    const res = await fetch(`/api/admin/whitelist/domains/${id}`, { method: 'DELETE' })
+  async function handleRemoveDomain() {
+    if (!deleteDomainId) return
+    const res = await fetch(`/api/admin/whitelist/domains/${deleteDomainId}`, { method: 'DELETE' })
     if (res.ok) {
-      setDomains((prev) => prev.filter((d) => d.id !== id))
+      setDomains((prev) => prev.filter((d) => d.id !== deleteDomainId))
+      toast.success('Domaine supprimé')
+    } else {
+      toast.error('Erreur lors de la suppression')
     }
+    setDeleteDomainId(null)
   }
 
   async function handleAddEmail(e: React.FormEvent) {
@@ -118,6 +128,7 @@ export function WhitelistPageClient() {
     if (!res.ok) {
       const data = await res.json()
       setError(data.error || 'Erreur lors de l\'ajout')
+      toast.error(data.error || 'Erreur lors de l\'ajout')
       return
     }
 
@@ -126,6 +137,7 @@ export function WhitelistPageClient() {
     setNewEmail('')
     setNewEmailRole('LEARNER')
     setIsEmailDialogOpen(false)
+    toast.success(`Email ${newEmail} ajouté`)
   }
 
   async function handleUpdateEmailRole(id: string, role: string) {
@@ -137,14 +149,22 @@ export function WhitelistPageClient() {
 
     if (res.ok) {
       setEmails((prev) => prev.map((e) => (e.id === id ? { ...e, role } : e)))
+      toast.success('Rôle mis à jour')
+    } else {
+      toast.error('Erreur lors de la mise à jour')
     }
   }
 
-  async function handleRemoveEmail(id: string) {
-    const res = await fetch(`/api/admin/whitelist/emails/${id}`, { method: 'DELETE' })
+  async function handleRemoveEmail() {
+    if (!deleteEmailId) return
+    const res = await fetch(`/api/admin/whitelist/emails/${deleteEmailId}`, { method: 'DELETE' })
     if (res.ok) {
-      setEmails((prev) => prev.filter((e) => e.id !== id))
+      setEmails((prev) => prev.filter((e) => e.id !== deleteEmailId))
+      toast.success('Email supprimé')
+    } else {
+      toast.error('Erreur lors de la suppression')
     }
+    setDeleteEmailId(null)
   }
 
   if (isLoading) {
@@ -242,7 +262,7 @@ export function WhitelistPageClient() {
                       variant="ghost"
                       size="icon"
                       className="shrink-0"
-                      onClick={() => handleRemoveDomain(domain.id)}
+                      onClick={() => setDeleteDomainId(domain.id)}
                     >
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
@@ -271,7 +291,7 @@ export function WhitelistPageClient() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleRemoveDomain(domain.id)}
+                            onClick={() => setDeleteDomainId(domain.id)}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -340,7 +360,7 @@ export function WhitelistPageClient() {
                         variant="ghost"
                         size="icon"
                         className="shrink-0 -mt-1 -mr-1"
-                        onClick={() => handleRemoveEmail(email.id)}
+                        onClick={() => setDeleteEmailId(email.id)}
                       >
                         <Trash2 className="h-4 w-4 text-red-500" />
                       </Button>
@@ -398,7 +418,7 @@ export function WhitelistPageClient() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            onClick={() => handleRemoveEmail(email.id)}
+                            onClick={() => setDeleteEmailId(email.id)}
                           >
                             <Trash2 className="h-4 w-4 text-red-500" />
                           </Button>
@@ -503,6 +523,26 @@ export function WhitelistPageClient() {
           </form>
         </DialogContent>
       </Dialog>
+
+      <ConfirmDialog
+        open={!!deleteDomainId}
+        onOpenChange={(open) => !open && setDeleteDomainId(null)}
+        title="Supprimer le domaine"
+        description={`Êtes-vous sûr de vouloir supprimer le domaine @${domains.find((d) => d.id === deleteDomainId)?.domain} ? Les utilisateurs de ce domaine ne pourront plus se connecter.`}
+        confirmLabel="Supprimer"
+        onConfirm={handleRemoveDomain}
+        variant="destructive"
+      />
+
+      <ConfirmDialog
+        open={!!deleteEmailId}
+        onOpenChange={(open) => !open && setDeleteEmailId(null)}
+        title="Supprimer l'email"
+        description={`Êtes-vous sûr de vouloir supprimer l'email ${emails.find((e) => e.id === deleteEmailId)?.email} de la liste autorisée ?`}
+        confirmLabel="Supprimer"
+        onConfirm={handleRemoveEmail}
+        variant="destructive"
+      />
     </div>
   )
 }

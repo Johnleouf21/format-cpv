@@ -1,6 +1,7 @@
 import { auth } from '@/lib/auth'
 import { ApiError } from '@/lib/errors/api-error'
 import { UserRole } from '@prisma/client'
+import { prisma } from '@/lib/db'
 
 interface AuthSession {
   user: {
@@ -32,4 +33,34 @@ export async function requireAuth(...allowedRoles: UserRole[]): Promise<AuthSess
   }
 
   return session as AuthSession
+}
+
+/**
+ * Vérifie que l'utilisateur est Super Admin.
+ * Usage pour les actions sensibles : promotion admin, suppression admin, delete parcours/modules.
+ */
+export async function requireSuperAdmin(): Promise<AuthSession> {
+  const session = await requireAuth('ADMIN')
+
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { isSuperAdmin: true },
+  })
+
+  if (!user?.isSuperAdmin) {
+    throw new ApiError(403, 'Action réservée au Super Admin', 'SUPER_ADMIN_REQUIRED')
+  }
+
+  return session
+}
+
+/**
+ * Vérifie si un userId est Super Admin (pour protéger contre la modification/suppression).
+ */
+export async function isSuperAdmin(userId: string): Promise<boolean> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { isSuperAdmin: true },
+  })
+  return user?.isSuperAdmin ?? false
 }

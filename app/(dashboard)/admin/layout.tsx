@@ -50,6 +50,7 @@ export default async function AdminLayout({
       userName={session.user.name || session.user.email || ''}
       userEmail={session.user.email || ''}
       userRole={session.user.role}
+      isSuperAdmin={session.user.isSuperAdmin}
       currentSpace="admin"
     >
       {children}

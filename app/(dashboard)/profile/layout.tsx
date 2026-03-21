@@ -74,6 +74,7 @@ export default async function ProfileLayout({
       userName={session.user.name || session.user.email || ''}
       userEmail={session.user.email || ''}
       userRole={session.user.role}
+      isSuperAdmin={session.user.isSuperAdmin}
       currentSpace={currentSpace}
     >
       {children}

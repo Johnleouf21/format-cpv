@@ -33,6 +33,7 @@ interface UserMenuProps {
   userName: string
   userEmail: string
   userRole: string
+  isSuperAdmin?: boolean
   currentSpace: 'admin' | 'trainer' | 'learner'
   /** Compact mode: only show avatar, no name/chevron (used in sidebar) */
   compact?: boolean
@@ -64,6 +65,7 @@ export function UserMenu({
   userName,
   userEmail,
   userRole,
+  isSuperAdmin,
   currentSpace,
   compact = false,
   align = 'end',
@@ -138,9 +140,16 @@ export function UserMenu({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{userName}</p>
               <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
-              <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${roleBadgeColors[userRole]}`}>
-                {roleLabels[userRole] || userRole}
-              </span>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${roleBadgeColors[userRole]}`}>
+                  {roleLabels[userRole] || userRole}
+                </span>
+                {isSuperAdmin && (
+                  <span className="inline-block px-1.5 py-0.5 rounded text-[10px] font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200">
+                    Super Admin
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </DropdownMenuLabel>

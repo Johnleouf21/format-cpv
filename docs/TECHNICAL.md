@@ -133,7 +133,7 @@ VerificationToken (NextAuth)
 - **Cross-device** : le lien fonctionne depuis n'importe quel appareil, polling automatique côté navigateur d'origine
 - **Auto-login** : si le lien est ouvert dans le même navigateur, redirection automatique
 - **Whitelist** : contrôle d'accès par domaine (@entreprise.com) ou email individuel
-- **RBAC** : 3 rôles (ADMIN, TRAINER, LEARNER) avec helper `requireAuth()` sur les 58 routes
+- **RBAC** : 3 rôles (ADMIN, TRAINER, LEARNER) + Super Admin avec helpers `requireAuth()` et `requireSuperAdmin()` sur les 58 routes
 - **Rate limiting** : protection des endpoints auth (in-memory, configurable)
 - **CSP** : Content Security Policy renforcée (unsafe-eval supprimé en production)
 - **Headers** : HSTS, Permissions-Policy, X-Frame-Options, X-Content-Type-Options
@@ -403,7 +403,8 @@ Configuration :
 | Mesure | Détail |
 |---|---|
 | Authentification | Magic link, pas de mot de passe stocké |
-| Autorisation | RBAC avec `requireAuth()` sur 58 routes |
+| Autorisation | RBAC avec `requireAuth()` + `requireSuperAdmin()` sur 58 routes |
+| Super Admin | Suppression parcours/modules, promotion/rétrogradation admin |
 | Rate limiting | 5 req/min login, 60/min polling, 10/min invitations |
 | CSP | Script-src sans unsafe-eval en prod |
 | HSTS | max-age 1 an en production |

@@ -67,6 +67,7 @@ providers.push(
           email: user.email,
           name: user.name,
           role: user.role,
+          isSuperAdmin: user.isSuperAdmin,
         }
       }
 
@@ -105,6 +106,7 @@ providers.push(
         email: user.email,
         name: user.name,
         role: user.role,
+        isSuperAdmin: user.isSuperAdmin,
       }
     },
   })
@@ -136,12 +138,13 @@ export const authConfig: NextAuthConfig = {
       if (user) {
         const dbUser = await prisma.user.findUnique({
           where: { email: user.email! },
-          select: { id: true, role: true },
+          select: { id: true, role: true, isSuperAdmin: true },
         })
 
         if (dbUser) {
           token.id = dbUser.id
           token.role = dbUser.role
+          token.isSuperAdmin = dbUser.isSuperAdmin
         }
       }
       return token
@@ -152,13 +155,15 @@ export const authConfig: NextAuthConfig = {
         // Always fetch fresh name and role from DB
         const dbUser = await prisma.user.findUnique({
           where: { id: token.id as string },
-          select: { name: true, role: true },
+          select: { name: true, role: true, isSuperAdmin: true },
         })
         if (dbUser) {
           session.user.name = dbUser.name
           session.user.role = dbUser.role
+          session.user.isSuperAdmin = dbUser.isSuperAdmin
         } else {
           session.user.role = token.role as UserRole
+          session.user.isSuperAdmin = false
         }
       }
       return session

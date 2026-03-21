@@ -4,7 +4,7 @@ import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Route, BookOpen, Users, Eye, Edit, Trash2 } from 'lucide-react'
+import { Route, BookOpen, Users, Eye, Edit, Trash2, Star } from 'lucide-react'
 
 interface ParcoursCardProps {
   id: string
@@ -17,6 +17,7 @@ interface ParcoursCardProps {
   onEdit?: () => void
   onDelete?: () => void
   canDelete?: boolean
+  rating?: { average: number; count: number }
 }
 
 export function ParcoursCard({
@@ -29,6 +30,7 @@ export function ParcoursCard({
   onEdit,
   onDelete,
   canDelete = true,
+  rating,
 }: ParcoursCardProps) {
   return (
     <Card className="hover:shadow-md transition-all hover:border-gray-300">
@@ -55,6 +57,13 @@ export function ParcoursCard({
             <Users className="h-4 w-4" />
             <span>{learnerCount} apprenant{learnerCount !== 1 ? 's' : ''}</span>
           </div>
+          {rating && (
+            <div className="flex items-center gap-1 text-sm">
+              <Star className="h-4 w-4 text-yellow-400 fill-yellow-400" />
+              <span className="font-medium">{rating.average}</span>
+              <span className="text-muted-foreground">({rating.count})</span>
+            </div>
+          )}
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="flex-1" asChild>

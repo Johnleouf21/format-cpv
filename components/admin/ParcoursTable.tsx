@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ConfirmDialog } from './ConfirmDialog'
-import { Eye, Edit, Trash2, BookOpen, Users } from 'lucide-react'
+import { Eye, Edit, Trash2, BookOpen, Users, Star } from 'lucide-react'
 
 interface Parcours {
   id: string
@@ -28,9 +28,10 @@ interface ParcoursTableProps {
   parcoursList: Parcours[]
   onDelete: (id: string) => Promise<void>
   onEdit: (parcours: Parcours) => void
+  ratings?: Record<string, { average: number; count: number }>
 }
 
-export function ParcoursTable({ parcoursList, onDelete, onEdit }: ParcoursTableProps) {
+export function ParcoursTable({ parcoursList, onDelete, onEdit, ratings }: ParcoursTableProps) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -58,13 +59,14 @@ export function ParcoursTable({ parcoursList, onDelete, onEdit }: ParcoursTableP
             <TableHead>Description</TableHead>
             <TableHead className="text-center">Modules</TableHead>
             <TableHead className="text-center">Apprenants</TableHead>
+            <TableHead className="text-center">Note</TableHead>
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {parcoursList.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+              <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                 Aucun parcours trouvé
               </TableCell>
             </TableRow>
@@ -86,6 +88,17 @@ export function ParcoursTable({ parcoursList, onDelete, onEdit }: ParcoursTableP
                     <Users className="h-3 w-3" />
                     {parcours.learnerCount}
                   </Badge>
+                </TableCell>
+                <TableCell className="text-center">
+                  {ratings?.[parcours.id] ? (
+                    <div className="flex items-center justify-center gap-1">
+                      <Star className="h-3.5 w-3.5 text-yellow-400 fill-yellow-400" />
+                      <span className="text-sm font-medium">{ratings[parcours.id].average}</span>
+                      <span className="text-xs text-muted-foreground">({ratings[parcours.id].count})</span>
+                    </div>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">-</span>
+                  )}
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">

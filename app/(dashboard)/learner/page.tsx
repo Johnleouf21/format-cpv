@@ -2,12 +2,14 @@ import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { getUserParcours, getUserParcoursAssignments } from '@/lib/services/parcours.service'
 import { getUserBadges } from '@/lib/services/badge.service'
+import { getParcoursRatings } from '@/lib/services/feedback.service'
 import { prisma } from '@/lib/db'
 import { WelcomeCard } from '@/components/learner/WelcomeCard'
 import { ModuleList } from '@/components/learner/ModuleList'
 import { CertificateDownloadButton } from '@/components/learner/CertificateDownloadButton'
 import { BadgesSection } from '@/components/learner/BadgesSection'
 import { XPCard } from '@/components/learner/XPCard'
+import { ParcoursRating } from '@/components/shared/ParcoursRating'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
@@ -73,9 +75,10 @@ export default async function LearnerHomePage() {
       )
     }
 
-    const [stats, earnedBadges] = await Promise.all([
+    const [stats, earnedBadges, ratings] = await Promise.all([
       getLearnerStats(session.user.id),
       getUserBadges(session.user.id),
+      getParcoursRatings(),
     ])
 
     // Multiple parcours — dashboard view
@@ -213,7 +216,12 @@ export default async function LearnerHomePage() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <CardTitle className="text-base truncate">{parcours.title}</CardTitle>
+                          <div className="flex items-center gap-2">
+                            <CardTitle className="text-base truncate">{parcours.title}</CardTitle>
+                            {ratings[parcours.id] && (
+                              <ParcoursRating average={ratings[parcours.id].average} count={ratings[parcours.id].count} compact />
+                            )}
+                          </div>
                           <CardDescription>
                             {parcours.completedModules}/{parcours.totalModules} modules
                           </CardDescription>
@@ -272,10 +280,15 @@ export default async function LearnerHomePage() {
 
     return (
       <div className="space-y-6">
-        <WelcomeCard
-          userName={data.user.name}
-          parcoursTitle={data.parcours.title}
-        />
+        <div className="flex items-end justify-between">
+          <WelcomeCard
+            userName={data.user.name}
+            parcoursTitle={data.parcours.title}
+          />
+          {ratings[data.parcours.id] && (
+            <ParcoursRating average={ratings[data.parcours.id].average} count={ratings[data.parcours.id].count} />
+          )}
+        </div>
 
         {/* Stats row */}
         <div id="stats" className="grid gap-4 grid-cols-2 lg:grid-cols-4">

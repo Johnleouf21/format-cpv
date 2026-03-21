@@ -68,6 +68,30 @@ export async function getAllFeedback() {
   }))
 }
 
+export async function getParcoursRatings(): Promise<Record<string, { average: number; count: number }>> {
+  const feedbacks = await prisma.feedback.findMany({
+    where: { parcoursId: { not: null } },
+    select: { parcoursId: true, rating: true },
+  })
+
+  const byParcours: Record<string, number[]> = {}
+  for (const f of feedbacks) {
+    if (!f.parcoursId) continue
+    if (!byParcours[f.parcoursId]) byParcours[f.parcoursId] = []
+    byParcours[f.parcoursId].push(f.rating)
+  }
+
+  const result: Record<string, { average: number; count: number }> = {}
+  for (const [id, ratings] of Object.entries(byParcours)) {
+    const sum = ratings.reduce((a, b) => a + b, 0)
+    result[id] = {
+      average: Math.round((sum / ratings.length) * 10) / 10,
+      count: ratings.length,
+    }
+  }
+  return result
+}
+
 export async function getFeedbackStats() {
   const feedbacks = await prisma.feedback.findMany({
     select: { rating: true },

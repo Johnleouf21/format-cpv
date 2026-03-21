@@ -53,9 +53,16 @@ export function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications()
-    // Polling toutes les 30 secondes
     const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
+
+    // Écouter les changements depuis le centre de notifications
+    const handleRefresh = () => fetchNotifications()
+    window.addEventListener('notifications-updated', handleRefresh)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('notifications-updated', handleRefresh)
+    }
   }, [fetchNotifications])
 
   async function handleMarkAllRead() {

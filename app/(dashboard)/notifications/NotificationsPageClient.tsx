@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
+import { toast } from 'sonner'
 import {
   Bell,
   Loader2,
@@ -74,6 +75,8 @@ export function NotificationsPageClient() {
     fetchNotifications()
   }, [fetchNotifications])
 
+  const notifyBell = () => window.dispatchEvent(new Event('notifications-updated'))
+
   async function handleMarkAllRead() {
     await fetch('/api/notifications', {
       method: 'PATCH',
@@ -81,20 +84,36 @@ export function NotificationsPageClient() {
       body: JSON.stringify({ action: 'mark_all_read' }),
     })
     fetchNotifications()
+    notifyBell()
+    toast.success('Toutes les notifications marquées comme lues')
   }
 
   async function handleDelete(id: string) {
     await fetch(`/api/notifications?id=${id}`, { method: 'DELETE' })
     setNotifications((prev) => prev.filter((n) => n.id !== id))
     setTotal((prev) => prev - 1)
+    notifyBell()
+    toast.success('Notification supprimée')
   }
 
   async function handleDeleteAll() {
-    if (!confirm('Supprimer toutes les notifications ?')) return
-    await fetch('/api/notifications?id=all', { method: 'DELETE' })
-    setNotifications([])
-    setTotal(0)
-    setUnreadCount(0)
+    toast('Supprimer toutes les notifications ?', {
+      action: {
+        label: 'Confirmer',
+        onClick: async () => {
+          await fetch('/api/notifications?id=all', { method: 'DELETE' })
+          setNotifications([])
+          setTotal(0)
+          setUnreadCount(0)
+          notifyBell()
+          toast.success('Toutes les notifications supprimées')
+        },
+      },
+      cancel: {
+        label: 'Annuler',
+        onClick: () => {},
+      },
+    })
   }
 
   return (

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -268,9 +269,12 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
 
       setHasQuiz(true)
       setSuccess('Quiz sauvegardé avec succès')
+      toast.success('Quiz sauvegardé avec succès')
       setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+      const msg = err instanceof Error ? err.message : 'Une erreur est survenue'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsSaving(false)
     }
@@ -287,6 +291,7 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
         setQuestions([])
         setHasQuiz(false)
         setSuccess('Quiz supprimé')
+        toast.success('Quiz supprimé')
         setTimeout(() => setSuccess(null), 3000)
       }
     } catch {

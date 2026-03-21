@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { LoggerInit } from "@/components/shared/LoggerInit";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -69,6 +70,7 @@ export default function RootLayout({
       >
         <LoggerInit />
         <TooltipProvider>{children}</TooltipProvider>
+        <Toaster position="bottom-right" richColors closeButton />
       </body>
     </html>
   );

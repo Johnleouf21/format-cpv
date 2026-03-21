@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/table'
 import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
-import { Route, BookOpen, Plus, Edit, Eye, ChevronUp, ChevronDown } from 'lucide-react'
+import { BookOpen, Plus, Edit, Eye, ChevronUp, ChevronDown } from 'lucide-react'
 
 interface Module {
   id: string

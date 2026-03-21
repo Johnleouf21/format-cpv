@@ -5,7 +5,7 @@ import { getParcours } from '@/lib/services/admin.service'
 
 export async function GET() {
   try {
-    const session = await requireAuth('ADMIN', 'TRAINER')
+    await requireAuth('ADMIN', 'TRAINER')
 
     const parcours = await getParcours()
 

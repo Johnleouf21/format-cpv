@@ -247,14 +247,16 @@ logActivity({ action: 'MODULE_COMPLETED', userId, targetId, targetType: 'module'
 
 ---
 
-## Déploiement
+## Déploiement & CI/CD
 
 ### Prérequis
 
 - Node.js 20+
+- pnpm 9+
 - PostgreSQL 16 (Docker pour le dev, Neon pour la prod)
 - Compte Resend (emails)
 - Compte Vercel (hébergement)
+- Compte GitHub (dépôt Git)
 
 ### Variables d'environnement
 
@@ -271,26 +273,86 @@ CRON_SECRET=                # Secret pour le cron de rappels
 
 ```bash
 # Développement
-npm run db                  # Démarrer PostgreSQL via Docker
+pnpm run db                 # Démarrer PostgreSQL via Docker
 npx prisma db push          # Synchroniser le schéma
-npm run dev                 # Lancer le serveur de développement
+pnpm dev                    # Lancer le serveur de développement
+
+# Qualité du code
+pnpm lint                   # ESLint
+pnpm typecheck              # Vérification TypeScript
+pnpm test                   # Tests unitaires (Vitest)
 
 # Production
 npx prisma generate         # Générer le client Prisma
-npm run build               # Build Next.js
-npm start                   # Démarrer en production
+pnpm build                  # Build Next.js
+pnpm start                  # Démarrer en production
 
 # Base de données
-npm run db:studio           # Interface visuelle Prisma Studio
-npm run db:reset            # Reset complet (dev uniquement)
+pnpm db:studio              # Interface visuelle Prisma Studio
+pnpm db:reset               # Reset complet (dev uniquement)
 ```
+
+### Stratégie de branches
+
+```
+main (production)
+  └── dev (développement)
+        ├── feature/xxx
+        └── fix/xxx
+```
+
+| Branche | Usage | Protection |
+|---|---|---|
+| `main` | Production — déployée automatiquement sur Vercel | Protégée : merge uniquement via Pull Request |
+| `dev` | Développement — intégration continue | Branche de travail principale |
+| `feature/*` | Nouvelles fonctionnalités | Créée depuis `dev`, PR vers `dev` |
+| `fix/*` | Corrections de bugs | Créée depuis `dev`, PR vers `dev` |
+
+**Workflow :**
+1. Créer une branche `feature/xxx` depuis `dev`
+2. Développer et commiter
+3. Ouvrir une Pull Request vers `dev`
+4. CI automatique : lint + typecheck + tests
+5. Review et merge dans `dev`
+6. Quand `dev` est stable → PR vers `main` → déploiement production
+
+### Pipeline CI/CD (GitHub Actions)
+
+Le pipeline s'exécute automatiquement sur chaque Pull Request :
+
+```yaml
+# .github/workflows/ci.yml
+Étapes :
+  1. Checkout du code
+  2. Installation des dépendances (pnpm)
+  3. Génération du client Prisma
+  4. Lint ESLint
+  5. Vérification TypeScript (tsc --noEmit)
+  6. Tests unitaires (Vitest)
+  7. Build Next.js (vérifie la compilation)
+```
+
+### Pre-commit hooks (Husky + lint-staged)
+
+Avant chaque commit, les hooks vérifient automatiquement :
+- **ESLint** sur les fichiers modifiés (.ts, .tsx)
+- **TypeScript** (compilation sans erreur)
+
+Cela empêche de commiter du code avec des erreurs de lint ou de typage.
 
 ### Déploiement Vercel
 
-1. Push sur `main` → déploiement automatique
-2. Variables d'environnement configurées dans Vercel Dashboard
-3. `prisma generate` exécuté automatiquement via `postinstall`
-4. Cron job `/api/cron/reminders` configuré dans `vercel.json` (quotidien à 9h UTC)
+| Événement | Action |
+|---|---|
+| Push sur `main` | Déploiement automatique en **production** |
+| Push sur `dev` | Déploiement **preview** (URL temporaire) |
+| Pull Request | Déploiement **preview** + CI pipeline |
+| Cron quotidien 9h UTC | Exécution `/api/cron/reminders` (rappels email) |
+
+Configuration :
+1. Variables d'environnement dans Vercel Dashboard
+2. `prisma generate` exécuté automatiquement via `postinstall`
+3. Cron job configuré dans `vercel.json`
 
 ---
 

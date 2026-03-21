@@ -4,7 +4,6 @@ import { getUserParcours, getUserParcoursAssignments } from '@/lib/services/parc
 import { getUserBadges } from '@/lib/services/badge.service'
 import { prisma } from '@/lib/db'
 import { WelcomeCard } from '@/components/learner/WelcomeCard'
-import { ProgressIndicator } from '@/components/learner/ProgressIndicator'
 import { ModuleList } from '@/components/learner/ModuleList'
 import { CertificateDownloadButton } from '@/components/learner/CertificateDownloadButton'
 import { BadgesSection } from '@/components/learner/BadgesSection'

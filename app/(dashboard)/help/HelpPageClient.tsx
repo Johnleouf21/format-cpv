@@ -17,11 +17,7 @@ import {
   Trophy,
   Users,
   Zap,
-  Download,
   Bell,
-  Mail,
-  CheckCircle,
-  Star,
   Award,
 } from 'lucide-react'
 

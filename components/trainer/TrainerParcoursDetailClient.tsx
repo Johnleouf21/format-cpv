@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Route, BookOpen, Eye } from 'lucide-react'
+import { BookOpen, Eye } from 'lucide-react'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'

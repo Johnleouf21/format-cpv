@@ -44,12 +44,6 @@ interface AllowedEmail {
   createdAt: string
 }
 
-const roleLabels: Record<string, string> = {
-  ADMIN: 'Admin',
-  TRAINER: 'Formateur',
-  LEARNER: 'Apprenant',
-}
-
 export function WhitelistPageClient() {
   const [domains, setDomains] = useState<AllowedDomain[]>([])
   const [emails, setEmails] = useState<AllowedEmail[]>([])

@@ -1,10 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
 import { BookOpen } from 'lucide-react'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { ModuleContent } from '@/components/learner/ModuleContent'

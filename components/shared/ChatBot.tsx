@@ -32,7 +32,6 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
 
   const {
     position,
-    buttonPosition,
     wasDraggingRef,
     getPanelPosition,
     handlePointerDown,
@@ -71,7 +70,8 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
   useEffect(() => {
     if (messages.length > 0) {
       try {
-        const toStore = messages.map(({ richText, ...rest }) => rest)
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const toStore = messages.map(({ richText: _richText, ...rest }) => rest)
         localStorage.setItem(`${STORAGE_KEY_PREFIX}${currentSpace}`, JSON.stringify(toStore))
       } catch {
         // ignore

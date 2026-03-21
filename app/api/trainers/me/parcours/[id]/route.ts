@@ -9,7 +9,7 @@ interface RouteParams {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const session = await requireAuth('ADMIN', 'TRAINER')
+    await requireAuth('ADMIN', 'TRAINER')
 
     const { id } = await params
     const parcours = await getParcoursById(id)

@@ -2,11 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card'
 import { TrainersTable } from './TrainersTable'
 import { AddTrainerForm } from './AddTrainerForm'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Plus, GraduationCap } from 'lucide-react'
+import { Plus } from 'lucide-react'
 
 interface Trainer {
   id: string

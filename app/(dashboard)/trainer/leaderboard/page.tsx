@@ -12,7 +12,6 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
 import { Badge } from '@/components/ui/badge'
 import { Trophy, Medal, Award, Loader2, Zap, Star, Filter } from 'lucide-react'
 import { cn } from '@/lib/utils'

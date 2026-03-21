@@ -26,7 +26,7 @@ export async function POST(
       throw new ApiError(400, 'Données invalides', 'VALIDATION_ERROR')
     }
 
-    const { answers, completeModule, moduleId } = validation.data
+    const { answers, moduleId } = validation.data
 
     const result = await submitQuiz(quizId, session.user.id, { answers })
 

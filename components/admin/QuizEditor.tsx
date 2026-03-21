@@ -44,13 +44,6 @@ interface Question {
   answers: Answer[]
 }
 
-const TYPE_LABELS: Record<QuestionType, string> = {
-  SINGLE_CHOICE: 'Choix unique',
-  MULTIPLE_CHOICE: 'Choix multiple',
-  ORDERING: 'Ordonnancement',
-  MATCHING: 'Association',
-}
-
 const TYPE_ICONS: Record<QuestionType, React.ReactNode> = {
   SINGLE_CHOICE: <CheckCircle className="h-3.5 w-3.5" />,
   MULTIPLE_CHOICE: <CheckCircle className="h-3.5 w-3.5" />,

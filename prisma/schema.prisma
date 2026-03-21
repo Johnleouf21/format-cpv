@@ -15,6 +15,8 @@ enum UserRole {
 enum QuestionType {
   SINGLE_CHOICE
   MULTIPLE_CHOICE
+  ORDERING
+  MATCHING
 }
 
 model User {
@@ -121,6 +123,7 @@ model Answer {
   text      String
   isCorrect Boolean @default(false) @map("is_correct")
   order     Int     @default(0)
+  matchText String? @map("match_text")  // Pour MATCHING : texte à associer (partie droite)
 
   questionId String   @map("question_id")
   question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)

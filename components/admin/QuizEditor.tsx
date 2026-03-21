@@ -24,21 +24,63 @@ import {
   CheckCircle,
   GripVertical,
   AlertCircle,
+  ArrowUpDown,
+  Link2,
+  ChevronUp,
+  ChevronDown,
 } from 'lucide-react'
+
+type QuestionType = 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'ORDERING' | 'MATCHING'
 
 interface Answer {
   text: string
   isCorrect: boolean
+  matchText?: string
 }
 
 interface Question {
   text: string
-  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'
+  type: QuestionType
   answers: Answer[]
+}
+
+const TYPE_LABELS: Record<QuestionType, string> = {
+  SINGLE_CHOICE: 'Choix unique',
+  MULTIPLE_CHOICE: 'Choix multiple',
+  ORDERING: 'Ordonnancement',
+  MATCHING: 'Association',
+}
+
+const TYPE_ICONS: Record<QuestionType, React.ReactNode> = {
+  SINGLE_CHOICE: <CheckCircle className="h-3.5 w-3.5" />,
+  MULTIPLE_CHOICE: <CheckCircle className="h-3.5 w-3.5" />,
+  ORDERING: <ArrowUpDown className="h-3.5 w-3.5" />,
+  MATCHING: <Link2 className="h-3.5 w-3.5" />,
 }
 
 interface QuizEditorProps {
   moduleId: string
+}
+
+function getDefaultAnswers(type: QuestionType): Answer[] {
+  switch (type) {
+    case 'ORDERING':
+      return [
+        { text: 'Étape 1', isCorrect: false },
+        { text: 'Étape 2', isCorrect: false },
+        { text: 'Étape 3', isCorrect: false },
+      ]
+    case 'MATCHING':
+      return [
+        { text: 'Élément A', isCorrect: false, matchText: 'Correspond à A' },
+        { text: 'Élément B', isCorrect: false, matchText: 'Correspond à B' },
+      ]
+    default:
+      return [
+        { text: '', isCorrect: true },
+        { text: '', isCorrect: false },
+      ]
+  }
 }
 
 export function QuizEditor({ moduleId }: QuizEditorProps) {
@@ -58,12 +100,13 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
           if (data) {
             setHasQuiz(true)
             setQuestions(
-              data.questions.map((q: { text: string; type: string; answers: { text: string; isCorrect: boolean }[] }) => ({
+              data.questions.map((q: { text: string; type: string; answers: { text: string; isCorrect: boolean; matchText?: string }[] }) => ({
                 text: q.text,
-                type: q.type as 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE',
-                answers: q.answers.map((a: { text: string; isCorrect: boolean }) => ({
+                type: q.type as QuestionType,
+                answers: q.answers.map((a) => ({
                   text: a.text,
                   isCorrect: a.isCorrect,
+                  matchText: a.matchText,
                 })),
               }))
             )
@@ -78,17 +121,10 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
     fetchQuiz()
   }, [moduleId])
 
-  const addQuestion = () => {
+  const addQuestion = (type: QuestionType = 'SINGLE_CHOICE') => {
     setQuestions([
       ...questions,
-      {
-        text: '',
-        type: 'SINGLE_CHOICE',
-        answers: [
-          { text: '', isCorrect: true },
-          { text: '', isCorrect: false },
-        ],
-      },
+      { text: '', type, answers: getDefaultAnswers(type) },
     ])
   }
 
@@ -97,14 +133,25 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
   }
 
   const updateQuestion = (qi: number, field: Partial<Question>) => {
-    setQuestions(questions.map((q, i) => (i === qi ? { ...q, ...field } : q)))
+    setQuestions(questions.map((q, i) => {
+      if (i !== qi) return q
+      // Si le type change, réinitialiser les réponses
+      if (field.type && field.type !== q.type) {
+        return { ...q, ...field, answers: getDefaultAnswers(field.type) }
+      }
+      return { ...q, ...field }
+    }))
   }
 
   const addAnswer = (qi: number) => {
     setQuestions(
-      questions.map((q, i) =>
-        i === qi ? { ...q, answers: [...q.answers, { text: '', isCorrect: false }] } : q
-      )
+      questions.map((q, i) => {
+        if (i !== qi) return q
+        const newAnswer: Answer = q.type === 'MATCHING'
+          ? { text: '', isCorrect: false, matchText: '' }
+          : { text: '', isCorrect: false }
+        return { ...q, answers: [...q.answers, newAnswer] }
+      })
     )
   }
 
@@ -124,7 +171,6 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
               ...q,
               answers: q.answers.map((a, j) => {
                 if (j !== ai) {
-                  // For SINGLE_CHOICE, uncheck other answers when one is checked
                   if (q.type === 'SINGLE_CHOICE' && field.isCorrect) {
                     return { ...a, isCorrect: false }
                   }
@@ -138,29 +184,66 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
     )
   }
 
+  const moveAnswer = (qi: number, ai: number, direction: 'up' | 'down') => {
+    setQuestions(
+      questions.map((q, i) => {
+        if (i !== qi) return q
+        const newAnswers = [...q.answers]
+        const targetIndex = direction === 'up' ? ai - 1 : ai + 1
+        if (targetIndex < 0 || targetIndex >= newAnswers.length) return q
+        ;[newAnswers[ai], newAnswers[targetIndex]] = [newAnswers[targetIndex], newAnswers[ai]]
+        return { ...q, answers: newAnswers }
+      })
+    )
+  }
+
   const handleSave = async () => {
     setError(null)
     setSuccess(null)
 
-    // Validate
     for (let i = 0; i < questions.length; i++) {
       const q = questions[i]
       if (!q.text.trim()) {
         setError(`Question ${i + 1} : le texte est requis`)
         return
       }
-      if (q.answers.length < 2) {
-        setError(`Question ${i + 1} : au moins 2 réponses sont requises`)
-        return
-      }
-      if (!q.answers.some((a) => a.isCorrect)) {
-        setError(`Question ${i + 1} : au moins une bonne réponse est requise`)
-        return
-      }
-      for (let j = 0; j < q.answers.length; j++) {
-        if (!q.answers[j].text.trim()) {
-          setError(`Question ${i + 1}, réponse ${j + 1} : le texte est requis`)
+
+      if (q.type === 'ORDERING') {
+        if (q.answers.length < 2) {
+          setError(`Question ${i + 1} : au moins 2 éléments sont requis`)
           return
+        }
+        for (let j = 0; j < q.answers.length; j++) {
+          if (!q.answers[j].text.trim()) {
+            setError(`Question ${i + 1}, élément ${j + 1} : le texte est requis`)
+            return
+          }
+        }
+      } else if (q.type === 'MATCHING') {
+        if (q.answers.length < 2) {
+          setError(`Question ${i + 1} : au moins 2 paires sont requises`)
+          return
+        }
+        for (let j = 0; j < q.answers.length; j++) {
+          if (!q.answers[j].text.trim() || !q.answers[j].matchText?.trim()) {
+            setError(`Question ${i + 1}, paire ${j + 1} : les deux textes sont requis`)
+            return
+          }
+        }
+      } else {
+        if (q.answers.length < 2) {
+          setError(`Question ${i + 1} : au moins 2 réponses sont requises`)
+          return
+        }
+        if (!q.answers.some((a) => a.isCorrect)) {
+          setError(`Question ${i + 1} : au moins une bonne réponse est requise`)
+          return
+        }
+        for (let j = 0; j < q.answers.length; j++) {
+          if (!q.answers[j].text.trim()) {
+            setError(`Question ${i + 1}, réponse ${j + 1} : le texte est requis`)
+            return
+          }
         }
       }
     }
@@ -179,6 +262,7 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
               text: a.text,
               isCorrect: a.isCorrect,
               order: ai,
+              matchText: a.matchText || null,
             })),
           })),
         }),
@@ -273,10 +357,24 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
             <p className="text-sm text-muted-foreground mb-4">
               Aucun quiz pour ce module. Ajoutez des questions pour créer un quiz.
             </p>
-            <Button onClick={addQuestion} variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter une question
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => addQuestion('SINGLE_CHOICE')} variant="outline" size="sm">
+                <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                Choix unique
+              </Button>
+              <Button onClick={() => addQuestion('MULTIPLE_CHOICE')} variant="outline" size="sm">
+                <CheckCircle className="h-3.5 w-3.5 mr-1.5" />
+                Choix multiple
+              </Button>
+              <Button onClick={() => addQuestion('ORDERING')} variant="outline" size="sm">
+                <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+                Ordonnancement
+              </Button>
+              <Button onClick={() => addQuestion('MATCHING')} variant="outline" size="sm">
+                <Link2 className="h-3.5 w-3.5 mr-1.5" />
+                Association
+              </Button>
+            </div>
           </div>
         ) : (
           <>
@@ -285,8 +383,12 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
                 <div className="flex items-start gap-2">
                   <GripVertical className="h-5 w-5 text-muted-foreground mt-2 shrink-0" />
                   <div className="flex-1 space-y-3">
+                    {/* Question header */}
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="shrink-0">Q{qi + 1}</Badge>
+                      <Badge variant="outline" className="shrink-0 gap-1">
+                        {TYPE_ICONS[question.type]}
+                        Q{qi + 1}
+                      </Badge>
                       <Input
                         value={question.text}
                         onChange={(e) => updateQuestion(qi, { text: e.target.value })}
@@ -295,14 +397,16 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
                       />
                       <Select
                         value={question.type}
-                        onValueChange={(v) => updateQuestion(qi, { type: v as 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' })}
+                        onValueChange={(v) => updateQuestion(qi, { type: v as QuestionType })}
                       >
-                        <SelectTrigger className="w-40">
+                        <SelectTrigger className="w-44">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="SINGLE_CHOICE">Choix unique</SelectItem>
                           <SelectItem value="MULTIPLE_CHOICE">Choix multiple</SelectItem>
+                          <SelectItem value="ORDERING">Ordonnancement</SelectItem>
+                          <SelectItem value="MATCHING">Association</SelectItem>
                         </SelectContent>
                       </Select>
                       <Button
@@ -310,41 +414,138 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
                         size="icon"
                         className="text-red-500 hover:text-red-600 hover:bg-red-50 shrink-0"
                         onClick={() => removeQuestion(qi)}
+                        aria-label="Supprimer la question"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
 
+                    {/* Answers section — varies by type */}
                     <div className="space-y-2 pl-2">
-                      <Label className="text-xs text-muted-foreground">
-                        Réponses (cochez les bonnes réponses)
-                      </Label>
-                      {question.answers.map((answer, ai) => (
-                        <div key={ai} className="flex items-center gap-2">
-                          <Checkbox
-                            checked={answer.isCorrect}
-                            onCheckedChange={(checked) =>
-                              updateAnswer(qi, ai, { isCorrect: !!checked })
-                            }
-                          />
-                          <Input
-                            value={answer.text}
-                            onChange={(e) => updateAnswer(qi, ai, { text: e.target.value })}
-                            placeholder={`Réponse ${ai + 1}...`}
-                            className={`flex-1 ${answer.isCorrect ? 'border-green-300 bg-green-50/50' : ''}`}
-                          />
-                          {question.answers.length > 2 && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-8 w-8 text-muted-foreground hover:text-red-500"
-                              onClick={() => removeAnswer(qi, ai)}
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                            </Button>
-                          )}
-                        </div>
-                      ))}
+                      {(question.type === 'SINGLE_CHOICE' || question.type === 'MULTIPLE_CHOICE') && (
+                        <>
+                          <Label className="text-xs text-muted-foreground">
+                            Réponses (cochez les bonnes réponses)
+                          </Label>
+                          {question.answers.map((answer, ai) => (
+                            <div key={ai} className="flex items-center gap-2">
+                              <Checkbox
+                                checked={answer.isCorrect}
+                                onCheckedChange={(checked) =>
+                                  updateAnswer(qi, ai, { isCorrect: !!checked })
+                                }
+                              />
+                              <Input
+                                value={answer.text}
+                                onChange={(e) => updateAnswer(qi, ai, { text: e.target.value })}
+                                placeholder={`Réponse ${ai + 1}...`}
+                                className={`flex-1 ${answer.isCorrect ? 'border-green-300 bg-green-50/50' : ''}`}
+                              />
+                              {question.answers.length > 2 && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                  onClick={() => removeAnswer(qi, ai)}
+                                  aria-label="Supprimer la réponse"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+
+                      {question.type === 'ORDERING' && (
+                        <>
+                          <Label className="text-xs text-muted-foreground">
+                            Éléments dans le bon ordre (l&apos;ordre ci-dessous = la bonne réponse)
+                          </Label>
+                          {question.answers.map((answer, ai) => (
+                            <div key={ai} className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-muted-foreground w-5 text-center shrink-0">{ai + 1}</span>
+                              <Input
+                                value={answer.text}
+                                onChange={(e) => updateAnswer(qi, ai, { text: e.target.value })}
+                                placeholder={`Étape ${ai + 1}...`}
+                                className="flex-1"
+                              />
+                              <div className="flex flex-col">
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5"
+                                  onClick={() => moveAnswer(qi, ai, 'up')}
+                                  disabled={ai === 0}
+                                  aria-label="Monter"
+                                >
+                                  <ChevronUp className="h-3 w-3" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5"
+                                  onClick={() => moveAnswer(qi, ai, 'down')}
+                                  disabled={ai === question.answers.length - 1}
+                                  aria-label="Descendre"
+                                >
+                                  <ChevronDown className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              {question.answers.length > 2 && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                  onClick={() => removeAnswer(qi, ai)}
+                                  aria-label="Supprimer"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+
+                      {question.type === 'MATCHING' && (
+                        <>
+                          <Label className="text-xs text-muted-foreground">
+                            Paires à associer (gauche → droite)
+                          </Label>
+                          {question.answers.map((answer, ai) => (
+                            <div key={ai} className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-muted-foreground shrink-0">{ai + 1}.</span>
+                              <Input
+                                value={answer.text}
+                                onChange={(e) => updateAnswer(qi, ai, { text: e.target.value })}
+                                placeholder="Élément gauche..."
+                                className="flex-1"
+                              />
+                              <Link2 className="h-4 w-4 text-muted-foreground shrink-0" />
+                              <Input
+                                value={answer.matchText || ''}
+                                onChange={(e) => updateAnswer(qi, ai, { matchText: e.target.value })}
+                                placeholder="Correspond à..."
+                                className="flex-1"
+                              />
+                              {question.answers.length > 2 && (
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-8 w-8 text-muted-foreground hover:text-red-500"
+                                  onClick={() => removeAnswer(qi, ai)}
+                                  aria-label="Supprimer la paire"
+                                >
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                </Button>
+                              )}
+                            </div>
+                          ))}
+                        </>
+                      )}
+
                       <Button
                         variant="ghost"
                         size="sm"
@@ -352,7 +553,9 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
                         onClick={() => addAnswer(qi)}
                       >
                         <Plus className="h-3.5 w-3.5 mr-1" />
-                        Ajouter une réponse
+                        {question.type === 'ORDERING' ? 'Ajouter un élément' :
+                         question.type === 'MATCHING' ? 'Ajouter une paire' :
+                         'Ajouter une réponse'}
                       </Button>
                     </div>
                   </div>
@@ -361,10 +564,20 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
             ))}
 
             <div className="flex items-center justify-between pt-2">
-              <Button variant="outline" onClick={addQuestion}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter une question
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button onClick={() => addQuestion('SINGLE_CHOICE')} variant="outline" size="sm">
+                  <Plus className="h-3.5 w-3.5 mr-1" />
+                  Choix
+                </Button>
+                <Button onClick={() => addQuestion('ORDERING')} variant="outline" size="sm">
+                  <ArrowUpDown className="h-3.5 w-3.5 mr-1" />
+                  Ordre
+                </Button>
+                <Button onClick={() => addQuestion('MATCHING')} variant="outline" size="sm">
+                  <Link2 className="h-3.5 w-3.5 mr-1" />
+                  Association
+                </Button>
+              </div>
               <Button onClick={handleSave} disabled={isSaving}>
                 {isSaving ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />

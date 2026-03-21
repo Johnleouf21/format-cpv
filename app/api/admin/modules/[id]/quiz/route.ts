@@ -52,9 +52,9 @@ export async function PUT(
     // Validate questions
     const questions: {
       text: string
-      type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'
+      type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'ORDERING' | 'MATCHING'
       order: number
-      answers: { text: string; isCorrect: boolean; order: number }[]
+      answers: { text: string; isCorrect: boolean; order: number; matchText?: string }[]
     }[] = body.questions
 
     if (!questions || questions.length === 0) {
@@ -63,8 +63,13 @@ export async function PUT(
 
     for (const q of questions) {
       if (!q.text?.trim()) throw new ApiError(400, 'Chaque question doit avoir un texte', 'INVALID_QUIZ')
-      if (!q.answers || q.answers.length < 2) throw new ApiError(400, 'Chaque question doit avoir au moins 2 réponses', 'INVALID_QUIZ')
-      if (!q.answers.some((a) => a.isCorrect)) throw new ApiError(400, 'Chaque question doit avoir au moins une bonne réponse', 'INVALID_QUIZ')
+      if (!q.answers || q.answers.length < 2) throw new ApiError(400, 'Chaque question doit avoir au moins 2 éléments', 'INVALID_QUIZ')
+      if ((q.type === 'SINGLE_CHOICE' || q.type === 'MULTIPLE_CHOICE') && !q.answers.some((a) => a.isCorrect)) {
+        throw new ApiError(400, 'Les questions à choix doivent avoir au moins une bonne réponse', 'INVALID_QUIZ')
+      }
+      if (q.type === 'MATCHING' && q.answers.some((a) => !a.matchText?.trim())) {
+        throw new ApiError(400, 'Les questions d\'association doivent avoir un texte de correspondance', 'INVALID_QUIZ')
+      }
     }
 
     // Delete existing quiz if any
@@ -84,6 +89,7 @@ export async function PUT(
                 text: a.text,
                 isCorrect: a.isCorrect,
                 order: ai,
+                matchText: a.matchText || null,
               })),
             },
           })),

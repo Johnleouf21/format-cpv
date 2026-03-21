@@ -8,12 +8,13 @@ export interface QuizWithQuestions {
   questions: {
     id: string
     text: string
-    type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'
+    type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'ORDERING' | 'MATCHING'
     order: number
     answers: {
       id: string
       text: string
       order: number
+      matchText?: string | null
     }[]
   }[]
 }
@@ -76,6 +77,7 @@ export async function getModuleQuiz(
               id: true,
               text: true,
               order: true,
+              matchText: true,
               // Don't expose isCorrect to client
             },
           },
@@ -160,25 +162,51 @@ export async function submitQuiz(
 
   for (const question of quiz.questions) {
     const selectedAnswerIds = submission.answers[question.id] || []
-    const correctAnswerIds = question.answers
-      .filter((a) => a.isCorrect)
-      .map((a) => a.id)
 
-    // Check if all selected answers are correct and all correct answers are selected
-    const isCorrect =
-      selectedAnswerIds.length === correctAnswerIds.length &&
-      selectedAnswerIds.every((id) => correctAnswerIds.includes(id))
-
-    if (isCorrect) {
-      correctCount++
+    if (question.type === 'ORDERING') {
+      // Pour l'ordonnancement : l'ordre correct est l'ordre dans la DB (par answer.order)
+      const correctOrder = question.answers
+        .sort((a, b) => a.order - b.order)
+        .map((a) => a.id)
+      const isCorrect =
+        selectedAnswerIds.length === correctOrder.length &&
+        selectedAnswerIds.every((id, index) => id === correctOrder[index])
+      if (isCorrect) correctCount++
+      results.push({
+        questionId: question.id,
+        correct: isCorrect,
+        selectedAnswers: selectedAnswerIds,
+        correctAnswers: correctOrder,
+      })
+    } else if (question.type === 'MATCHING') {
+      // Pour l'association : format "leftId:rightId", correct = leftId:leftId (même answer)
+      const correctPairs = question.answers.map((a) => `${a.id}:${a.id}`)
+      const isCorrect =
+        selectedAnswerIds.length === correctPairs.length &&
+        correctPairs.every((pair) => selectedAnswerIds.includes(pair))
+      if (isCorrect) correctCount++
+      results.push({
+        questionId: question.id,
+        correct: isCorrect,
+        selectedAnswers: selectedAnswerIds,
+        correctAnswers: correctPairs,
+      })
+    } else {
+      // SINGLE_CHOICE / MULTIPLE_CHOICE
+      const correctAnswerIds = question.answers
+        .filter((a) => a.isCorrect)
+        .map((a) => a.id)
+      const isCorrect =
+        selectedAnswerIds.length === correctAnswerIds.length &&
+        selectedAnswerIds.every((id) => correctAnswerIds.includes(id))
+      if (isCorrect) correctCount++
+      results.push({
+        questionId: question.id,
+        correct: isCorrect,
+        selectedAnswers: selectedAnswerIds,
+        correctAnswers: correctAnswerIds,
+      })
     }
-
-    results.push({
-      questionId: question.id,
-      correct: isCorrect,
-      selectedAnswers: selectedAnswerIds,
-      correctAnswers: correctAnswerIds,
-    })
   }
 
   const totalQuestions = quiz.questions.length
@@ -296,7 +324,7 @@ export async function getUserQuizResult(
     include: {
       questions: {
         include: {
-          answers: { select: { id: true, isCorrect: true } },
+          answers: { select: { id: true, isCorrect: true, order: true }, orderBy: { order: 'asc' } },
         },
       },
     },
@@ -304,11 +332,21 @@ export async function getUserQuizResult(
 
   const userAnswers = progress.quizResult.answers as Record<string, string[]>
 
-  const results = (quiz?.questions || []).map((q) => ({
-    questionId: q.id,
-    selectedAnswers: userAnswers[q.id] || [],
-    correctAnswers: q.answers.filter((a) => a.isCorrect).map((a) => a.id),
-  }))
+  const results = (quiz?.questions || []).map((q) => {
+    let correctAnswers: string[]
+    if (q.type === 'ORDERING') {
+      correctAnswers = q.answers.map((a) => a.id) // déjà trié par order
+    } else if (q.type === 'MATCHING') {
+      correctAnswers = q.answers.map((a) => `${a.id}:${a.id}`)
+    } else {
+      correctAnswers = q.answers.filter((a) => a.isCorrect).map((a) => a.id)
+    }
+    return {
+      questionId: q.id,
+      selectedAnswers: userAnswers[q.id] || [],
+      correctAnswers,
+    }
+  })
 
   return {
     score: progress.quizResult.score,

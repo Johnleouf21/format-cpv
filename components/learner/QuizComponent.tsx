@@ -11,12 +11,13 @@ interface Answer {
   id: string
   text: string
   order: number
+  matchText?: string
 }
 
 interface Question {
   id: string
   text: string
-  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'
+  type: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE' | 'ORDERING' | 'MATCHING'
   order: number
   answers: Answer[]
 }

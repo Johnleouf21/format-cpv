@@ -7,6 +7,7 @@ function mapToAdapterUser(user: {
   email: string
   name: string
   role: UserRole
+  isSuperAdmin: boolean
   emailVerified: Date | null
 }): AdapterUser {
   return {
@@ -15,6 +16,7 @@ function mapToAdapterUser(user: {
     name: user.name,
     emailVerified: user.emailVerified,
     role: user.role,
+    isSuperAdmin: user.isSuperAdmin,
   }
 }
 

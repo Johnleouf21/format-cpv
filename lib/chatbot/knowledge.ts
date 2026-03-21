@@ -203,7 +203,14 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['role', 'changer', 'promouvoir', 'retrograder', 'hierarchie', 'permission'],
     question: "Comment changer le rôle d'un utilisateur ?",
-    answer: 'Dans [Accès](/admin/whitelist) ou [Formateurs](/admin/trainers), utilisez le sélecteur de rôle.\n\nHiérarchie : **Admin** > **Formateur** > **Apprenant**\n\n- Un admin peut modifier **n\'importe quel rôle**\n- Un formateur ne peut gérer que ses apprenants\n- Les admins ne peuvent pas être rétrogradés depuis l\'espace Formateurs',
+    answer: 'Dans [Accès](/admin/whitelist), utilisez le sélecteur de rôle.\n\nHiérarchie : **Super Admin** > **Admin** > **Formateur** > **Apprenant**\n\n- **Promouvoir en Admin** → réservé au Super Admin\n- **Rétrograder un Admin** → réservé au Super Admin\n- Un formateur ne peut gérer que ses apprenants',
+    category: 'Administration',
+    roles: ['ADMIN'],
+  },
+  {
+    keywords: ['super admin', 'su', 'privileges', 'droits', 'supprimer parcours', 'supprimer module'],
+    question: 'Qu\'est-ce que le Super Admin ?',
+    answer: 'Le **Super Admin** est un administrateur avec des **privilèges élevés**. Lui seul peut :\n\n- **Promouvoir** un utilisateur en Admin\n- **Rétrograder ou supprimer** un Admin\n- **Supprimer** un parcours ou un module\n\nLe badge **"Super Admin"** est visible dans le menu utilisateur. Ce statut se configure en base de données uniquement.',
     category: 'Administration',
     roles: ['ADMIN'],
   },

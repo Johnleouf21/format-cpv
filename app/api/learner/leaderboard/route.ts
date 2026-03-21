@@ -59,7 +59,10 @@ export async function GET() {
       rank: index + 1,
     }))
 
-    return NextResponse.json({ entries: ranked, groupLabel })
+    const response = NextResponse.json({ entries: ranked, groupLabel })
+    // Cache 60s côté Vercel CDN, revalidation en arrière-plan
+    response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=120')
+    return response
   } catch (error) {
     return handleApiError(error)
   }

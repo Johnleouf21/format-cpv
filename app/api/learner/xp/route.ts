@@ -8,7 +8,9 @@ export async function GET() {
     const session = await requireAuth()
 
     const xp = await getUserXP(session.user.id)
-    return NextResponse.json(xp)
+    const response = NextResponse.json(xp)
+    response.headers.set('Cache-Control', 's-maxage=30, stale-while-revalidate=60')
+    return response
   } catch (error) {
     return handleApiError(error)
   }

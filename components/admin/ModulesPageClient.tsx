@@ -15,6 +15,7 @@ import { ModuleCard, ModuleCardSkeleton } from '@/components/shared/ModuleCard'
 import { ConfirmDialog } from './ConfirmDialog'
 import { Skeleton } from '@/components/ui/skeleton'
 import { Plus } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Module {
   id: string
@@ -74,10 +75,16 @@ export function ModulesPageClient() {
       })
       if (response.ok) {
         setModules((prev) => prev.filter((m) => m.id !== deleteId))
-        setDeleteId(null)
+        toast.success('Module supprimé')
+      } else {
+        const data = await response.json().catch(() => ({}))
+        toast.error(data.error || 'Erreur lors de la suppression')
       }
+    } catch {
+      toast.error('Erreur lors de la suppression')
     } finally {
       setIsDeleting(false)
+      setDeleteId(null)
     }
   }
 

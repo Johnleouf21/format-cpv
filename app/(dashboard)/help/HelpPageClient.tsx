@@ -280,6 +280,25 @@ const adminSections = [
     ],
   },
   {
+    id: 'admin-superadmin',
+    icon: Shield,
+    title: 'Super Admin',
+    items: [
+      {
+        q: 'Qu\'est-ce que le Super Admin ?',
+        a: 'Le Super Admin est un administrateur avec des privilèges élevés. Il est le seul à pouvoir :\n- Promouvoir un utilisateur en administrateur\n- Rétrograder ou supprimer un administrateur\n- Supprimer un parcours ou un module\n\nLe badge "Super Admin" est visible dans le menu utilisateur.',
+      },
+      {
+        q: 'Comment devenir Super Admin ?',
+        a: 'Le statut Super Admin se configure directement en base de données. Il ne peut pas être attribué depuis l\'interface pour des raisons de sécurité.',
+      },
+      {
+        q: 'Quelles actions sont réservées au Super Admin ?',
+        a: 'Les actions suivantes nécessitent le Super Admin :\n- Supprimer un parcours\n- Supprimer un module\n- Promouvoir un utilisateur en Admin\n- Rétrograder un Admin\n- Supprimer un email Admin de la whitelist\n\nLes autres admins reçoivent un message "Vous n\'avez pas les droits nécessaires".',
+      },
+    ],
+  },
+  {
     id: 'admin-monitoring',
     icon: Shield,
     title: 'Suivi et exports',

@@ -78,6 +78,8 @@ export function LearnersPageClient() {
   const [selectedTrainer, setSelectedTrainer] = useState<string>('all')
   const [selectedParcours, setSelectedParcours] = useState<string>('all')
   const [selectedStatus, setSelectedStatus] = useState<string>('all')
+  const [selectedCenter, setSelectedCenter] = useState<string>('all')
+  const [centersList, setCentersList] = useState<{ id: string; name: string }[]>([])
 
   const fetchLearners = useCallback(async () => {
     try {
@@ -98,15 +100,17 @@ export function LearnersPageClient() {
   useEffect(() => {
     async function fetchInitialData() {
       try {
-        const [learnersRes, trainersRes, parcoursRes] = await Promise.all([
+        const [learnersRes, trainersRes, parcoursRes, centersRes] = await Promise.all([
           fetch('/api/admin/learners'),
           fetch('/api/admin/trainers'),
           fetch('/api/admin/parcours'),
+          fetch('/api/admin/centers'),
         ])
 
         if (learnersRes.ok) setRawLearners(await learnersRes.json())
         if (trainersRes.ok) setTrainers(await trainersRes.json())
         if (parcoursRes.ok) setParcoursList(await parcoursRes.json())
+        if (centersRes.ok) setCentersList(await centersRes.json())
       } catch (error) {
         console.error('Error fetching data:', error)
       } finally {
@@ -123,15 +127,22 @@ export function LearnersPageClient() {
     }
   }, [selectedTrainer, selectedParcours, selectedStatus, fetchLearners, isLoading])
 
-  // Map + client-side search filter
+  // Map + client-side search + center filter
   const learners = useMemo(() => {
-    const mapped = rawLearners.map(mapToLearnerItem)
+    let mapped = rawLearners.map(mapToLearnerItem)
+
+    // Filtre par centre
+    if (selectedCenter !== 'all') {
+      mapped = mapped.filter((l) => l.centers?.some((c) => c.id === selectedCenter))
+    }
+
+    // Filtre par recherche
     if (!search) return mapped
     const q = search.toLowerCase()
     return mapped.filter(
       (l) => l.name.toLowerCase().includes(q) || l.email.toLowerCase().includes(q)
     )
-  }, [rawLearners, search])
+  }, [rawLearners, search, selectedCenter])
 
   async function handleDelete(id: string) {
     const response = await fetch(`/api/admin/learners/${id}`, {
@@ -269,6 +280,21 @@ export function LearnersPageClient() {
                 <SelectItem value="completed">Terminé</SelectItem>
               </SelectContent>
             </Select>
+            {centersList.length > 0 && (
+              <Select value={selectedCenter} onValueChange={setSelectedCenter}>
+                <SelectTrigger className="w-[160px] h-8 text-xs">
+                  <SelectValue placeholder="Centre" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tous les centres</SelectItem>
+                  {centersList.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>
+                      {c.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
           </div>
         }
       />

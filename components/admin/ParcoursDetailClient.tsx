@@ -7,7 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
-import { BookOpen, Plus, Edit, Eye } from 'lucide-react'
+import { BookOpen, Plus, Edit, Eye, Trash2 } from 'lucide-react'
+import { ConfirmDialog } from './ConfirmDialog'
+import { toast } from 'sonner'
 import { SortableList } from '@/components/shared/SortableList'
 
 interface Module {
@@ -34,6 +36,8 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
   const [isLoading, setIsLoading] = useState(true)
   const [isReordering, setIsReordering] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [deleteModuleId, setDeleteModuleId] = useState<string | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   useEffect(() => {
     async function fetchParcours() {
@@ -83,6 +87,29 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
       setParcours(previous)
     } finally {
       setIsReordering(false)
+    }
+  }
+
+  const handleDeleteModule = async () => {
+    if (!deleteModuleId || !parcours) return
+    setIsDeleting(true)
+    try {
+      const res = await fetch(`/api/admin/modules/${deleteModuleId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setParcours({
+          ...parcours,
+          modules: parcours.modules.filter((m) => m.id !== deleteModuleId),
+        })
+        toast.success('Module supprimé')
+      } else {
+        const data = await res.json()
+        toast.error(data.error || 'Erreur lors de la suppression')
+      }
+    } catch {
+      toast.error('Erreur lors de la suppression')
+    } finally {
+      setIsDeleting(false)
+      setDeleteModuleId(null)
     }
   }
 
@@ -178,6 +205,15 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
                           <Edit className="h-4 w-4" />
                         </Link>
                       </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setDeleteModuleId(module.id)}
+                        aria-label="Supprimer"
+                        className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                 )}
@@ -185,6 +221,17 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
             )}
         </CardContent>
       </Card>
+
+      <ConfirmDialog
+        open={!!deleteModuleId}
+        onOpenChange={(open) => !open && setDeleteModuleId(null)}
+        title="Supprimer le module"
+        description={`Êtes-vous sûr de vouloir supprimer le module "${parcours.modules.find((m) => m.id === deleteModuleId)?.title}" ? Cette action est irréversible et supprimera le quiz et la progression associés.`}
+        confirmLabel="Supprimer"
+        onConfirm={handleDeleteModule}
+        isLoading={isDeleting}
+        variant="destructive"
+      />
     </div>
   )
 }

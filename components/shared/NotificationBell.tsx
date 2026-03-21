@@ -53,7 +53,7 @@ export function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications()
-    const interval = setInterval(fetchNotifications, 30000)
+    const interval = setInterval(fetchNotifications, 60000)
 
     // Écouter les changements depuis le centre de notifications
     const handleRefresh = () => fetchNotifications()

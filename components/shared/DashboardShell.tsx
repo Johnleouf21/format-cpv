@@ -40,6 +40,7 @@ interface DashboardShellProps {
   userName: string
   userEmail: string
   userRole: string
+  isSuperAdmin?: boolean
   currentSpace: 'admin' | 'trainer' | 'learner'
   maxWidth?: string
 }
@@ -65,6 +66,7 @@ export function DashboardShell({
   userName,
   userEmail,
   userRole,
+  isSuperAdmin,
   currentSpace,
   maxWidth = 'max-w-7xl',
 }: DashboardShellProps) {
@@ -136,6 +138,7 @@ export function DashboardShell({
               userName={userName}
               userEmail={userEmail}
               userRole={userRole}
+              isSuperAdmin={isSuperAdmin}
               currentSpace={currentSpace}
               compact={sidebarCollapsed}
               side="right"
@@ -271,6 +274,7 @@ export function DashboardShell({
               userName={userName}
               userEmail={userEmail}
               userRole={userRole}
+              isSuperAdmin={isSuperAdmin}
               currentSpace={currentSpace}
             />
           </div>

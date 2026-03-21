@@ -7,7 +7,9 @@ export async function GET() {
   try {
     await requireAuth()
     const ratings = await getParcoursRatings()
-    return NextResponse.json(ratings)
+    const response = NextResponse.json(ratings)
+    response.headers.set('Cache-Control', 's-maxage=120, stale-while-revalidate=300')
+    return response
   } catch (error) {
     return handleApiError(error)
   }

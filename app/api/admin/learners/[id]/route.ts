@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAuth } from '@/lib/auth/require-auth'
+import { requireAuth, isSuperAdmin } from '@/lib/auth/require-auth'
 import { getLearnerById, deleteLearner } from '@/lib/services/admin.service'
-import { handleApiError } from '@/lib/errors/api-error'
+import { handleApiError, ApiError } from '@/lib/errors/api-error'
 import { logActivity } from '@/lib/services/activity-log.service'
 
 interface RouteParams {
@@ -26,6 +26,12 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     const session = await requireAuth('ADMIN')
 
     const { id } = await params
+
+    // Empêcher la suppression d'un Super Admin
+    if (await isSuperAdmin(id)) {
+      throw new ApiError(403, 'Cet utilisateur ne peut pas être supprimé', 'CANNOT_DELETE_SUPER_ADMIN')
+    }
+
     await deleteLearner(id)
 
     logActivity({

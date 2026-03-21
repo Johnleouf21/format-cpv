@@ -33,6 +33,7 @@ interface UserMenuProps {
   userName: string
   userEmail: string
   userRole: string
+  isSuperAdmin?: boolean
   currentSpace: 'admin' | 'trainer' | 'learner'
   /** Compact mode: only show avatar, no name/chevron (used in sidebar) */
   compact?: boolean
@@ -64,6 +65,7 @@ export function UserMenu({
   userName,
   userEmail,
   userRole,
+  isSuperAdmin,
   currentSpace,
   compact = false,
   align = 'end',
@@ -138,9 +140,17 @@ export function UserMenu({
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium truncate">{userName}</p>
               <p className="text-xs text-muted-foreground truncate">{userEmail}</p>
-              <span className={`inline-block mt-0.5 px-1.5 py-0.5 rounded text-[10px] font-medium ${roleBadgeColors[userRole]}`}>
-                {roleLabels[userRole] || userRole}
-              </span>
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className={`inline-block px-1.5 py-0.5 rounded text-[10px] font-medium ${roleBadgeColors[userRole]}`}>
+                  {roleLabels[userRole] || userRole}
+                </span>
+                {isSuperAdmin && (
+                  <span className="relative inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold whitespace-nowrap bg-gradient-to-r from-amber-400 via-yellow-300 to-amber-400 dark:from-amber-600 dark:via-yellow-500 dark:to-amber-600 text-amber-900 dark:text-amber-100 shadow-sm animate-shimmer bg-[length:200%_100%]">
+                    <svg className="h-2.5 w-2.5 shrink-0" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                    Super&nbsp;Admin
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         </DropdownMenuLabel>

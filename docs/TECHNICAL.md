@@ -133,7 +133,7 @@ VerificationToken (NextAuth)
 - **Cross-device** : le lien fonctionne depuis n'importe quel appareil, polling automatique côté navigateur d'origine
 - **Auto-login** : si le lien est ouvert dans le même navigateur, redirection automatique
 - **Whitelist** : contrôle d'accès par domaine (@entreprise.com) ou email individuel
-- **RBAC** : 3 rôles (ADMIN, TRAINER, LEARNER) avec helper `requireAuth()` sur les 58 routes
+- **RBAC** : 3 rôles (ADMIN, TRAINER, LEARNER) + Super Admin avec helpers `requireAuth()` et `requireSuperAdmin()` sur les 58 routes
 - **Rate limiting** : protection des endpoints auth (in-memory, configurable)
 - **CSP** : Content Security Policy renforcée (unsafe-eval supprimé en production)
 - **Headers** : HSTS, Permissions-Policy, X-Frame-Options, X-Content-Type-Options
@@ -342,6 +342,44 @@ Avant chaque commit, les hooks vérifient automatiquement :
 
 Cela empêche de commiter du code avec des erreurs de lint ou de typage.
 
+### Convention de commits (Commitlint)
+
+Les messages de commit suivent la convention [Conventional Commits](https://www.conventionalcommits.org/) :
+
+| Préfixe | Usage | Exemple |
+|---|---|---|
+| `feat:` | Nouvelle fonctionnalité | `feat: ajout drag & drop quiz` |
+| `fix:` | Correction de bug | `fix: contraste dark mode certificats` |
+| `docs:` | Documentation | `docs: mise à jour aide chatbot` |
+| `refactor:` | Refactoring | `refactor: extraction helper auth` |
+| `perf:` | Performance | `perf: batch XP queries` |
+| `chore:` | Maintenance | `chore: mise à jour dépendances` |
+
+Un hook `commit-msg` vérifie automatiquement le format avant chaque commit.
+
+### Gestion de projet (GitHub Issues)
+
+Le projet utilise **GitHub Issues** pour le suivi des tâches :
+
+- **Templates structurés** : Bug Report et Feature Request pré-formatés
+- **Labels** : `bug`, `enhancement`, `dependencies`, `ci`
+- **Workflow** : Issue → Branche → PR → Merge → Issue fermée automatiquement
+
+Exemple de workflow :
+1. Issue `#42` créée : "Ajouter export PDF des résultats"
+2. Branche `feature/42-export-pdf` créée depuis `dev`
+3. PR ouverte avec référence `fixes #42`
+4. CI passe → Review → Merge
+5. Issue `#42` fermée automatiquement
+
+### Maintenance des dépendances (Dependabot)
+
+**Dependabot** scanne automatiquement les dépendances chaque lundi :
+- PRs automatiques pour les mises à jour de sécurité
+- Mises à jour mineures/patch groupées en une seule PR
+- Mises à jour majeures en PRs individuelles
+- Couvre npm et GitHub Actions
+
 ### Déploiement Vercel
 
 | Événement | Action |
@@ -365,7 +403,8 @@ Configuration :
 | Mesure | Détail |
 |---|---|
 | Authentification | Magic link, pas de mot de passe stocké |
-| Autorisation | RBAC avec `requireAuth()` sur 58 routes |
+| Autorisation | RBAC avec `requireAuth()` + `requireSuperAdmin()` sur 58 routes |
+| Super Admin | Suppression parcours/modules, promotion/rétrogradation admin |
 | Rate limiting | 5 req/min login, 60/min polling, 10/min invitations |
 | CSP | Script-src sans unsafe-eval en prod |
 | HSTS | max-age 1 an en production |

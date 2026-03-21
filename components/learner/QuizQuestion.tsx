@@ -175,8 +175,8 @@ export function QuizQuestion({
     const leftId = Object.entries(matchSelections).find(([, v]) => v === rightId)?.[0]
     if (!leftId) return ''
     const correctPair = correctAnswers.find((c) => c.startsWith(`${leftId}:`))
-    if (correctPair === `${leftId}:${rightId}`) return 'border-green-500 bg-green-50'
-    return 'border-red-500 bg-red-50'
+    if (correctPair === `${leftId}:${rightId}`) return 'border-green-500 bg-green-50 dark:bg-green-950'
+    return 'border-red-500 bg-red-50 dark:bg-red-950'
   }
 
   // ─── Render ───
@@ -213,7 +213,7 @@ export function QuizQuestion({
               <RadioGroupItem value={answer.id} id={answer.id} />
               <Label htmlFor={answer.id} className="cursor-pointer flex-1">{answer.text}</Label>
               {showResult && correctAnswers?.includes(answer.id) && (
-                <span className="text-green-600 text-sm font-medium">✓ Correct</span>
+                <span className="text-green-600 dark:text-green-400 text-sm font-medium">✓ Correct</span>
               )}
             </div>
           ))}
@@ -236,7 +236,7 @@ export function QuizQuestion({
               />
               <Label htmlFor={answer.id} className="cursor-pointer flex-1">{answer.text}</Label>
               {showResult && correctAnswers?.includes(answer.id) && (
-                <span className="text-green-600 text-sm font-medium">✓ Correct</span>
+                <span className="text-green-600 dark:text-green-400 text-sm font-medium">✓ Correct</span>
               )}
             </div>
           ))}
@@ -256,7 +256,7 @@ export function QuizQuestion({
                 <span className="text-sm font-bold text-muted-foreground w-6 text-center">{index + 1}</span>
                 <span className="flex-1 text-sm">{item.text}</span>
                 {showResult && correctAnswers && (
-                  <span className={cn('text-sm font-medium', correctAnswers[index] === item.id ? 'text-green-600' : 'text-red-600')}>
+                  <span className={cn('text-sm font-medium', correctAnswers[index] === item.id ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
                     {correctAnswers[index] === item.id ? '✓' : '✗'}
                   </span>
                 )}
@@ -299,7 +299,7 @@ export function QuizQuestion({
                       <div className="flex items-center gap-2">
                         <span className="text-sm flex-1">{answer.text}</span>
                         {isPaired && pairedRight && (
-                          <span className="text-[11px] text-blue-600 bg-blue-100 px-2 py-0.5 rounded-full truncate max-w-[120px]">
+                          <span className="text-[11px] text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900 px-2 py-0.5 rounded-full truncate max-w-[120px]">
                             → {pairedRight.matchText}
                           </span>
                         )}
@@ -333,7 +333,7 @@ export function QuizQuestion({
                       >
                         {answer.matchText || answer.text}
                         {pairedLeft && !showResult && (
-                          <span className="block text-[11px] text-blue-600 mt-0.5">
+                          <span className="block text-[11px] text-blue-600 dark:text-blue-300 mt-0.5">
                             ← {pairedLeft.text}
                           </span>
                         )}

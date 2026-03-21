@@ -78,3 +78,37 @@ export async function markAllAsRead(userId: string) {
     data: { read: true },
   })
 }
+
+export async function deleteNotification(notificationId: string, userId: string) {
+  return prisma.notification.deleteMany({
+    where: { id: notificationId, userId },
+  })
+}
+
+export async function deleteAllNotifications(userId: string) {
+  return prisma.notification.deleteMany({
+    where: { userId },
+  })
+}
+
+export async function getAllNotifications(
+  userId: string,
+  options?: { read?: boolean; limit?: number; offset?: number }
+) {
+  const where: Record<string, unknown> = { userId }
+  if (options?.read !== undefined) {
+    where.read = options.read
+  }
+
+  const [notifications, total] = await Promise.all([
+    prisma.notification.findMany({
+      where,
+      orderBy: { createdAt: 'desc' },
+      take: options?.limit || 50,
+      skip: options?.offset || 0,
+    }),
+    prisma.notification.count({ where }),
+  ])
+
+  return { notifications, total }
+}

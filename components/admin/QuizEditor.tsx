@@ -432,7 +432,7 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
                                 value={answer.text}
                                 onChange={(e) => updateAnswer(qi, ai, { text: e.target.value })}
                                 placeholder={`Réponse ${ai + 1}...`}
-                                className={`flex-1 ${answer.isCorrect ? 'border-green-300 bg-green-50/50' : ''}`}
+                                className={`flex-1 ${answer.isCorrect ? 'border-green-300 bg-green-50/50 dark:bg-green-950/50 dark:border-green-700' : ''}`}
                               />
                               {question.answers.length > 2 && (
                                 <Button

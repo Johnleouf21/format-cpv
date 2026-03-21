@@ -194,7 +194,7 @@ export function DashboardShell({
               </div>
               <div className="hidden md:flex items-center gap-2">
                 <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
-                  <Link href="/help">
+                  <Link href="/help" aria-label="Aide">
                     <HelpCircle className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -202,7 +202,7 @@ export function DashboardShell({
               </div>
               <div className="flex items-center gap-2 md:hidden">
                 <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
-                  <Link href="/help">
+                  <Link href="/help" aria-label="Aide">
                     <HelpCircle className="h-4 w-4" />
                   </Link>
                 </Button>

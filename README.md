@@ -1,36 +1,91 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FormaCPV
 
-## Getting Started
+[![CI](https://github.com/Johnleouf21/forma-cpv/actions/workflows/ci.yml/badge.svg)](https://github.com/YOUR_USERNAME/forma-cpv/actions/workflows/ci.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Next.js](https://img.shields.io/badge/Next.js-16-black?logo=next.js)](https://nextjs.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-7.x-2D3748?logo=prisma)](https://www.prisma.io/)
+[![License](https://img.shields.io/badge/License-Private-red)]()
 
-First, run the development server:
+Plateforme de formation interne gamifiée — parcours structurés, quiz interactifs, système XP et suivi de progression.
+
+## Stack
+
+| Frontend | Backend | Infrastructure |
+|---|---|---|
+| Next.js 16 (App Router) | Next.js API Routes | Vercel |
+| React 19 + TypeScript | Prisma ORM 7 | Neon (PostgreSQL) |
+| Tailwind CSS 4 | NextAuth.js 5 | Resend (emails) |
+| Radix UI / shadcn | Zod (validation) | GitHub Actions (CI/CD) |
+| @dnd-kit (drag & drop) | | Husky + Commitlint |
+
+## Fonctionnalités
+
+- **Parcours & Modules** — contenu Markdown, vidéos, mode brouillon/publié
+- **Quiz enrichis** — choix unique/multiple, ordonnancement (drag & drop), association
+- **Gamification** — XP, niveaux, 10 badges, leaderboard par centre
+- **Centres hiérarchiques** — GIE > SELAS > centres, multi-rattachement
+- **3 rôles** — Admin, Formateur, Apprenant avec RBAC sur 58 routes API
+- **Notifications** — in-app (cloche + centre), emails transactionnels, rappels automatiques
+- **Sécurité** — magic link auth, rate limiting, CSP, HSTS
+- **Accessibilité** — Lighthouse 90+, ARIA, contrastes WCAG AA
+- **Documentation** — aide intégrée par rôle, chatbot, doc technique dans l'app
+
+## Démarrage rapide
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Prérequis : Node.js 20+, pnpm, Docker
+
+# 1. Cloner et installer
+git clone <repo-url>
+cd forma-cpv
+pnpm install
+
+# 2. Base de données locale
+pnpm db
+npx prisma db push
+
+# 3. Configurer les variables d'environnement
+cp .env.example .env
+# Remplir DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL
+
+# 4. Lancer
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Commande | Description |
+|---|---|
+| `pnpm dev` | Serveur de développement |
+| `pnpm build` | Build de production |
+| `pnpm lint` | ESLint |
+| `pnpm typecheck` | Vérification TypeScript |
+| `pnpm test` | Tests unitaires (Vitest) |
+| `pnpm db` | Démarrer PostgreSQL (Docker) |
+| `pnpm db:studio` | Interface Prisma Studio |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Convention de commits
 
-## Learn More
+Les commits suivent la [convention conventionnelle](https://www.conventionalcommits.org/) :
 
-To learn more about Next.js, take a look at the following resources:
+```
+feat: nouvelle fonctionnalité
+fix: correction de bug
+docs: documentation
+refactor: refactoring
+perf: performance
+chore: maintenance
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Branches
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Branche | Usage |
+|---|---|
+| `main` | Production (déploiement automatique Vercel) |
+| `dev` | Développement (preview Vercel) |
+| `feature/*` | Nouvelles fonctionnalités → PR vers dev |
+| `fix/*` | Corrections → PR vers dev |
 
-## Deploy on Vercel
+## Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+La documentation technique complète est accessible dans l'application : **Admin > Documentation**.

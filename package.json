@@ -61,6 +61,8 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@types/node": "^25.3.0",
     "@types/papaparse": "^5.5.2",

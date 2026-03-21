@@ -21,6 +21,7 @@ import {
   Activity,
   Building2,
   HelpCircle,
+  FileText,
 } from 'lucide-react'
 import { ChatBot } from '@/components/shared/ChatBot'
 import { NotificationBell } from '@/components/shared/NotificationBell'
@@ -53,6 +54,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Trophy,
   Activity,
   Building2,
+  FileText,
 }
 
 export function DashboardShell({

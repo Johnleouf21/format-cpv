@@ -18,6 +18,7 @@ const navItems = [
   { href: '/admin/whitelist', label: 'Accès', icon: 'ShieldCheck' },
   { href: '/admin/feedback', label: 'Avis', icon: 'MessageSquare' },
   { href: '/admin/activity', label: 'Journal', icon: 'Activity' },
+  { href: '/admin/docs', label: 'Documentation', icon: 'FileText' },
 ]
 
 export default async function AdminLayout({

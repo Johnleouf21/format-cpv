@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
     const session = await requireAuth()
 
     const body = await request.json()
-    const { rating, comment, anonymous } = body
+    const { rating, comment, anonymous, parcoursId } = body
 
     if (!rating || rating < 1 || rating > 5) {
       throw new ApiError(400, 'Note invalide (1-5)', 'INVALID_RATING')
@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
       rating,
       comment: comment || '',
       anonymous: !!anonymous,
+      parcoursId: parcoursId || undefined,
     })
 
     return NextResponse.json(feedback, { status: 201 })
@@ -26,11 +27,14 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const session = await requireAuth()
 
-    const hasGiven = await hasUserGivenFeedback(session.user.id)
+    const { searchParams } = new URL(request.url)
+    const parcoursId = searchParams.get('parcoursId') || undefined
+
+    const hasGiven = await hasUserGivenFeedback(session.user.id, parcoursId)
     return NextResponse.json({ hasGivenFeedback: hasGiven })
   } catch (error) {
     return handleApiError(error)

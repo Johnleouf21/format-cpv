@@ -53,9 +53,16 @@ export function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications()
-    // Polling toutes les 30 secondes
     const interval = setInterval(fetchNotifications, 30000)
-    return () => clearInterval(interval)
+
+    // Écouter les changements depuis le centre de notifications
+    const handleRefresh = () => fetchNotifications()
+    window.addEventListener('notifications-updated', handleRefresh)
+
+    return () => {
+      clearInterval(interval)
+      window.removeEventListener('notifications-updated', handleRefresh)
+    }
   }, [fetchNotifications])
 
   async function handleMarkAllRead() {
@@ -87,14 +94,16 @@ export function NotificationBell() {
       <PopoverContent align="end" side="bottom" sideOffset={8} collisionPadding={16} className="w-80 p-0">
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <p className="font-semibold text-sm">Notifications</p>
-          {unreadCount > 0 && (
-            <button
-              onClick={handleMarkAllRead}
-              className="text-xs text-primary hover:underline"
-            >
-              Tout marquer comme lu
-            </button>
-          )}
+          <div className="flex items-center gap-2">
+            {unreadCount > 0 && (
+              <button
+                onClick={handleMarkAllRead}
+                className="text-xs text-primary hover:underline"
+              >
+                Tout lire
+              </button>
+            )}
+          </div>
         </div>
         <div className="max-h-80 overflow-y-auto">
           {notifications.length === 0 ? (
@@ -140,6 +149,15 @@ export function NotificationBell() {
               return <div key={notif.id}>{content}</div>
             })
           )}
+        </div>
+        <div className="border-t px-4 py-2">
+          <Link
+            href="/notifications"
+            onClick={() => setIsOpen(false)}
+            className="text-xs text-primary hover:underline block text-center"
+          >
+            Voir toutes les notifications
+          </Link>
         </div>
       </PopoverContent>
     </Popover>

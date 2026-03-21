@@ -165,7 +165,7 @@ export function AddTrainerForm({ open, onOpenChange, onSubmit }: AddTrainerFormP
         )}
 
         {success && (
-          <Alert className="border-green-200 bg-green-50 text-green-700">
+          <Alert className="border-green-200 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>{success}</AlertDescription>
           </Alert>

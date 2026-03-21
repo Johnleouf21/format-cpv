@@ -27,9 +27,14 @@ export function ParcoursPageClient() {
   const [editingParcours, setEditingParcours] = useState<Parcours | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [ratings, setRatings] = useState<Record<string, { average: number; count: number }>>({})
 
   useEffect(() => {
     fetchParcours()
+    fetch('/api/parcours/ratings')
+      .then((res) => res.ok ? res.json() : {})
+      .then(setRatings)
+      .catch(() => {})
   }, [])
 
   async function fetchParcours() {
@@ -161,6 +166,7 @@ export function ParcoursPageClient() {
                 setEditingParcours(p)
                 setIsFormOpen(true)
               }}
+              rating={ratings[p.id]}
               onDelete={() => setDeleteId(p.id)}
               canDelete={p.learnerCount === 0}
             />

@@ -16,6 +16,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, ExternalLink, Eye, Code, AlertCircle, ImageIcon, Video, Clock, Globe } from 'lucide-react'
+import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
 import { ModuleContent } from '@/components/learner/ModuleContent'
 
@@ -98,6 +99,7 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
         throw new Error(data.message || 'Une erreur est survenue')
       }
 
+      toast.success(isEditing ? 'Module modifié' : 'Module créé')
       router.push('/admin/modules')
       router.refresh()
     } catch (err) {

@@ -27,9 +27,9 @@ export function ModuleCard({
     'flex-1 mb-4 p-4 rounded-xl border transition-all',
     isLocked && 'cursor-not-allowed opacity-60',
     !isLocked && 'cursor-pointer hover:shadow-md',
-    isCompleted && 'bg-green-50/50 border-green-200 hover:bg-green-50',
+    isCompleted && 'bg-green-50/50 border-green-200 hover:bg-green-50 dark:bg-green-950/50 dark:border-green-800 dark:hover:bg-green-950',
     isNext && !isCompleted && 'bg-primary/5 border-primary/30 hover:bg-primary/10 shadow-sm',
-    !isCompleted && !isNext && !isLocked && 'bg-white border-gray-200 hover:border-gray-300',
+    !isCompleted && !isNext && !isLocked && 'bg-background border-border hover:border-foreground/20',
   )
 
   const cardContent = (

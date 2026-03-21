@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback, useMemo } from 'react'
+import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -139,6 +140,9 @@ export function LearnersPageClient() {
 
     if (response.ok) {
       setRawLearners((prev) => prev.filter((l) => l.id !== id))
+      toast.success('Apprenant supprimé')
+    } else {
+      toast.error('Erreur lors de la suppression')
     }
   }
 
@@ -162,6 +166,7 @@ export function LearnersPageClient() {
           : l
       )
     )
+    toast.success('Apprenant réattribué')
   }
 
   if (isLoading) {

@@ -239,10 +239,10 @@ export function ModuleContent({ content }: ModuleContentProps) {
           // Blockquotes - Notion callout style
           blockquote: ({ children, ...props }) => (
             <blockquote
-              className="my-6 p-4 bg-amber-50 border-l-4 border-amber-400 rounded-r-lg"
+              className="my-6 p-4 bg-amber-50 dark:bg-amber-950 border-l-4 border-amber-400 dark:border-amber-600 rounded-r-lg"
               {...props}
             >
-              <div className="text-[1.0625rem] leading-[1.8] text-amber-900 [&>p]:my-2 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0">
+              <div className="text-[1.0625rem] leading-[1.8] text-amber-900 dark:text-amber-200 [&>p]:my-2 [&>p:first-child]:mt-0 [&>p:last-child]:mb-0">
                 {children}
               </div>
             </blockquote>
@@ -265,7 +265,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
 
             return (
               <code
-                className="px-1.5 py-0.5 mx-0.5 text-[0.9em] font-mono bg-red-50 text-red-600 rounded"
+                className="px-1.5 py-0.5 mx-0.5 text-[0.9em] font-mono bg-muted text-foreground rounded"
                 {...props}
               >
                 {children}

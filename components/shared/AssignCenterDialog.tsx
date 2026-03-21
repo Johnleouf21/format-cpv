@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -69,6 +70,9 @@ export function AssignCenterDialog({
       if (res.ok) {
         onUpdated()
         onOpenChange(false)
+        toast.success('Centres mis à jour')
+      } else {
+        toast.error('Erreur lors de la mise à jour')
       }
     } finally {
       setIsSubmitting(false)

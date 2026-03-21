@@ -4,9 +4,20 @@ import { useState } from 'react'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { ChevronUp, ChevronDown, Link2 } from 'lucide-react'
+import { GripVertical } from 'lucide-react'
+import { SortableList } from '@/components/shared/SortableList'
+import {
+  DndContext,
+  DragOverlay,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDraggable,
+  useDroppable,
+  type DragStartEvent,
+  type DragEndEvent,
+} from '@dnd-kit/core'
 
 interface Answer {
   id: string
@@ -75,12 +86,7 @@ export function QuizQuestion({
     return [...answers].sort(() => Math.random() - 0.5)
   })
 
-  const moveItem = (index: number, direction: 'up' | 'down') => {
-    if (showResult) return
-    const newItems = [...orderedItems]
-    const targetIndex = direction === 'up' ? index - 1 : index + 1
-    if (targetIndex < 0 || targetIndex >= newItems.length) return
-    ;[newItems[index], newItems[targetIndex]] = [newItems[targetIndex], newItems[index]]
+  const handleReorder = (newItems: Answer[]) => {
     setOrderedItems(newItems)
     onAnswerChange(questionId, newItems.map((item) => item.id))
   }
@@ -89,8 +95,8 @@ export function QuizQuestion({
     if (!showResult || !correctAnswers) return ''
     const answerId = orderedItems[index]?.id
     const correctIndex = correctAnswers.indexOf(answerId)
-    if (correctIndex === index) return 'bg-green-50 border-green-500'
-    return 'bg-red-50 border-red-500'
+    if (correctIndex === index) return 'bg-green-50 border-green-500 dark:bg-green-950'
+    return 'bg-red-50 border-red-500 dark:bg-red-950'
   }
 
   // ─── Matching handlers ───
@@ -105,27 +111,52 @@ export function QuizQuestion({
     return selections
   })
 
-  const [selectedLeft, setSelectedLeft] = useState<string | null>(null)
+  const [draggingId, setDraggingId] = useState<string | null>(null)
 
   const shuffledRight = useState<Answer[]>(() => {
     if (type !== 'MATCHING') return []
     return [...answers].sort(() => Math.random() - 0.5)
   })[0]
 
-  const handleMatchSelect = (leftId: string, rightId: string) => {
-    if (showResult) return
-    const newSelections = { ...matchSelections }
+  const matchSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+  )
 
-    // Si ce rightId est déjà associé à un autre left, le libérer
+  const handleMatchDragStart = (event: DragStartEvent) => {
+    setDraggingId(String(event.active.id))
+  }
+
+  const handleMatchDragEnd = (event: DragEndEvent) => {
+    setDraggingId(null)
+    const { active, over } = event
+    if (!over || showResult) return
+
+    const leftId = String(active.id)
+    const rightId = String(over.id).replace('drop-', '')
+
+    const newSelections = { ...matchSelections }
+    // Libérer si ce rightId est déjà pris
     for (const [key, val] of Object.entries(newSelections)) {
       if (val === rightId) delete newSelections[key]
     }
+    newSelections[leftId] = rightId
+    setMatchSelections(newSelections)
 
+    const pairs = Object.entries(newSelections).map(([l, r]) => `${l}:${r}`)
+    onAnswerChange(questionId, pairs)
+  }
+
+  // Also keep click-based matching as fallback (mobile)
+  const [selectedLeft, setSelectedLeft] = useState<string | null>(null)
+  const handleMatchClick = (leftId: string, rightId: string) => {
+    if (showResult) return
+    const newSelections = { ...matchSelections }
+    for (const [key, val] of Object.entries(newSelections)) {
+      if (val === rightId) delete newSelections[key]
+    }
     newSelections[leftId] = rightId
     setMatchSelections(newSelections)
     setSelectedLeft(null)
-
-    // Format: ["leftId:rightId", ...]
     const pairs = Object.entries(newSelections).map(([l, r]) => `${l}:${r}`)
     onAnswerChange(questionId, pairs)
   }
@@ -135,8 +166,17 @@ export function QuizQuestion({
     const selectedRight = matchSelections[leftId]
     if (!selectedRight) return ''
     const correctPair = correctAnswers.find((c) => c.startsWith(`${leftId}:`))
-    if (correctPair === `${leftId}:${selectedRight}`) return 'border-green-500 bg-green-50'
-    return 'border-red-500 bg-red-50'
+    if (correctPair === `${leftId}:${selectedRight}`) return 'border-green-500 bg-green-50 dark:bg-green-950'
+    return 'border-red-500 bg-red-50 dark:bg-red-950'
+  }
+
+  const getRightMatchClass = (rightId: string) => {
+    if (!showResult || !correctAnswers) return ''
+    const leftId = Object.entries(matchSelections).find(([, v]) => v === rightId)?.[0]
+    if (!leftId) return ''
+    const correctPair = correctAnswers.find((c) => c.startsWith(`${leftId}:`))
+    if (correctPair === `${leftId}:${rightId}`) return 'border-green-500 bg-green-50 dark:bg-green-950'
+    return 'border-red-500 bg-red-50 dark:bg-red-950'
   }
 
   // ─── Render ───
@@ -173,7 +213,7 @@ export function QuizQuestion({
               <RadioGroupItem value={answer.id} id={answer.id} />
               <Label htmlFor={answer.id} className="cursor-pointer flex-1">{answer.text}</Label>
               {showResult && correctAnswers?.includes(answer.id) && (
-                <span className="text-green-600 text-sm font-medium">✓ Correct</span>
+                <span className="text-green-600 dark:text-green-400 text-sm font-medium">✓ Correct</span>
               )}
             </div>
           ))}
@@ -196,7 +236,7 @@ export function QuizQuestion({
               />
               <Label htmlFor={answer.id} className="cursor-pointer flex-1">{answer.text}</Label>
               {showResult && correctAnswers?.includes(answer.id) && (
-                <span className="text-green-600 text-sm font-medium">✓ Correct</span>
+                <span className="text-green-600 dark:text-green-400 text-sm font-medium">✓ Correct</span>
               )}
             </div>
           ))}
@@ -206,114 +246,191 @@ export function QuizQuestion({
 
       {/* ORDERING */}
       {type === 'ORDERING' && (
-        <div className="space-y-2 pl-10">
-          {orderedItems.map((item, index) => (
-            <div
-              key={item.id}
-              className={cn('flex items-center gap-2 rounded-lg border p-3 transition-colors', getOrderClass(index))}
-            >
-              <span className="text-sm font-bold text-muted-foreground w-6 text-center">{index + 1}</span>
-              <span className="flex-1 text-sm">{item.text}</span>
-              {!showResult && (
-                <div className="flex flex-col gap-0.5">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => moveItem(index, 'up')}
-                    disabled={index === 0}
-                    aria-label="Monter"
-                  >
-                    <ChevronUp className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6"
-                    onClick={() => moveItem(index, 'down')}
-                    disabled={index === orderedItems.length - 1}
-                    aria-label="Descendre"
-                  >
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </div>
-              )}
-              {showResult && correctAnswers && (
-                <span className={cn('text-sm font-medium', correctAnswers[index] === item.id ? 'text-green-600' : 'text-red-600')}>
-                  {correctAnswers[index] === item.id ? '✓' : `✗ (→ ${index + 1})`}
-                </span>
-              )}
-            </div>
-          ))}
+        <div className="pl-10">
+          <SortableList
+            items={orderedItems}
+            onReorder={handleReorder}
+            disabled={showResult}
+            renderItem={(item, index) => (
+              <div className={cn('flex items-center gap-2 rounded-lg border p-3 transition-colors', getOrderClass(index))}>
+                <span className="text-sm font-bold text-muted-foreground w-6 text-center">{index + 1}</span>
+                <span className="flex-1 text-sm">{item.text}</span>
+                {showResult && correctAnswers && (
+                  <span className={cn('text-sm font-medium', correctAnswers[index] === item.id ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400')}>
+                    {correctAnswers[index] === item.id ? '✓' : '✗'}
+                  </span>
+                )}
+              </div>
+            )}
+          />
+          {!showResult && (
+            <p className="text-sm text-muted-foreground mt-2">Glissez les éléments pour les réordonner</p>
+          )}
         </div>
       )}
 
       {/* MATCHING */}
       {type === 'MATCHING' && (
-        <div className="pl-10 space-y-3">
-          <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-start">
-            {/* Left column */}
-            <div className="space-y-2">
-              {answers.map((answer) => (
-                <div
-                  key={answer.id}
-                  className={cn(
-                    'rounded-lg border p-3 text-sm cursor-pointer transition-all',
-                    selectedLeft === answer.id && 'ring-2 ring-primary border-primary',
-                    matchSelections[answer.id] && 'bg-blue-50 border-blue-300',
-                    getMatchClass(answer.id),
-                    showResult && 'cursor-default'
-                  )}
-                  onClick={() => !showResult && setSelectedLeft(answer.id)}
-                >
-                  {answer.text}
-                  {matchSelections[answer.id] && (
-                    <span className="block text-xs text-blue-600 mt-1">
-                      → {answers.find((a) => a.id === matchSelections[answer.id])?.matchText ||
-                         shuffledRight.find((a) => a.id === matchSelections[answer.id])?.matchText}
-                    </span>
-                  )}
+        <div className="pl-10">
+          <DndContext
+            sensors={matchSensors}
+            onDragStart={handleMatchDragStart}
+            onDragEnd={handleMatchDragEnd}
+          >
+            <div className="grid grid-cols-[1fr_1fr] gap-4">
+              {/* Left column — draggable items */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Éléments</p>
+                {answers.map((answer) => {
+                  const isPaired = !!matchSelections[answer.id]
+                  const pairedRight = isPaired
+                    ? shuffledRight.find((a) => a.id === matchSelections[answer.id])
+                    : null
+                  return (
+                    <DraggableMatch
+                      key={answer.id}
+                      id={answer.id}
+                      disabled={showResult}
+                      className={cn(
+                        getMatchClass(answer.id),
+                        isPaired && !showResult && 'border-blue-300 bg-blue-50/50 dark:bg-blue-950/50'
+                      )}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm flex-1">{answer.text}</span>
+                        {isPaired && pairedRight && (
+                          <span className="text-[11px] text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900 px-2 py-0.5 rounded-full truncate max-w-[120px]">
+                            → {pairedRight.matchText}
+                          </span>
+                        )}
+                      </div>
+                    </DraggableMatch>
+                  )
+                })}
+              </div>
+
+              {/* Right column — droppable zones */}
+              <div className="space-y-2">
+                <p className="text-xs font-medium text-muted-foreground mb-1">Correspondances</p>
+                {shuffledRight.map((answer) => {
+                  const isUsed = Object.values(matchSelections).includes(answer.id)
+                  const pairedLeftId = Object.entries(matchSelections).find(([, v]) => v === answer.id)?.[0]
+                  const pairedLeft = pairedLeftId ? answers.find((a) => a.id === pairedLeftId) : null
+                  return (
+                    <DroppableMatch
+                      key={answer.id}
+                      id={`drop-${answer.id}`}
+                      className={cn(getRightMatchClass(answer.id))}
+                      isOver={false}
+                    >
+                      <div
+                        className={cn('text-sm', isUsed && !showResult && 'text-muted-foreground')}
+                        onClick={() => {
+                          if (selectedLeft && !showResult) {
+                            handleMatchClick(selectedLeft, answer.id)
+                          }
+                        }}
+                      >
+                        {answer.matchText || answer.text}
+                        {pairedLeft && !showResult && (
+                          <span className="block text-[11px] text-blue-600 dark:text-blue-300 mt-0.5">
+                            ← {pairedLeft.text}
+                          </span>
+                        )}
+                      </div>
+                    </DroppableMatch>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* Drag overlay */}
+            <DragOverlay>
+              {draggingId && (
+                <div className="rounded-lg border-2 border-primary bg-primary/10 p-3 text-sm shadow-lg">
+                  {answers.find((a) => a.id === draggingId)?.text}
                 </div>
-              ))}
-            </div>
+              )}
+            </DragOverlay>
+          </DndContext>
 
-            {/* Link icon */}
-            <div className="flex items-center justify-center pt-3">
-              <Link2 className="h-5 w-5 text-muted-foreground" />
-            </div>
-
-            {/* Right column */}
-            <div className="space-y-2">
-              {shuffledRight.map((answer) => {
-                const isUsed = Object.values(matchSelections).includes(answer.id)
-                return (
-                  <div
-                    key={answer.id}
-                    className={cn(
-                      'rounded-lg border p-3 text-sm transition-all',
-                      selectedLeft && !showResult && 'cursor-pointer hover:border-primary hover:bg-primary/5',
-                      isUsed && 'opacity-50',
-                      showResult && 'cursor-default'
-                    )}
-                    onClick={() => {
-                      if (selectedLeft && !showResult) {
-                        handleMatchSelect(selectedLeft, answer.id)
-                      }
-                    }}
-                  >
-                    {answer.matchText || answer.text}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
           {!showResult && (
-            <p className="text-sm text-muted-foreground">
-              Cliquez sur un élément à gauche, puis sur sa correspondance à droite
+            <p className="text-sm text-muted-foreground mt-3">
+              Glissez chaque élément vers sa correspondance, ou cliquez pour associer
             </p>
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// ─── Matching sub-components ────────────────────────────────────────────────
+
+function DraggableMatch({
+  id,
+  children,
+  disabled,
+  className,
+}: {
+  id: string
+  children: React.ReactNode
+  disabled?: boolean
+  className?: string
+}) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id,
+    disabled,
+  })
+
+  const style = transform
+    ? { transform: `translate(${transform.x}px, ${transform.y}px)` }
+    : undefined
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={cn(
+        'rounded-lg border p-3 transition-all flex items-center gap-2',
+        !disabled && 'cursor-grab active:cursor-grabbing',
+        isDragging && 'opacity-50 shadow-lg z-50',
+        className
+      )}
+      {...attributes}
+    >
+      {!disabled && (
+        <button type="button" className="touch-none shrink-0 text-muted-foreground" {...listeners}>
+          <GripVertical className="h-4 w-4" />
+        </button>
+      )}
+      <div className="flex-1 min-w-0">{children}</div>
+    </div>
+  )
+}
+
+function DroppableMatch({
+  id,
+  children,
+  className,
+}: {
+  id: string
+  children: React.ReactNode
+  className?: string
+  isOver?: boolean
+}) {
+  const { setNodeRef, isOver: isOverCurrent } = useDroppable({ id })
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={cn(
+        'rounded-lg border p-3 transition-all min-h-[48px]',
+        isOverCurrent && 'border-primary bg-primary/10 ring-2 ring-primary/30',
+        className
+      )}
+    >
+      {children}
     </div>
   )
 }

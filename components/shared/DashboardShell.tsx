@@ -24,6 +24,7 @@ import {
   FileText,
 } from 'lucide-react'
 import { ChatBot } from '@/components/shared/ChatBot'
+import { ThemeToggle } from '@/components/shared/ThemeToggle'
 import { NotificationBell } from '@/components/shared/NotificationBell'
 
 interface NavItem {
@@ -194,7 +195,8 @@ export function DashboardShell({
                   FormaCPV
                 </Link>
               </div>
-              <div className="hidden md:flex items-center gap-2">
+              <div className="hidden md:flex items-center gap-1">
+                <ThemeToggle />
                 <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
                   <Link href="/help" aria-label="Aide">
                     <HelpCircle className="h-4 w-4" />
@@ -202,7 +204,8 @@ export function DashboardShell({
                 </Button>
                 <NotificationBell />
               </div>
-              <div className="flex items-center gap-2 md:hidden">
+              <div className="flex items-center gap-1 md:hidden">
+                <ThemeToggle />
                 <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
                   <Link href="/help" aria-label="Aide">
                     <HelpCircle className="h-4 w-4" />
@@ -255,7 +258,8 @@ export function DashboardShell({
               ))}
             </nav>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1 shrink-0">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
               <Link href="/help" aria-label="Aide">
                 <HelpCircle className="h-4 w-4" />

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -268,9 +269,12 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
 
       setHasQuiz(true)
       setSuccess('Quiz sauvegardé avec succès')
+      toast.success('Quiz sauvegardé avec succès')
       setTimeout(() => setSuccess(null), 3000)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue')
+      const msg = err instanceof Error ? err.message : 'Une erreur est survenue'
+      setError(msg)
+      toast.error(msg)
     } finally {
       setIsSaving(false)
     }
@@ -287,6 +291,7 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
         setQuestions([])
         setHasQuiz(false)
         setSuccess('Quiz supprimé')
+        toast.success('Quiz supprimé')
         setTimeout(() => setSuccess(null), 3000)
       }
     } catch {
@@ -338,7 +343,7 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
         )}
 
         {success && (
-          <Alert className="border-green-200 bg-green-50 text-green-700">
+          <Alert className="border-green-200 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 dark:border-green-800">
             <CheckCircle className="h-4 w-4" />
             <AlertDescription>{success}</AlertDescription>
           </Alert>
@@ -432,7 +437,7 @@ export function QuizEditor({ moduleId }: QuizEditorProps) {
                                 value={answer.text}
                                 onChange={(e) => updateAnswer(qi, ai, { text: e.target.value })}
                                 placeholder={`Réponse ${ai + 1}...`}
-                                className={`flex-1 ${answer.isCorrect ? 'border-green-300 bg-green-50/50' : ''}`}
+                                className={`flex-1 ${answer.isCorrect ? 'border-green-300 bg-green-50/50 dark:bg-green-950/50 dark:border-green-700' : ''}`}
                               />
                               {question.answers.length > 2 && (
                                 <Button

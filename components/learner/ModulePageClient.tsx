@@ -21,6 +21,10 @@ interface ModuleData {
     hasQuiz: boolean
     minDuration: number
   }
+  parcours: {
+    id: string
+    title: string
+  }
   isCompleted: boolean
   navigation: {
     previous: { id: string; title: string } | null
@@ -108,6 +112,9 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
           setQuizData(quizResponse)
           if (quizResponse.previousResult) {
             setQuizCompleted(true)
+          } else if (data.isCompleted) {
+            // Module déjà complété mais quiz jamais passé → afficher le quiz
+            setShowQuizView(true)
           }
         })
         .catch(console.error)
@@ -137,7 +144,7 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
     // Show feedback modal only at the end of a parcours (last module, no next)
     if (!nextModuleId && !data.navigation.next) {
       try {
-        const res = await fetch('/api/feedback')
+        const res = await fetch(`/api/feedback?parcoursId=${data.parcours.id}`)
         const { hasGivenFeedback } = await res.json()
         if (!hasGivenFeedback) {
           setPendingNavigation(nextModuleId)
@@ -168,14 +175,14 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
 
   // Feedback modal
   if (showFeedback) {
-    return <FeedbackModal open={showFeedback} onClose={handleFeedbackClose} />
+    return <FeedbackModal open={showFeedback} onClose={handleFeedbackClose} parcoursId={data.parcours.id} parcoursTitle={data.parcours.title} />
   }
 
   // Completion celebration
   if (showCompletionMessage) {
     return (
       <div className="space-y-6">
-        <Card className="border-2 border-green-500 bg-green-50">
+        <Card className="border-2 border-green-500 bg-green-50 dark:bg-green-950">
           <CardHeader className="text-center">
             <PartyPopper className="mx-auto h-16 w-16 text-green-600 mb-4" />
             <CardTitle className="text-2xl text-green-700">

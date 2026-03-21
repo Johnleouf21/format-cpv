@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
 
-const publicRoutes = ['/login', '/invite', '/api/auth', '/api/invitations']
+const publicRoutes = ['/login', '/invite', '/api/auth', '/api/invitations', '/api/cron']
 const roleRoutes: Record<string, string[]> = {
   '/admin': ['ADMIN'],
   '/trainer': ['TRAINER', 'ADMIN'],

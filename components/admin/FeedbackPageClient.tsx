@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { Star, MessageSquare, User, EyeOff } from 'lucide-react'
+import { Badge } from '@/components/ui/badge'
+import { Star, MessageSquare, User, EyeOff, Route } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface FeedbackItem {
@@ -13,6 +14,7 @@ interface FeedbackItem {
   anonymous: boolean
   userName: string | null
   userEmail: string | null
+  parcoursTitle: string | null
   createdAt: string
 }
 
@@ -142,8 +144,14 @@ export function FeedbackPageClient() {
                 <CardContent className="pt-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1 space-y-2">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <StarRating rating={feedback.rating} />
+                        {feedback.parcoursTitle && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <Route className="h-3 w-3" />
+                            {feedback.parcoursTitle}
+                          </Badge>
+                        )}
                         <span className="text-xs text-muted-foreground">
                           {new Date(feedback.createdAt).toLocaleDateString('fr-FR', {
                             day: 'numeric',

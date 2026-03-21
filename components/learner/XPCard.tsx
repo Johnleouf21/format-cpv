@@ -27,7 +27,7 @@ export function XPCard() {
   }, [])
 
   if (!xp) return (
-    <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
+    <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/50 dark:to-purple-950/50 dark:border-indigo-800">
       <CardContent className="pt-4 pb-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -53,7 +53,7 @@ export function XPCard() {
   )
 
   return (
-    <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
+    <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/50 dark:from-indigo-950/50 dark:to-purple-950/50 dark:border-indigo-800">
       <CardContent className="pt-4 pb-3">
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center gap-2">

@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/select'
 import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import { Building2, Loader2, MapPin, Plus, Trash2, Users, Pencil, ChevronRight } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface Center {
   id: string
@@ -87,6 +88,9 @@ export default function CentersPage() {
       if (res.ok) {
         cancelForm()
         fetchCenters()
+        toast.success(editingCenter ? 'Centre modifié' : 'Centre créé')
+      } else {
+        toast.error('Erreur lors de l\'enregistrement')
       }
     } finally {
       setIsSubmitting(false)
@@ -97,6 +101,7 @@ export default function CentersPage() {
     if (!deleteId) return
     const res = await fetch(`/api/admin/centers/${deleteId}`, { method: 'DELETE' })
     if (res.ok) {
+      toast.success('Centre supprimé')
       setDeleteId(null)
       fetchCenters()
     }

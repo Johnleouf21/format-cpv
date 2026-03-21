@@ -252,7 +252,7 @@ export function AddUserDialog({ parcoursList, onUserAdded, trigger, existingOnly
 
         {/* Mode toggle */}
         {existingOnly ? (
-          <p className="text-xs text-muted-foreground bg-blue-50 text-blue-700 px-3 py-2 rounded-md">
+          <p className="text-xs bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 px-3 py-2 rounded-md">
             Recherchez un utilisateur existant. Pour ajouter un nouvel email, contactez votre administrateur.
           </p>
         ) : (
@@ -278,7 +278,7 @@ export function AddUserDialog({ parcoursList, onUserAdded, trigger, existingOnly
         )}
 
         {result && (
-          <Alert className={result.isNew ? 'border-green-200 bg-green-50 text-green-700' : 'border-blue-200 bg-blue-50 text-blue-700'}>
+          <Alert className={result.isNew ? 'border-green-200 bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300 dark:border-green-800' : 'border-blue-200 bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:border-blue-800'}>
             {result.isNew ? <CheckCircle className="h-4 w-4" /> : <Info className="h-4 w-4" />}
             <AlertDescription>{result.message}</AlertDescription>
           </Alert>

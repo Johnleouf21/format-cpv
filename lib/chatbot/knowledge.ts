@@ -42,7 +42,7 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['theme', 'sombre', 'clair', 'dark', 'mode', 'apparence', 'couleur'],
     question: 'Comment changer le thème ?',
-    answer: 'Allez dans [Mon profil](/profile) > section **"Préférences"**.\n\nCliquez sur le bouton pour basculer entre :\n- **Mode clair** — fond blanc\n- **Mode sombre** — fond foncé\n\nLe thème est sauvegardé automatiquement.',
+    answer: 'Cliquez sur l\'icône **lune/soleil** en haut de page (à côté de l\'aide et de la cloche) pour basculer entre :\n- **Mode clair** — fond blanc\n- **Mode sombre** — fond foncé\n\nVous pouvez aussi changer dans [Mon profil](/profile) > **Préférences**. Le thème est sauvegardé automatiquement.',
     category: 'Mon compte',
   },
   {
@@ -75,21 +75,21 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['quiz', 'test', 'examen', 'score', 'resultat', 'reponse', 'question'],
     question: 'Comment fonctionnent les quiz ?',
-    answer: 'Certains modules ont un **quiz à la fin** avec 4 types de questions :\n\n- **Choix unique** — sélectionnez une seule réponse\n- **Choix multiple** — cochez toutes les bonnes réponses\n- **Ordonnancement** — remettez les éléments dans le bon ordre avec les flèches\n- **Association** — reliez chaque élément de gauche à sa correspondance à droite\n\nCliquez sur **"Valider"** pour soumettre. Votre **score** est calculé automatiquement. Un score élevé peut débloquer des **badges** !',
+    answer: 'Certains modules ont un **quiz à la fin** avec 4 types de questions :\n\n- **Choix unique** — sélectionnez une seule réponse\n- **Choix multiple** — cochez toutes les bonnes réponses\n- **Ordonnancement** — glissez-déposez les éléments pour les remettre dans le bon ordre\n- **Association** — glissez un élément vers sa correspondance (ou cliquez)\n\nCliquez sur **"Valider"** pour soumettre. Votre **score** est calculé automatiquement. Un score élevé peut débloquer des **badges** !',
     category: 'Formation',
     roles: ['LEARNER'],
   },
   {
     keywords: ['ordonnancement', 'ordre', 'remettre', 'etapes', 'classer', 'trier'],
     question: 'Comment répondre à une question d\'ordonnancement ?',
-    answer: 'Les éléments sont présentés dans un **ordre aléatoire**.\n\n- Utilisez les **flèches haut/bas** pour les remettre dans le bon ordre\n- Le numéro à gauche indique la position actuelle\n- La correction montre en **vert** les éléments bien placés et en **rouge** ceux mal placés',
+    answer: 'Les éléments sont présentés dans un **ordre aléatoire**.\n\n- **Glissez-déposez** les éléments pour les remettre dans le bon ordre (poignée à gauche)\n- Le numéro à gauche indique la position actuelle\n- La correction montre en **vert** les éléments bien placés et en **rouge** ceux mal placés',
     category: 'Formation',
     roles: ['LEARNER'],
   },
   {
     keywords: ['association', 'associer', 'relier', 'correspondance', 'paire', 'matching'],
     question: 'Comment répondre à une question d\'association ?',
-    answer: 'Vous devez relier chaque élément de la **colonne gauche** à sa correspondance dans la **colonne droite** :\n\n- **Cliquez** sur un élément à gauche (il se surligne)\n- Puis **cliquez** sur l\'élément correspondant à droite\n- La paire se forme automatiquement\n- Pour modifier, recliquez sur l\'élément de gauche et choisissez une autre correspondance',
+    answer: 'Vous devez relier chaque élément de la **colonne gauche** à sa correspondance dans la **colonne droite** :\n\n- **Glissez** un élément de gauche vers sa correspondance à droite\n- Ou **cliquez** sur un élément à gauche puis sur sa correspondance à droite\n- Les paires formées sont affichées avec un **badge**\n- Pour modifier, glissez à nouveau l\'élément vers une autre correspondance',
     category: 'Formation',
     roles: ['LEARNER'],
   },
@@ -288,7 +288,7 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['cloche', 'notification', 'alerte', 'badge obtenu', 'parcours assigne'],
     question: 'Comment fonctionnent les notifications in-app ?',
-    answer: 'La **cloche** en haut de page affiche vos notifications :\n\n- **Nouveau parcours assigné**\n- **Badge obtenu**\n- Cliquez sur la cloche pour les consulter\n- **"Tout marquer comme lu"** pour effacer le compteur\n\nLes notifications sont vérifiées toutes les 30 secondes.',
+    answer: 'La **cloche** en haut de page affiche vos 5 dernières notifications.\n\n- Cliquez sur **"Voir toutes les notifications"** pour accéder au [centre de notifications](/notifications)\n- Filtrez par statut : **Toutes**, **Non lues**, **Lues**\n- **Supprimez** des notifications individuellement ou en masse\n- **Tout marquer comme lu** pour effacer le compteur',
     category: 'Mon compte',
   },
   // ── Export & Journal ──
@@ -318,7 +318,7 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['avis', 'feedback', 'note', 'etoile', 'commentaire', 'opinion'],
     question: 'Comment fonctionnent les avis ?',
-    answer: 'À la fin du **dernier module** d\'un parcours, un formulaire d\'avis apparaît :\n\n- Note de **1 à 5 étoiles**\n- **Commentaire** libre\n- Choix entre **nominatif ou anonyme**\n\nL\'admin peut consulter tous les avis dans [Admin > Avis](/admin/feedback) avec la note moyenne et la répartition.',
+    answer: 'À la fin de **chaque parcours** complété, un formulaire d\'avis apparaît :\n\n- Note de **1 à 5 étoiles**\n- **Commentaire** libre\n- Choix entre **nominatif ou anonyme**\n- Vous pouvez noter **chaque parcours séparément**\n\nLa **note moyenne** est visible par tous sur les cards parcours. L\'admin peut consulter les commentaires détaillés dans [Admin > Avis](/admin/feedback).',
     category: 'Formation',
   },
   // ── Rappels email ──

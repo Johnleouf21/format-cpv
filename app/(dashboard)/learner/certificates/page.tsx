@@ -70,8 +70,8 @@ export default async function CertificatesPage() {
         <Card>
           <CardContent className="py-12">
             <div className="flex flex-col items-center text-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 mb-4">
-                <Award className="h-7 w-7 text-amber-600" />
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900 mb-4">
+                <Award className="h-7 w-7 text-amber-600 dark:text-amber-400" />
               </div>
               <p className="text-muted-foreground max-w-sm">
                 Vous n&apos;avez pas encore de certificat. Terminez tous les modules d&apos;un parcours pour obtenir votre certificat de réussite.
@@ -82,11 +82,11 @@ export default async function CertificatesPage() {
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {completedParcours.map((parcours) => (
-            <Card key={parcours.id} className="border-amber-200 bg-gradient-to-br from-amber-50/50 to-yellow-50/30">
+            <Card key={parcours.id} className="border-amber-200 bg-gradient-to-br from-amber-50/50 to-yellow-50/30 dark:from-amber-950/50 dark:to-yellow-950/30 dark:border-amber-800">
               <CardHeader className="pb-2">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 shrink-0">
-                    <Award className="h-5 w-5 text-amber-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 dark:bg-amber-900 shrink-0">
+                    <Award className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <CardTitle className="text-base truncate">{parcours.title}</CardTitle>

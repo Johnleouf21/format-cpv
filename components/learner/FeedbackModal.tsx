@@ -17,9 +17,11 @@ import { cn } from '@/lib/utils'
 interface FeedbackModalProps {
   open: boolean
   onClose: () => void
+  parcoursId?: string
+  parcoursTitle?: string
 }
 
-export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
+export function FeedbackModal({ open, onClose, parcoursId, parcoursTitle }: FeedbackModalProps) {
   const [rating, setRating] = useState(0)
   const [hoveredRating, setHoveredRating] = useState(0)
   const [comment, setComment] = useState('')
@@ -34,7 +36,7 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
       const res = await fetch('/api/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ rating, comment, anonymous }),
+        body: JSON.stringify({ rating, comment, anonymous, parcoursId }),
       })
       if (res.ok) {
         setSubmitted(true)
@@ -71,7 +73,9 @@ export function FeedbackModal({ open, onClose }: FeedbackModalProps) {
         <DialogHeader>
           <DialogTitle>Donnez votre avis</DialogTitle>
           <DialogDescription>
-            Que pensez-vous de cette plateforme de formation ? Votre retour est précieux pour nous aider à l&apos;améliorer.
+            {parcoursTitle
+              ? `Que pensez-vous du parcours "${parcoursTitle}" ? Votre retour est précieux.`
+              : 'Que pensez-vous de cette plateforme de formation ? Votre retour est précieux.'}
           </DialogDescription>
         </DialogHeader>
 

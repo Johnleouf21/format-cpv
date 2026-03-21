@@ -61,6 +61,7 @@ model Parcours {
   users        User[]        @relation("LegacyUserParcours")
   userParcours UserParcours[]
   invitations  Invitation[]
+  feedbacks    Feedback[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -280,12 +281,17 @@ model Feedback {
   comment   String  @db.Text
   anonymous Boolean @default(false)
 
-  userId String @map("user_id")
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String   @map("user_id")
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  parcoursId String?  @map("parcours_id")
+  parcours   Parcours? @relation(fields: [parcoursId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now()) @map("created_at")
 
+  @@unique([userId, parcoursId])
   @@index([userId])
+  @@index([parcoursId])
   @@map("feedbacks")
 }
 

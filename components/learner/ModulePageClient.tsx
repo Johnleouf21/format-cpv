@@ -21,6 +21,10 @@ interface ModuleData {
     hasQuiz: boolean
     minDuration: number
   }
+  parcours: {
+    id: string
+    title: string
+  }
   isCompleted: boolean
   navigation: {
     previous: { id: string; title: string } | null
@@ -140,7 +144,7 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
     // Show feedback modal only at the end of a parcours (last module, no next)
     if (!nextModuleId && !data.navigation.next) {
       try {
-        const res = await fetch('/api/feedback')
+        const res = await fetch(`/api/feedback?parcoursId=${data.parcours.id}`)
         const { hasGivenFeedback } = await res.json()
         if (!hasGivenFeedback) {
           setPendingNavigation(nextModuleId)
@@ -171,7 +175,7 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
 
   // Feedback modal
   if (showFeedback) {
-    return <FeedbackModal open={showFeedback} onClose={handleFeedbackClose} />
+    return <FeedbackModal open={showFeedback} onClose={handleFeedbackClose} parcoursId={data.parcours.id} parcoursTitle={data.parcours.title} />
   }
 
   // Completion celebration

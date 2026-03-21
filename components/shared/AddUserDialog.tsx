@@ -17,7 +17,8 @@ import {
 import { Checkbox } from '@/components/ui/checkbox'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Loader2, UserPlus, Users, Search, CheckCircle, Info, BookOpen, AlertCircle, ChevronRight } from 'lucide-react'
+import { Loader2, UserPlus, Users, Search, CheckCircle, Info, BookOpen, AlertCircle } from 'lucide-react'
+import { CenterCheckboxes } from './CenterCheckboxes'
 
 interface Parcours {
   id: string
@@ -67,9 +68,6 @@ export function AddUserDialog({ parcoursList, onUserAdded, trigger, existingOnly
       .then(setCentersList)
       .catch(() => setCentersList([]))
   }, [])
-
-  const parentCenters = centersList.filter((c) => !c.parentId)
-  const getCenterChildren = (parentId: string) => centersList.filter((c) => c.parentId === parentId)
 
   function toggleCenter(centerId: string) {
     setSelectedCenters((prev) =>
@@ -469,28 +467,12 @@ export function AddUserDialog({ parcoursList, onUserAdded, trigger, existingOnly
             {centersList.length > 0 && (
               <div className="space-y-2">
                 <Label>Centres de rattachement</Label>
-                <div className="space-y-1.5 max-h-40 overflow-y-auto border rounded-md p-3">
-                  {parentCenters.map((parent) => (
-                    <div key={parent.id}>
-                      <label className="flex items-center gap-2 cursor-pointer py-0.5">
-                        <Checkbox
-                          checked={selectedCenters.includes(parent.id)}
-                          onCheckedChange={() => toggleCenter(parent.id)}
-                        />
-                        <span className="text-sm font-medium">{parent.name}</span>
-                      </label>
-                      {getCenterChildren(parent.id).map((child) => (
-                        <label key={child.id} className="flex items-center gap-2 cursor-pointer py-0.5 ml-6">
-                          <Checkbox
-                            checked={selectedCenters.includes(child.id)}
-                            onCheckedChange={() => toggleCenter(child.id)}
-                          />
-                          <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                          <span className="text-sm">{child.name}</span>
-                        </label>
-                      ))}
-                    </div>
-                  ))}
+                <div className="max-h-40 overflow-y-auto border rounded-md p-3">
+                  <CenterCheckboxes
+                    centers={centersList}
+                    selectedIds={selectedCenters}
+                    onToggle={toggleCenter}
+                  />
                 </div>
               </div>
             )}

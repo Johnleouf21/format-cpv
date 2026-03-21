@@ -10,15 +10,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Label } from '@/components/ui/label'
-import { Loader2, ChevronRight } from 'lucide-react'
+import { Loader2 } from 'lucide-react'
+import { CenterCheckboxes } from './CenterCheckboxes'
 
 interface Center {
   id: string
   name: string
   parentId: string | null
-  children?: { id: string; name: string }[]
 }
 
 interface AssignCenterDialogProps {
@@ -51,9 +49,6 @@ export function AssignCenterDialog({
         .catch(() => setCenters([]))
     }
   }, [open, currentCenterIds])
-
-  const parentCenters = centers.filter((c) => !c.parentId)
-  const getChildren = (parentId: string) => centers.filter((c) => c.parentId === parentId)
 
   function toggleCenter(centerId: string) {
     setSelectedIds((prev) =>
@@ -90,36 +85,17 @@ export function AssignCenterDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-3 max-h-60 overflow-y-auto border rounded-md p-3">
-          {parentCenters.length === 0 ? (
+        <div className="max-h-60 overflow-y-auto border rounded-md p-3">
+          {centers.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center py-4">
               Aucun centre créé. Allez dans Admin &gt; Centres pour en créer.
             </p>
           ) : (
-            parentCenters.map((parent) => {
-              const children = getChildren(parent.id)
-              return (
-                <div key={parent.id}>
-                  <label className="flex items-center gap-2 cursor-pointer py-1">
-                    <Checkbox
-                      checked={selectedIds.includes(parent.id)}
-                      onCheckedChange={() => toggleCenter(parent.id)}
-                    />
-                    <Label className="cursor-pointer font-medium text-sm">{parent.name}</Label>
-                  </label>
-                  {children.map((child) => (
-                    <label key={child.id} className="flex items-center gap-2 cursor-pointer py-1 ml-6">
-                      <Checkbox
-                        checked={selectedIds.includes(child.id)}
-                        onCheckedChange={() => toggleCenter(child.id)}
-                      />
-                      <ChevronRight className="h-3 w-3 text-muted-foreground" />
-                      <Label className="cursor-pointer text-sm">{child.name}</Label>
-                    </label>
-                  ))}
-                </div>
-              )
-            })
+            <CenterCheckboxes
+              centers={centers}
+              selectedIds={selectedIds}
+              onToggle={toggleCenter}
+            />
           )}
         </div>
 

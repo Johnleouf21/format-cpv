@@ -78,7 +78,15 @@ const learnerSections = [
     items: [
       {
         q: 'Comment fonctionnent les quiz ?',
-        a: 'Les quiz apparaissent après la validation du module. Ils peuvent contenir des questions à choix unique ou multiple. Sélectionnez vos réponses puis validez.',
+        a: 'Les quiz apparaissent après la validation du module. Ils peuvent contenir 4 types de questions :\n- Choix unique : sélectionnez une seule réponse\n- Choix multiple : cochez toutes les bonnes réponses\n- Ordonnancement : remettez les éléments dans le bon ordre avec les flèches haut/bas\n- Association : cliquez sur un élément à gauche puis sur sa correspondance à droite',
+      },
+      {
+        q: 'Comment fonctionne l\'ordonnancement ?',
+        a: 'Les éléments sont présentés dans un ordre aléatoire. Utilisez les flèches haut/bas pour les remettre dans le bon ordre. La correction montre en vert les éléments bien placés et en rouge ceux mal placés.',
+      },
+      {
+        q: 'Comment fonctionne l\'association ?',
+        a: 'Cliquez d\'abord sur un élément dans la colonne de gauche (il se surligne), puis cliquez sur l\'élément correspondant dans la colonne de droite. La paire se forme automatiquement. Vous pouvez modifier une association en recliquer sur l\'élément de gauche.',
       },
       {
         q: 'Où voir mes résultats ?',
@@ -217,7 +225,7 @@ const adminSections = [
       },
       {
         q: 'Comment ajouter un quiz ?',
-        a: 'Éditez un module, puis allez dans la section Quiz. Ajoutez des questions à choix unique ou multiple avec les bonnes réponses. Le quiz apparaîtra après la validation du module par l\'apprenant.',
+        a: 'Éditez un module, puis allez dans la section Quiz. 4 types de questions disponibles :\n- Choix unique / multiple : cochez les bonnes réponses\n- Ordonnancement : saisissez les éléments dans le bon ordre, utilisez les flèches pour ajuster\n- Association : saisissez les paires gauche → droite\n\nLe quiz apparaîtra après la validation du module par l\'apprenant.',
       },
       {
         q: 'Comment intégrer des vidéos ?',

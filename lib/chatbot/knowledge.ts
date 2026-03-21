@@ -75,7 +75,21 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['quiz', 'test', 'examen', 'score', 'resultat', 'reponse', 'question'],
     question: 'Comment fonctionnent les quiz ?',
-    answer: 'Certains modules ont un **quiz à la fin** :\n\n- Répondez à **toutes les questions** (choix unique ou multiple)\n- Cliquez sur **"Valider"** pour soumettre\n- Votre **score** est calculé automatiquement\n- Vous pouvez voir vos résultats dans l\'historique de quiz\n- Un score élevé peut débloquer des **badges** !',
+    answer: 'Certains modules ont un **quiz à la fin** avec 4 types de questions :\n\n- **Choix unique** — sélectionnez une seule réponse\n- **Choix multiple** — cochez toutes les bonnes réponses\n- **Ordonnancement** — remettez les éléments dans le bon ordre avec les flèches\n- **Association** — reliez chaque élément de gauche à sa correspondance à droite\n\nCliquez sur **"Valider"** pour soumettre. Votre **score** est calculé automatiquement. Un score élevé peut débloquer des **badges** !',
+    category: 'Formation',
+    roles: ['LEARNER'],
+  },
+  {
+    keywords: ['ordonnancement', 'ordre', 'remettre', 'etapes', 'classer', 'trier'],
+    question: 'Comment répondre à une question d\'ordonnancement ?',
+    answer: 'Les éléments sont présentés dans un **ordre aléatoire**.\n\n- Utilisez les **flèches haut/bas** pour les remettre dans le bon ordre\n- Le numéro à gauche indique la position actuelle\n- La correction montre en **vert** les éléments bien placés et en **rouge** ceux mal placés',
+    category: 'Formation',
+    roles: ['LEARNER'],
+  },
+  {
+    keywords: ['association', 'associer', 'relier', 'correspondance', 'paire', 'matching'],
+    question: 'Comment répondre à une question d\'association ?',
+    answer: 'Vous devez relier chaque élément de la **colonne gauche** à sa correspondance dans la **colonne droite** :\n\n- **Cliquez** sur un élément à gauche (il se surligne)\n- Puis **cliquez** sur l\'élément correspondant à droite\n- La paire se forme automatiquement\n- Pour modifier, recliquez sur l\'élément de gauche et choisissez une autre correspondance',
     category: 'Formation',
     roles: ['LEARNER'],
   },
@@ -168,7 +182,7 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['module', 'creer', 'contenu', 'nouveau', 'rediger', 'ecrire'],
     question: 'Comment créer un module ?',
-    answer: 'Allez dans [Parcours](/admin/parcours) > sélectionnez un parcours :\n\n- Cliquez sur **"Ajouter un module"**\n- Remplissez le **titre** et le **contenu** (éditeur riche)\n- Vous pouvez ajouter des **vidéos**, **images**, **liens**\n- Ajoutez un **quiz** avec des questions à choix unique ou multiple\n- **Réordonnez** les modules par glisser-déposer',
+    answer: 'Allez dans [Parcours](/admin/parcours) > sélectionnez un parcours :\n\n- Cliquez sur **"Ajouter un module"**\n- Remplissez le **titre** et le **contenu** (éditeur riche)\n- Vous pouvez ajouter des **vidéos**, **images**, **liens**\n- Ajoutez un **quiz** avec 4 types de questions : choix unique/multiple, ordonnancement, association\n- **Réordonnez** les modules par glisser-déposer',
     category: 'Administration',
     roles: ['ADMIN'],
   },

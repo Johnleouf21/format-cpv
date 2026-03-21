@@ -108,6 +108,9 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
           setQuizData(quizResponse)
           if (quizResponse.previousResult) {
             setQuizCompleted(true)
+          } else if (data.isCompleted) {
+            // Module déjà complété mais quiz jamais passé → afficher le quiz
+            setShowQuizView(true)
           }
         })
         .catch(console.error)
@@ -175,7 +178,7 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
   if (showCompletionMessage) {
     return (
       <div className="space-y-6">
-        <Card className="border-2 border-green-500 bg-green-50">
+        <Card className="border-2 border-green-500 bg-green-50 dark:bg-green-950">
           <CardHeader className="text-center">
             <PartyPopper className="mx-auto h-16 w-16 text-green-600 mb-4" />
             <CardTitle className="text-2xl text-green-700">

@@ -166,7 +166,7 @@ export default async function LearnerHomePage() {
 
           {/* Resume card */}
           {nextParcours && (
-            <Card data-tour="resume" className="border-blue-200 bg-blue-50/30">
+            <Card data-tour="resume" className="border-blue-200 bg-blue-50/30 dark:bg-blue-950/30 dark:border-blue-800">
               <CardContent className="pt-4 pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
@@ -202,7 +202,7 @@ export default async function LearnerHomePage() {
                 const isCompleted = parcours.totalModules > 0 && parcours.completedModules === parcours.totalModules
 
                 return (
-                  <Card key={parcours.id} className={isCompleted ? 'border-green-300 bg-green-50/50' : ''}>
+                  <Card key={parcours.id} className={isCompleted ? 'border-green-300 bg-green-50/50 dark:bg-green-950/50 dark:border-green-800' : ''}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center gap-3">
                         <div className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${isCompleted ? 'bg-green-100' : 'bg-blue-100'}`}>
@@ -338,7 +338,7 @@ export default async function LearnerHomePage() {
 
         {/* Continue button */}
         {data.nextModule && (
-          <Card data-tour="resume" className="border-blue-200 bg-blue-50/30">
+          <Card data-tour="resume" className="border-blue-200 bg-blue-50/30 dark:bg-blue-950/30 dark:border-blue-800">
             <CardContent className="pt-4 pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">

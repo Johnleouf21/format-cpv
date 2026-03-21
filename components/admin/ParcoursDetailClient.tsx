@@ -5,17 +5,10 @@ import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
 import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
-import { BookOpen, Plus, Edit, Eye, ChevronUp, ChevronDown } from 'lucide-react'
+import { BookOpen, Plus, Edit, Eye } from 'lucide-react'
+import { SortableList } from '@/components/shared/SortableList'
 
 interface Module {
   id: string
@@ -60,33 +53,19 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
     fetchParcours()
   }, [parcoursId])
 
-  const handleReorder = async (moduleId: string, direction: 'up' | 'down') => {
+  const handleReorder = async (newModules: Module[]) => {
     if (!parcours || isReordering) return
 
-    const modules = [...parcours.modules]
-    const currentIndex = modules.findIndex(m => m.id === moduleId)
-
-    if (currentIndex === -1) return
-    if (direction === 'up' && currentIndex === 0) return
-    if (direction === 'down' && currentIndex === modules.length - 1) return
-
-    const targetIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1
-
-    // Swap modules
-    const temp = modules[currentIndex]
-    modules[currentIndex] = modules[targetIndex]
-    modules[targetIndex] = temp
-
-    // Update orders
-    const moduleOrders = modules.map((m, index) => ({
+    const moduleOrders = newModules.map((m, index) => ({
       id: m.id,
       order: index,
     }))
 
     // Optimistic update
+    const previous = parcours
     setParcours({
       ...parcours,
-      modules: modules.map((m, index) => ({ ...m, order: index })),
+      modules: newModules.map((m, index) => ({ ...m, order: index })),
     })
 
     setIsReordering(true)
@@ -101,8 +80,7 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
         throw new Error('Erreur lors du réordonnancement')
       }
     } catch {
-      // Revert on error
-      setParcours(parcours)
+      setParcours(previous)
     } finally {
       setIsReordering(false)
     }
@@ -171,73 +149,40 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
           </div>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[100px]">Ordre</TableHead>
-                <TableHead>Titre</TableHead>
-                <TableHead>Créé le</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {parcours.modules.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    Aucun module dans ce parcours
-                  </TableCell>
-                </TableRow>
-              ) : (
-                parcours.modules.map((module, index) => (
-                  <TableRow key={module.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-1">
-                        <div className="flex flex-col">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => handleReorder(module.id, 'up')}
-                            disabled={index === 0 || isReordering}
-                          >
-                            <ChevronUp className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6"
-                            onClick={() => handleReorder(module.id, 'down')}
-                            disabled={index === parcours.modules.length - 1 || isReordering}
-                          >
-                            <ChevronDown className="h-4 w-4" />
-                          </Button>
-                        </div>
-                        <Badge variant="outline">{module.order + 1}</Badge>
-                      </div>
-                    </TableCell>
-                    <TableCell className="font-medium">{module.title}</TableCell>
-                    <TableCell className="text-muted-foreground">
-                      {new Date(module.createdAt).toLocaleDateString('fr-FR')}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
-                        <Button variant="ghost" size="sm" asChild title="Prévisualiser">
-                          <Link href={`/admin/modules/${module.id}/preview`}>
-                            <Eye className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="sm" asChild title="Modifier">
-                          <Link href={`/admin/modules/${module.id}/edit`}>
-                            <Edit className="h-4 w-4" />
-                          </Link>
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
+            {parcours.modules.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                Aucun module dans ce parcours
+              </div>
+            ) : (
+              <SortableList
+                items={parcours.modules}
+                onReorder={handleReorder}
+                disabled={isReordering}
+                renderItem={(module, index) => (
+                  <div className="flex items-center gap-3 rounded-lg border p-3 bg-background">
+                    <Badge variant="outline" className="shrink-0">{index + 1}</Badge>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{module.title}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(module.createdAt).toLocaleDateString('fr-FR')}
+                      </p>
+                    </div>
+                    <div className="flex gap-1 shrink-0">
+                      <Button variant="ghost" size="sm" asChild aria-label="Prévisualiser">
+                        <Link href={`/admin/modules/${module.id}/preview`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="sm" asChild aria-label="Modifier">
+                        <Link href={`/admin/modules/${module.id}/edit`}>
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              />
+            )}
         </CardContent>
       </Card>
     </div>

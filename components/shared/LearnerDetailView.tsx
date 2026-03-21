@@ -92,16 +92,16 @@ function QuizCorrectionView({ questions }: { questions: QuizQuestion[] }) {
               let Icon = CircleDot
 
               if (isCorrectAndSelected) {
-                bgClass = 'bg-green-50 border-green-200'
-                textClass = 'text-green-700'
+                bgClass = 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800'
+                textClass = 'text-green-700 dark:text-green-300'
                 Icon = CheckCircle
               } else if (isWrongSelection) {
-                bgClass = 'bg-red-50 border-red-200'
-                textClass = 'text-red-700'
+                bgClass = 'bg-red-50 border-red-200 dark:bg-red-950 dark:border-red-800'
+                textClass = 'text-red-700 dark:text-red-300'
                 Icon = XCircle
               } else if (isMissedCorrect) {
-                bgClass = 'bg-amber-50 border-amber-200'
-                textClass = 'text-amber-700'
+                bgClass = 'bg-amber-50 border-amber-200 dark:bg-amber-950 dark:border-amber-800'
+                textClass = 'text-amber-700 dark:text-amber-300'
                 Icon = CheckCircle
               }
 
@@ -201,8 +201,8 @@ export function LearnerDetailView({ data }: LearnerDetailViewProps) {
                     value={module.id}
                     className={`rounded-lg border px-4 ${
                       module.isCompleted
-                        ? 'bg-green-50 border-green-200'
-                        : 'bg-gray-50'
+                        ? 'bg-green-50 border-green-200 dark:bg-green-950 dark:border-green-800'
+                        : 'bg-muted'
                     }`}
                   >
                     <AccordionTrigger className="hover:no-underline py-3" disabled={!hasQuizDetail}>

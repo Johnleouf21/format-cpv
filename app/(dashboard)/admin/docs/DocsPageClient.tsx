@@ -6,7 +6,11 @@ import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import 'highlight.js/styles/github-dark.min.css'
 import { Card, CardContent } from '@/components/ui/card'
-import { FileText, List, ChevronRight, Folder, FolderOpen, File } from 'lucide-react'
+import {
+  FileText, List, ChevronRight, Folder, FolderOpen, File,
+  FileCode, FileJson, Database, Globe, Shield, Settings, Terminal,
+  Palette, Layout, Braces, Server, TestTube, BookOpen, Cog,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface DocsPageClientProps {
@@ -42,7 +46,15 @@ function extractText(node: ReactNode): string {
 function generateToc(markdown: string): TocItem[] {
   const lines = markdown.split('\n')
   const toc: TocItem[] = []
+  let inCodeBlock = false
+
   for (const line of lines) {
+    if (line.trim().startsWith('```')) {
+      inCodeBlock = !inCodeBlock
+      continue
+    }
+    if (inCodeBlock) continue
+
     const match = line.match(/^(#{1,3})\s+(.+)$/)
     if (match) {
       const level = match[1].length
@@ -65,25 +77,81 @@ interface TreeNode {
 
 function parseTree(text: string): TreeNode[] | null {
   const lines = text.split('\n').filter((l) => l.trim())
-  // Detect if this is a file tree (contains ├── or └── or has directory-like structure)
-  const isTree = lines.some((l) => /[├└│─]/.test(l) || /^\w+\//.test(l.trim()))
+  const isTree = lines.some((l) => /[├└│─]/.test(l))
   if (!isTree || lines.length < 3) return null
 
   return lines.map((line) => {
-    // Count depth by tree characters or spaces
-    const stripped = line.replace(/[│├└─\s]/g, '')
-    const depthMatch = line.match(/^(\s*(?:[│├└]\s*(?:──\s*)?))/)
-    const depth = depthMatch ? Math.floor(depthMatch[1].replace(/[│├└─]/g, ' ').length / 2) : 0
+    // Count depth: each level of tree drawing is ~4 chars (│   or ├── or └──)
+    const prefixMatch = line.match(/^([\s│├└─]*)/)
+    const prefix = prefixMatch ? prefixMatch[1] : ''
+    const depth = Math.floor(prefix.length / 4)
 
-    // Extract comment (after #)
-    const commentMatch = stripped.match(/^(.+?)\s+#\s*(.+)$/)
-    const name = commentMatch ? commentMatch[1] : stripped
-    const comment = commentMatch ? commentMatch[2] : undefined
+    // Extract the actual name + comment from after the tree characters
+    const content = line.replace(/^[\s│├└─]*/, '').trim()
 
-    const isDir = name.endsWith('/') || !name.includes('.')
+    // Split name and comment (comment starts with #)
+    const commentIdx = content.indexOf('#')
+    let name: string
+    let comment: string | undefined
+
+    if (commentIdx > 0) {
+      name = content.substring(0, commentIdx).trim()
+      comment = content.substring(commentIdx + 1).trim()
+    } else {
+      name = content
+    }
+
+    const isDir = name.endsWith('/') || (!name.includes('.') && name !== '...')
 
     return { name: name.replace(/\/$/, ''), depth, isDir, comment }
   })
+}
+
+function getFileIcon(name: string, isDir: boolean, depth: number) {
+  if (isDir) {
+    const dirName = name.toLowerCase()
+    if (depth === 0) return <FolderOpen className="h-4 w-4 text-blue-400 shrink-0" />
+    if (dirName === 'api') return <Server className="h-4 w-4 text-green-400 shrink-0" />
+    if (dirName === 'components' || dirName === 'ui') return <Layout className="h-4 w-4 text-purple-400 shrink-0" />
+    if (dirName === 'lib' || dirName === 'utils') return <Braces className="h-4 w-4 text-orange-400 shrink-0" />
+    if (dirName === 'services') return <Cog className="h-4 w-4 text-cyan-400 shrink-0" />
+    if (dirName === 'auth') return <Shield className="h-4 w-4 text-red-400 shrink-0" />
+    if (dirName === 'prisma') return <Database className="h-4 w-4 text-teal-400 shrink-0" />
+    if (dirName === 'tests' || dirName === 'test') return <TestTube className="h-4 w-4 text-yellow-300 shrink-0" />
+    if (dirName === 'admin') return <Shield className="h-4 w-4 text-red-400 shrink-0" />
+    if (dirName === 'learner') return <BookOpen className="h-4 w-4 text-green-400 shrink-0" />
+    if (dirName === 'trainer') return <BookOpen className="h-4 w-4 text-blue-300 shrink-0" />
+    if (dirName === 'chatbot') return <Terminal className="h-4 w-4 text-emerald-400 shrink-0" />
+    if (dirName === 'shared') return <Globe className="h-4 w-4 text-indigo-400 shrink-0" />
+    if (dirName === 'profile') return <Settings className="h-4 w-4 text-gray-400 shrink-0" />
+    if (dirName === 'validations' || dirName === 'errors') return <Shield className="h-4 w-4 text-amber-400 shrink-0" />
+    return <Folder className="h-4 w-4 text-yellow-400 shrink-0" />
+  }
+
+  const ext = name.split('.').pop()?.toLowerCase()
+  if (ext === 'tsx') return <FileCode className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+  if (ext === 'ts') return <FileCode className="h-3.5 w-3.5 text-blue-300 shrink-0" />
+  if (ext === 'css') return <Palette className="h-3.5 w-3.5 text-pink-400 shrink-0" />
+  if (ext === 'json') return <FileJson className="h-3.5 w-3.5 text-yellow-300 shrink-0" />
+  if (ext === 'prisma') return <Database className="h-3.5 w-3.5 text-teal-400 shrink-0" />
+  if (ext === 'yml' || ext === 'yaml') return <Settings className="h-3.5 w-3.5 text-red-300 shrink-0" />
+  if (ext === 'md') return <FileText className="h-3.5 w-3.5 text-gray-300 shrink-0" />
+  if (ext === 'mjs' || ext === 'js') return <FileCode className="h-3.5 w-3.5 text-yellow-400 shrink-0" />
+  if (ext === 'env') return <Shield className="h-3.5 w-3.5 text-green-300 shrink-0" />
+  return <File className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
+}
+
+function getFileColor(name: string, isDir: boolean): string {
+  if (isDir) return 'text-blue-300 font-medium'
+  const ext = name.split('.').pop()?.toLowerCase()
+  if (ext === 'tsx') return 'text-blue-300'
+  if (ext === 'ts') return 'text-blue-200'
+  if (ext === 'css') return 'text-pink-300'
+  if (ext === 'json') return 'text-yellow-200'
+  if (ext === 'prisma') return 'text-teal-300'
+  if (ext === 'yml' || ext === 'yaml') return 'text-red-200'
+  if (ext === 'md') return 'text-gray-300'
+  return 'text-zinc-300'
 }
 
 function FileTree({ code }: { code: string }) {
@@ -98,16 +166,8 @@ function FileTree({ code }: { code: string }) {
           className="flex items-center gap-1.5 py-0.5 text-zinc-300 hover:text-zinc-100 hover:bg-zinc-800/50 rounded px-1 -mx-1 transition-colors"
           style={{ paddingLeft: `${node.depth * 20}px` }}
         >
-          {node.isDir ? (
-            node.depth === 0 ? (
-              <FolderOpen className="h-4 w-4 text-blue-400 shrink-0" />
-            ) : (
-              <Folder className="h-4 w-4 text-yellow-400 shrink-0" />
-            )
-          ) : (
-            <File className="h-3.5 w-3.5 text-zinc-500 shrink-0" />
-          )}
-          <span className={node.isDir ? 'text-blue-300 font-medium' : 'text-zinc-300'}>
+          {getFileIcon(node.name, node.isDir, node.depth)}
+          <span className={getFileColor(node.name, node.isDir)}>
             {node.name}
           </span>
           {node.comment && (
@@ -148,7 +208,23 @@ function useScrollSpy(ids: string[]) {
 
 // ─── Component ──────────────────────────────────────────────────────────────
 
+function preprocessContent(markdown: string): { processed: string; trees: Record<string, string> } {
+  const trees: Record<string, string> = {}
+  let index = 0
+  // Match code blocks without language (```) that contain tree characters
+  const processed = markdown.replace(/```\n([\s\S]*?)```/g, (match, code: string) => {
+    if (/[├└│─]/.test(code) && code.split('\n').length >= 3) {
+      const key = `FILETREE${index++}END`
+      trees[key] = code.trim()
+      return key
+    }
+    return match
+  })
+  return { processed, trees }
+}
+
 export function DocsPageClient({ content }: DocsPageClientProps) {
+  const { processed, trees } = useMemo(() => preprocessContent(content), [content])
   const toc = useMemo(() => generateToc(content), [content])
   const tocIds = useMemo(() => toc.map((t) => t.id), [toc])
   const activeId = useScrollSpy(tocIds)
@@ -253,18 +329,19 @@ export function DocsPageClient({ content }: DocsPageClientProps) {
                 h1: headingComponent(1),
                 h2: headingComponent(2),
                 h3: headingComponent(3),
-                pre: ({ children, ...props }) => {
-                  // Check if this is a file tree block
-                  const text = extractText(children)
-                  const treeNodes = parseTree(text)
-                  if (treeNodes) {
-                    return <FileTree code={text} />
+                p: ({ children, ...props }) => {
+                  const text = extractText(children).trim()
+                  // Check if this paragraph is a file tree placeholder
+                  const treeMatch = text.match(/^FILETREE(\d+)END$/)
+                  if (treeMatch) {
+                    const key = `FILETREE${treeMatch[1]}END`
+                    if (trees[key]) return <FileTree code={trees[key]} />
                   }
-                  return <pre {...props}>{children}</pre>
+                  return <p {...props}>{children}</p>
                 },
               }}
             >
-              {content}
+              {processed}
             </ReactMarkdown>
           </CardContent>
         </Card>

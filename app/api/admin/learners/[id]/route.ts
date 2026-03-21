@@ -29,7 +29,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     // Empêcher la suppression d'un Super Admin
     if (await isSuperAdmin(id)) {
-      throw new ApiError(403, 'Impossible de supprimer un Super Admin', 'CANNOT_DELETE_SUPER_ADMIN')
+      throw new ApiError(403, 'Cet utilisateur ne peut pas être supprimé', 'CANNOT_DELETE_SUPER_ADMIN')
     }
 
     await deleteLearner(id)

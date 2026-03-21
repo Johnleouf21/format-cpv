@@ -48,7 +48,7 @@ export async function requireSuperAdmin(): Promise<AuthSession> {
   })
 
   if (!user?.isSuperAdmin) {
-    throw new ApiError(403, 'Action réservée au Super Admin', 'SUPER_ADMIN_REQUIRED')
+    throw new ApiError(403, 'Vous n\'avez pas les droits nécessaires pour cette action', 'INSUFFICIENT_PRIVILEGES')
   }
 
   return session

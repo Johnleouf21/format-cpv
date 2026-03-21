@@ -15,22 +15,23 @@ export async function PUT(
     const body = await request.json()
     const { role } = updateEmailRoleSchema.parse(body)
 
-    // Promouvoir en ADMIN → Super Admin requis
-    if (role === 'ADMIN') {
+    const allowedEmail = await getAllowedEmailById(id)
+
+    // Toute modification impliquant le rôle ADMIN → Super Admin requis
+    if (role === 'ADMIN' || allowedEmail?.role === 'ADMIN') {
       await requireSuperAdmin()
     } else {
       await requireAuth('ADMIN')
     }
 
-    // Empêcher la rétrogradation d'un Super Admin
-    const allowedEmail = await getAllowedEmailById(id)
+    // Protection absolue : impossible de modifier un Super Admin
     if (allowedEmail) {
       const targetUser = await prisma.user.findUnique({
         where: { email: allowedEmail.email },
         select: { isSuperAdmin: true },
       })
       if (targetUser?.isSuperAdmin && role !== 'ADMIN') {
-        throw new ApiError(403, 'Impossible de rétrograder un Super Admin', 'CANNOT_DEMOTE_SUPER_ADMIN')
+        throw new ApiError(403, 'Ce rôle ne peut pas être modifié', 'PROTECTED_USER')
       }
     }
 
@@ -55,32 +56,24 @@ export async function DELETE(
   try {
     const { id } = await params
 
-    // Vérifier si l'email est celui d'un Super Admin
     const allowedEmail = await getAllowedEmailById(id)
+
+    // Si l'email a le rôle ADMIN dans la whitelist → Super Admin requis
+    if (allowedEmail?.role === 'ADMIN') {
+      await requireSuperAdmin()
+    } else {
+      await requireAuth('ADMIN')
+    }
+
+    // Vérifier si c'est un Super Admin (protection absolue)
     if (allowedEmail) {
       const targetUser = await prisma.user.findUnique({
         where: { email: allowedEmail.email },
-        select: { id: true, isSuperAdmin: true },
+        select: { isSuperAdmin: true },
       })
       if (targetUser?.isSuperAdmin) {
-        throw new ApiError(403, 'Impossible de supprimer un Super Admin', 'CANNOT_DELETE_SUPER_ADMIN')
+        throw new ApiError(403, 'Cet utilisateur ne peut pas être supprimé', 'PROTECTED_USER')
       }
-      // Supprimer un ADMIN → Super Admin requis
-      if (targetUser) {
-        const isAdmin = await prisma.user.findUnique({
-          where: { id: targetUser.id },
-          select: { role: true },
-        })
-        if (isAdmin?.role === 'ADMIN') {
-          await requireSuperAdmin()
-        } else {
-          await requireAuth('ADMIN')
-        }
-      } else {
-        await requireAuth('ADMIN')
-      }
-    } else {
-      await requireAuth('ADMIN')
     }
 
     await removeAllowedEmail(id)

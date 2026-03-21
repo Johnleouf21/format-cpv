@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Zap, Star } from 'lucide-react'
 
 interface XPData {
@@ -25,7 +26,31 @@ export function XPCard() {
       .catch(() => null)
   }, [])
 
-  if (!xp) return null
+  if (!xp) return (
+    <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
+      <CardContent className="pt-4 pb-3">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-8 w-8 rounded-lg" />
+            <div>
+              <Skeleton className="h-4 w-16 mb-1" />
+              <Skeleton className="h-3 w-24" />
+            </div>
+          </div>
+          <Skeleton className="h-6 w-16 rounded-full" />
+        </div>
+        <Skeleton className="h-2 w-full rounded-full mt-4" />
+        <div className="grid grid-cols-4 gap-1 mt-3">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="text-center">
+              <Skeleton className="h-4 w-6 mx-auto mb-1" />
+              <Skeleton className="h-3 w-10 mx-auto" />
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  )
 
   return (
     <Card className="border-indigo-200 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">

@@ -189,12 +189,12 @@ export function BadgesSection({ stats, earnedBadges }: BadgesSectionProps) {
             return (
               <div
                 key={badge.id}
-                className="flex flex-col items-center text-center p-3 rounded-lg border border-dashed opacity-40"
+                className="flex flex-col items-center text-center p-3 rounded-lg border border-dashed bg-muted/30"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted mb-2">
                   <Icon className="h-5 w-5 text-muted-foreground" />
                 </div>
-                <span className="text-xs font-medium">{badge.label}</span>
+                <span className="text-xs font-medium text-muted-foreground">{badge.label}</span>
                 <span className="text-[10px] text-muted-foreground mt-0.5">{badge.description}</span>
               </div>
             )

@@ -66,8 +66,8 @@ export function ModuleCard({
             </Link>
           </Button>
           {editHref && (
-            <Button variant="ghost" size="icon" asChild aria-label="Modifier">
-              <Link href={editHref}>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href={editHref} aria-label="Modifier">
                 <Edit className="h-4 w-4" />
               </Link>
             </Button>

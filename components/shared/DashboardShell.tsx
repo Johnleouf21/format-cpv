@@ -254,8 +254,8 @@ export function DashboardShell({
             </nav>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <Button variant="ghost" size="icon" className="h-9 w-9" asChild aria-label="Aide">
-              <Link href="/help">
+            <Button variant="ghost" size="icon" className="h-9 w-9" asChild>
+              <Link href="/help" aria-label="Aide">
                 <HelpCircle className="h-4 w-4" />
               </Link>
             </Button>

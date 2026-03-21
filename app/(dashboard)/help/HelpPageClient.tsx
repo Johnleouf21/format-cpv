@@ -294,7 +294,7 @@ const adminSections = [
       },
       {
         q: 'Comment voir les avis des apprenants ?',
-        a: 'Allez dans Avis. Les apprenants peuvent donner leur avis à la fin d\'un parcours (note de 1 à 5 étoiles + commentaire, nominatif ou anonyme).',
+        a: 'Allez dans Avis. Les apprenants donnent leur avis à la fin de chaque parcours complété (note de 1 à 5 étoiles + commentaire, nominatif ou anonyme). Chaque parcours peut être noté séparément, ce qui permet d\'identifier ceux à améliorer.',
       },
       {
         q: 'Les rappels automatiques, comment ça marche ?',

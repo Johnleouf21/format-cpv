@@ -58,7 +58,9 @@ export async function GET(request: NextRequest) {
       rank: index + 1,
     }))
 
-    return NextResponse.json(ranked)
+    const response = NextResponse.json(ranked)
+    response.headers.set('Cache-Control', 's-maxage=60, stale-while-revalidate=120')
+    return response
   } catch (error) {
     return handleApiError(error)
   }

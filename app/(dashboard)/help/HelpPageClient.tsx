@@ -74,15 +74,15 @@ const learnerSections = [
     items: [
       {
         q: 'Comment fonctionnent les quiz ?',
-        a: 'Les quiz apparaissent après la validation du module. Ils peuvent contenir 4 types de questions :\n- Choix unique : sélectionnez une seule réponse\n- Choix multiple : cochez toutes les bonnes réponses\n- Ordonnancement : remettez les éléments dans le bon ordre avec les flèches haut/bas\n- Association : cliquez sur un élément à gauche puis sur sa correspondance à droite',
+        a: 'Les quiz apparaissent après la validation du module. Ils peuvent contenir 4 types de questions :\n- Choix unique : sélectionnez une seule réponse\n- Choix multiple : cochez toutes les bonnes réponses\n- Ordonnancement : glissez-déposez les éléments pour les remettre dans le bon ordre\n- Association : cliquez sur un élément à gauche puis sur sa correspondance à droite',
       },
       {
         q: 'Comment fonctionne l\'ordonnancement ?',
-        a: 'Les éléments sont présentés dans un ordre aléatoire. Utilisez les flèches haut/bas pour les remettre dans le bon ordre. La correction montre en vert les éléments bien placés et en rouge ceux mal placés.',
+        a: 'Les éléments sont présentés dans un ordre aléatoire. Glissez-déposez les éléments pour les remettre dans le bon ordre (utilisez la poignée à gauche). La correction montre en vert les éléments bien placés et en rouge ceux mal placés.',
       },
       {
         q: 'Comment fonctionne l\'association ?',
-        a: 'Cliquez d\'abord sur un élément dans la colonne de gauche (il se surligne), puis cliquez sur l\'élément correspondant dans la colonne de droite. La paire se forme automatiquement. Vous pouvez modifier une association en recliquer sur l\'élément de gauche.',
+        a: 'Glissez un élément de la colonne de gauche vers sa correspondance dans la colonne de droite. Vous pouvez aussi cliquer : sélectionnez un élément à gauche puis cliquez sur sa correspondance à droite. Les paires formées sont affichées avec un badge.',
       },
       {
         q: 'Où voir mes résultats ?',
@@ -131,15 +131,23 @@ const learnerSections = [
   {
     id: 'notifications',
     icon: Bell,
-    title: 'Notifications',
+    title: 'Notifications et préférences',
     items: [
       {
         q: 'Comment fonctionnent les notifications ?',
-        a: 'La cloche en haut de page affiche vos notifications : nouveau parcours assigné, badge obtenu, etc. Cliquez dessus pour les consulter et "Tout marquer comme lu" pour les effacer.',
+        a: 'La cloche en haut de page affiche vos 5 dernières notifications. Cliquez sur "Voir toutes les notifications" pour accéder au centre de notifications complet.',
+      },
+      {
+        q: 'Comment gérer mes notifications ?',
+        a: 'Dans le centre de notifications vous pouvez :\n- Filtrer par statut : Toutes, Non lues, Lues\n- Supprimer une notification (icône poubelle au survol)\n- Tout marquer comme lu ou tout supprimer\n- Naviguer entre les pages',
       },
       {
         q: 'Comment gérer les emails ?',
         a: 'Allez dans Profil > Notifications pour activer ou désactiver les différents types d\'emails (bienvenue, assignation de parcours, mises à jour de contenu).',
+      },
+      {
+        q: 'Comment changer le thème ?',
+        a: 'Cliquez sur l\'icône lune/soleil dans la barre en haut, à côté de l\'aide et de la cloche. Le changement est instantané et sauvegardé.',
       },
     ],
   },
@@ -221,7 +229,7 @@ const adminSections = [
       },
       {
         q: 'Comment ajouter un quiz ?',
-        a: 'Éditez un module, puis allez dans la section Quiz. 4 types de questions disponibles :\n- Choix unique / multiple : cochez les bonnes réponses\n- Ordonnancement : saisissez les éléments dans le bon ordre, utilisez les flèches pour ajuster\n- Association : saisissez les paires gauche → droite\n\nLe quiz apparaîtra après la validation du module par l\'apprenant.',
+        a: 'Éditez un module, puis allez dans la section Quiz. 4 types de questions disponibles :\n- Choix unique / multiple : cochez les bonnes réponses\n- Ordonnancement : saisissez les éléments dans le bon ordre, glissez-déposez pour ajuster\n- Association : saisissez les paires gauche → droite\n\nLe quiz apparaîtra après la validation du module par l\'apprenant.',
       },
       {
         q: 'Comment intégrer des vidéos ?',

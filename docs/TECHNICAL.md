@@ -31,6 +31,8 @@ FormaCPV est une plateforme de formation interne gamifiée, conçue pour permett
 | **Lucide React** | 0.575 | Icônes |
 | **React Markdown** | 10.x | Rendu du contenu Markdown des modules |
 | **React PDF** | 4.x | Génération des certificats PDF |
+| **@dnd-kit** | 6.x / 10.x | Drag & drop (quiz ordonnancement, réordonnement modules) |
+| **Sonner** | - | Toasts de confirmation élégants |
 
 ### Backend
 | Technologie | Version | Usage |

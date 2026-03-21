@@ -181,7 +181,7 @@ VerificationToken (NextAuth)
 - **Export CSV** : 3 types (apprenants, modules complétés, résultats quiz) avec BOM UTF-8
 - **Filtrage** : par formateur, parcours, statut, centre
 - **Whitelist** : gestion des domaines et emails autorisés avec barre de recherche
-- **Avis** : collecte d'avis fin de parcours (1-5 étoiles, nominatif ou anonyme)
+- **Avis** : collecte d'avis par parcours (1-5 étoiles, nominatif ou anonyme), note moyenne visible sur les cards
 
 ### 7. Espace formateur
 

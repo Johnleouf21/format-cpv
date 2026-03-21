@@ -318,7 +318,7 @@ export const KNOWLEDGE_BASE: QA[] = [
   {
     keywords: ['avis', 'feedback', 'note', 'etoile', 'commentaire', 'opinion'],
     question: 'Comment fonctionnent les avis ?',
-    answer: 'À la fin de **chaque parcours** complété, un formulaire d\'avis apparaît :\n\n- Note de **1 à 5 étoiles**\n- **Commentaire** libre\n- Choix entre **nominatif ou anonyme**\n- Vous pouvez noter **chaque parcours séparément**\n\nL\'admin peut consulter tous les avis par parcours dans [Admin > Avis](/admin/feedback).',
+    answer: 'À la fin de **chaque parcours** complété, un formulaire d\'avis apparaît :\n\n- Note de **1 à 5 étoiles**\n- **Commentaire** libre\n- Choix entre **nominatif ou anonyme**\n- Vous pouvez noter **chaque parcours séparément**\n\nLa **note moyenne** est visible par tous sur les cards parcours. L\'admin peut consulter les commentaires détaillés dans [Admin > Avis](/admin/feedback).',
     category: 'Formation',
   },
   // ── Rappels email ──

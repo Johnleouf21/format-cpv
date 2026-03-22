@@ -10,6 +10,8 @@ import {
   FileText, List, ChevronRight, Folder, FolderOpen, File,
   FileCode, FileJson, Database, Globe, Shield, Settings, Terminal,
   Palette, Layout, Braces, Server, TestTube, BookOpen, Cog,
+  Layers, Rocket, Lock, Wrench, Users, BarChart3, Workflow,
+  type LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -41,6 +43,41 @@ function extractText(node: ReactNode): string {
     return extractText((node as { props: { children?: ReactNode } }).props.children)
   }
   return ''
+}
+
+const tocIcons: Record<string, LucideIcon> = {
+  'stack technique': Layers,
+  'architecture': Folder,
+  'structure': Folder,
+  'fonctionnalités': Wrench,
+  'fonctionnalites': Wrench,
+  'authentification': Lock,
+  'sécurité': Shield,
+  'securite': Shield,
+  'rôles': Users,
+  'roles': Users,
+  'rbac': Shield,
+  'déploiement': Rocket,
+  'deploiement': Rocket,
+  'ci/cd': Workflow,
+  'pipeline': Workflow,
+  'performance': BarChart3,
+  'base de données': Database,
+  'base de donnees': Database,
+  'api': Server,
+  'email': Globe,
+  'tests': TestTube,
+  'configuration': Settings,
+  'variables': Settings,
+}
+
+function getTocIcon(text: string): LucideIcon | null {
+  const lower = text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  for (const [key, icon] of Object.entries(tocIcons)) {
+    const normalizedKey = key.normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+    if (lower.includes(normalizedKey)) return icon
+  }
+  return null
 }
 
 function generateToc(markdown: string): TocItem[] {
@@ -234,7 +271,15 @@ export function DocsPageClient({ content }: DocsPageClientProps) {
       const text = extractText(children)
       const id = slugify(text)
       const Tag = `h${level}` as const
-      return <Tag id={id} {...props}>{children}</Tag>
+      const Icon = level === 2 ? getTocIcon(text) : null
+      return (
+        <Tag id={id} {...props}>
+          {Icon && (
+            <Icon className="inline-block h-5 w-5 text-primary mr-2 -mt-0.5" />
+          )}
+          {children}
+        </Tag>
+      )
     }
 
   return (
@@ -252,49 +297,75 @@ export function DocsPageClient({ content }: DocsPageClientProps) {
       <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-6 items-start">
 
         {/* Sommaire sticky avec scroll-spy */}
-        <Card className="lg:sticky lg:top-20">
-          <CardContent className="pt-5 pb-4">
-            <h2 className="text-sm font-semibold flex items-center gap-2 mb-4">
-              <List className="h-4 w-4 text-primary" />
-              Sommaire
+        <Card className="lg:sticky lg:top-20 overflow-hidden border-primary/20">
+          <div className="bg-gradient-to-r from-primary/15 via-primary/10 to-transparent dark:from-primary/25 dark:via-primary/15 dark:to-transparent px-5 py-3.5 border-b">
+            <h2 className="text-sm font-bold flex items-center justify-between text-primary">
+              <span className="flex items-center gap-2">
+                <BookOpen className="h-4 w-4" />
+                Sommaire
+              </span>
+              <span className="text-[10px] font-normal text-muted-foreground">
+                {toc.filter(t => t.level <= 2).length} sections
+              </span>
             </h2>
-            <nav className="space-y-0.5 max-h-[70vh] overflow-y-auto pr-2">
-              {toc.map((item) => {
+          </div>
+          <CardContent className="pt-2 pb-4 px-2">
+            <nav className="space-y-0.5 max-h-[70vh] overflow-y-auto pr-1 scroll-smooth">
+              {toc.map((item, index) => {
                 const isActive = activeId === item.id
+                const Icon = item.level <= 2 ? getTocIcon(item.text) : null
+                const isFirstLevel = item.level === 1
+                const showDivider = isFirstLevel && index > 0
+
                 return (
-                  <a
-                    key={item.id}
-                    href={`#${item.id}`}
-                    className={cn(
-                      'group flex items-center gap-1.5 py-1 transition-all rounded-md px-2 -mx-2',
-                      isActive
-                        ? 'text-primary bg-primary/10 font-medium'
-                        : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                    )}
-                    style={{ paddingLeft: `${(item.level - 1) * 12 + 8}px` }}
-                  >
-                    {item.level > 1 && (
-                      <ChevronRight className={cn(
-                        'h-3 w-3 shrink-0 transition-colors',
-                        isActive ? 'text-primary' : 'text-muted-foreground/50 group-hover:text-primary'
-                      )} />
-                    )}
-                    {item.level === 1 && (
-                      <div className={cn(
-                        'w-1.5 h-1.5 rounded-full shrink-0',
-                        isActive ? 'bg-primary' : 'bg-muted-foreground/30'
-                      )} />
-                    )}
-                    <span className={
-                      item.level === 1
-                        ? 'text-sm font-semibold'
-                        : item.level === 2
-                          ? 'text-[13px]'
-                          : 'text-xs'
-                    }>
-                      {item.text}
-                    </span>
-                  </a>
+                  <div key={item.id}>
+                    {showDivider && <div className="border-t border-dashed border-border/60 my-2 mx-2" />}
+                    <a
+                      href={`#${item.id}`}
+                      onClick={(e) => {
+                        e.preventDefault()
+                        document.getElementById(item.id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+                      }}
+                      className={cn(
+                        'group relative flex items-center gap-2 py-1.5 transition-all duration-200 rounded-lg px-2.5',
+                        isActive
+                          ? 'text-primary bg-primary/10 font-medium'
+                          : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
+                      )}
+                      style={{ paddingLeft: isFirstLevel ? '10px' : `${(item.level - 1) * 14 + 10}px` }}
+                    >
+                      {/* Barre latérale active */}
+                      {isActive && (
+                        <div className="absolute left-0 top-1 bottom-1 w-[3px] bg-primary rounded-full" />
+                      )}
+                      {Icon ? (
+                        <Icon className={cn(
+                          'h-3.5 w-3.5 shrink-0 transition-colors duration-200',
+                          isActive ? 'text-primary' : 'text-muted-foreground/50 group-hover:text-primary'
+                        )} />
+                      ) : item.level > 1 ? (
+                        <ChevronRight className={cn(
+                          'h-3 w-3 shrink-0 transition-all duration-200',
+                          isActive ? 'text-primary rotate-90' : 'text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-0.5'
+                        )} />
+                      ) : (
+                        <div className={cn(
+                          'w-2 h-2 rounded-full shrink-0 transition-all duration-200',
+                          isActive ? 'bg-primary scale-110' : 'bg-muted-foreground/20 group-hover:bg-primary/50'
+                        )} />
+                      )}
+                      <span className={cn(
+                        'transition-colors duration-200',
+                        isFirstLevel
+                          ? 'text-[13px] font-semibold'
+                          : item.level === 2
+                            ? 'text-[12px]'
+                            : 'text-[11px]',
+                      )}>
+                        {item.text}
+                      </span>
+                    </a>
+                  </div>
                 )
               })}
             </nav>

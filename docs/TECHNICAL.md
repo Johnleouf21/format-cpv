@@ -268,7 +268,7 @@ NEXTAUTH_URL=               # URL du site
 NEXTAUTH_SECRET=            # Secret JWT
 RESEND_API_KEY=             # Clé API Resend
 EMAIL_FROM=                 # Email expéditeur
-CRON_SECRET=                # Secret pour le cron de rappels
+CRON_SECRET=                # Secret pour le cron de rappels (7h UTC = 9h Paris)
 ```
 
 ### Commandes
@@ -387,7 +387,7 @@ Exemple de workflow :
 | Push sur `main` | Déploiement automatique en **production** |
 | Push sur `dev` | Déploiement **preview** (URL temporaire) |
 | Pull Request | Déploiement **preview** + CI pipeline |
-| Cron quotidien 9h UTC | Exécution `/api/cron/reminders` (rappels email) |
+| Cron quotidien 7h UTC (9h Paris) | Exécution `/api/cron/reminders` (rappels email inactivité 3j) |
 
 Configuration :
 1. Variables d'environnement dans Vercel Dashboard

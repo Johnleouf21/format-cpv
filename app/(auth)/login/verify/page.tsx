@@ -11,11 +11,11 @@ import { Button } from '@/components/ui/button'
 export default function VerifyRequestPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#2B4C7E] via-[#3A5F96] to-[#1E3A5F] px-4">
+        <Card className="w-full max-w-md text-center shadow-2xl border-0">
           <CardHeader>
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-              <Mail className="h-6 w-6 text-blue-600" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">Chargement...</CardTitle>
           </CardHeader>
@@ -99,11 +99,11 @@ function VerifyRequestContent() {
 
   if (!pendingId) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <Card className="w-full max-w-md text-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#2B4C7E] via-[#3A5F96] to-[#1E3A5F] px-4">
+        <Card className="w-full max-w-md text-center shadow-2xl border-0">
           <CardHeader>
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-              <Mail className="h-6 w-6 text-blue-600" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+              <Mail className="h-6 w-6 text-primary" />
             </div>
             <CardTitle className="text-2xl font-bold">Vérifiez votre email</CardTitle>
             <CardDescription>
@@ -126,13 +126,13 @@ function VerifyRequestContent() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <Card className="w-full max-w-md text-center">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#2B4C7E] via-[#3A5F96] to-[#1E3A5F] px-4">
+      <Card className="w-full max-w-md text-center shadow-2xl border-0">
         <CardHeader>
           {status === 'polling' && (
             <>
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
-                <Mail className="h-6 w-6 text-blue-600" />
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+                <Mail className="h-6 w-6 text-primary" />
               </div>
               <CardTitle className="text-2xl font-bold">Vérifiez votre email</CardTitle>
               <CardDescription>
@@ -180,7 +180,7 @@ function VerifyRequestContent() {
           {status === 'polling' && (
             <>
               <div className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4 text-blue-600" viewBox="0 0 24 24">
+                <svg className="animate-spin h-4 w-4 text-primary" viewBox="0 0 24 24">
                   <circle
                     className="opacity-25"
                     cx="12"

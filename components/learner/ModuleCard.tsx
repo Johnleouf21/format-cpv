@@ -48,7 +48,7 @@ export function ModuleCard({
               className={cn(
                 'inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full',
                 quizScore
-                  ? 'bg-blue-100 text-blue-700'
+                  ? 'bg-primary/10 text-primary'
                   : 'bg-gray-100 text-gray-500'
               )}
             >
@@ -92,7 +92,7 @@ export function ModuleCard({
 
           {/* Quiz score if completed */}
           {quizScore && (
-            <span className="inline-flex items-center gap-1 text-xs text-blue-600 font-medium ml-2">
+            <span className="inline-flex items-center gap-1 text-xs text-primary font-medium ml-2">
               <Award className="w-3.5 h-3.5" />
               {quizScore.score}%
             </span>

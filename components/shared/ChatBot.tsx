@@ -200,14 +200,14 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
             if (!wasDraggingRef.current) setIsOpen(true)
             wasDraggingRef.current = false
           }}
-          className="fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-700 transition-colors duration-200 hover:scale-105 active:scale-95 group touch-none select-none cursor-grab active:cursor-grabbing"
+          className="fixed z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary/90 transition-colors duration-200 hover:scale-105 active:scale-95 group touch-none select-none cursor-grab active:cursor-grabbing"
           style={position ? { left: position.x, top: position.y } : { bottom: 24, right: 24 }}
           aria-label="Ouvrir l'assistant"
         >
           <MessageCircle className="h-6 w-6 transition-transform group-hover:scale-110 pointer-events-none" />
           <span className="absolute -top-1 -right-1 flex h-4 w-4 pointer-events-none">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
-            <span className="relative inline-flex rounded-full h-4 w-4 bg-blue-500 items-center justify-center text-[9px] font-bold text-white">?</span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary/50 opacity-75" />
+            <span className="relative inline-flex rounded-full h-4 w-4 bg-primary items-center justify-center text-[9px] font-bold text-white">?</span>
           </span>
         </button>
       )}
@@ -225,7 +225,7 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
           style={{ left: pp.x, top: pp.y, width: pp.w, height: pp.h }}
         >
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-700 text-white shrink-0">
+          <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-primary to-primary/90 text-white shrink-0">
             <div className="flex items-center gap-2.5">
               <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20">
                 <Bot className="h-5 w-5" />
@@ -234,7 +234,7 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
                 <p className="font-semibold text-sm">Assistant FormaCPV</p>
                 <div className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-                  <p className="text-[11px] text-blue-100">En ligne</p>
+                  <p className="text-[11px] text-primary-foreground/80">En ligne</p>
                 </div>
               </div>
             </div>
@@ -264,8 +264,8 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
               <div key={msg.id} className="animate-in fade-in slide-in-from-bottom-2 duration-200">
                 {msg.type === 'bot' ? (
                   <div className="flex gap-2">
-                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 mt-0.5">
-                      <Bot className="h-4 w-4 text-blue-600" />
+                    <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                      <Bot className="h-4 w-4 text-primary" />
                     </div>
                     <div className="space-y-2 max-w-[85%]">
                       <div className="rounded-2xl rounded-tl-sm bg-muted px-3 py-2 text-sm leading-relaxed">
@@ -296,7 +296,7 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
                       {msg.suggestions && (
                         <div className="flex flex-wrap gap-1.5">
                           {msg.suggestions.map((s) => (
-                            <button key={s} onClick={() => !isTyping && handleQuestion(s)} disabled={isTyping} className="text-xs px-2.5 py-1.5 rounded-full border bg-background hover:bg-blue-50 hover:border-blue-200 hover:text-blue-700 transition-colors text-left disabled:opacity-50">
+                            <button key={s} onClick={() => !isTyping && handleQuestion(s)} disabled={isTyping} className="text-xs px-2.5 py-1.5 rounded-full border bg-background hover:bg-primary/5 hover:border-primary/20 hover:text-primary transition-colors text-left disabled:opacity-50">
                               {s}
                             </button>
                           ))}
@@ -316,7 +316,7 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
                               {expandedCategory === cat.label && (
                                 <div className="px-2 pb-2 space-y-1">
                                   {cat.questions.map((q) => (
-                                    <button key={q} onClick={() => !isTyping && handleQuestion(q)} disabled={isTyping} className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-blue-50 hover:text-blue-700 transition-colors disabled:opacity-50">
+                                    <button key={q} onClick={() => !isTyping && handleQuestion(q)} disabled={isTyping} className="w-full text-left text-xs px-2 py-1.5 rounded hover:bg-primary/5 hover:text-primary transition-colors disabled:opacity-50">
                                       {q}
                                     </button>
                                   ))}
@@ -331,11 +331,11 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
                 ) : (
                   <div className="flex justify-end">
                     <div className="flex gap-2 max-w-[85%]">
-                      <div className="rounded-2xl rounded-tr-sm bg-blue-600 text-white px-3 py-2 text-sm">
+                      <div className="rounded-2xl rounded-tr-sm bg-primary text-white px-3 py-2 text-sm">
                         {msg.text}
                       </div>
-                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 mt-0.5">
-                        <User className="h-4 w-4 text-blue-600" />
+                      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                        <User className="h-4 w-4 text-primary" />
                       </div>
                     </div>
                   </div>
@@ -346,8 +346,8 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
             {/* Typing indicator */}
             {isTyping && (
               <div className="flex gap-2 animate-in fade-in duration-150">
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-100 mt-0.5">
-                  <Bot className="h-4 w-4 text-blue-600" />
+                <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 mt-0.5">
+                  <Bot className="h-4 w-4 text-primary" />
                 </div>
                 <div className="rounded-2xl rounded-tl-sm bg-muted px-4 py-3">
                   <div className="flex gap-1">
@@ -375,7 +375,7 @@ export function ChatBot({ userName, currentSpace }: ChatBotProps) {
             <Button
               type="submit"
               size="icon"
-              className="rounded-full h-9 w-9 shrink-0 bg-blue-600 hover:bg-blue-700"
+              className="rounded-full h-9 w-9 shrink-0 bg-primary hover:bg-primary/90"
               disabled={!input.trim() || isTyping}
               aria-label="Envoyer"
             >

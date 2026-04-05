@@ -121,8 +121,8 @@ export function AdminDashboardClient() {
       description: 'Suivez et gérez les apprenants',
       icon: Users,
       href: '/admin/learners',
-      iconBg: 'bg-blue-50',
-      iconColor: 'text-blue-600',
+      iconBg: 'bg-primary/5',
+      iconColor: 'text-primary',
     },
   ]
 

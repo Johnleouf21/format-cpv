@@ -106,15 +106,20 @@ export function DashboardShell({
       <div className="min-h-screen bg-background flex">
         {/* Sidebar */}
         <aside
-          className={`sticky top-0 h-screen border-r bg-card flex flex-col transition-all duration-200 ${
+          className={`sticky top-0 h-screen border-r bg-sidebar flex flex-col transition-all duration-200 ${
             sidebarCollapsed ? 'w-16' : 'w-60'
           } hidden md:flex`}
         >
           {/* Logo + collapse */}
-          <div className="h-14 flex items-center justify-between px-4 border-b">
-            {!sidebarCollapsed && (
-              <Link href={`/${currentSpace}`} className="text-lg font-bold text-primary">
-                FormaCPV
+          <div className="h-14 flex items-center justify-between px-4 border-b border-sidebar-border">
+            {!sidebarCollapsed ? (
+              <Link href={`/${currentSpace}`} className="flex items-center gap-2">
+                <img src="/logo-pointvision.png" alt="Point Vision" className="h-8 w-8 rounded" />
+                <span className="text-lg font-bold text-primary dark:text-white">FormaCPV</span>
+              </Link>
+            ) : (
+              <Link href={`/${currentSpace}`} className="mx-auto">
+                <img src="/logo-pointvision.png" alt="Point Vision" className="h-8 w-8 rounded" />
               </Link>
             )}
             <Button
@@ -194,8 +199,9 @@ export function DashboardShell({
               {/* Mobile: show full nav like header mode */}
               <div className="flex items-center gap-4 md:hidden">
                 {mobileNavComponent}
-                <Link href={`/${currentSpace}`} className="text-lg font-bold text-primary">
-                  FormaCPV
+                <Link href={`/${currentSpace}`} className="flex items-center gap-2">
+                  <img src="/logo-pointvision.png" alt="Point Vision" className="h-7 w-7 rounded" />
+                  <span className="text-lg font-bold text-primary">FormaCPV</span>
                 </Link>
               </div>
               <div className="hidden md:flex items-center gap-1">
@@ -242,8 +248,9 @@ export function DashboardShell({
         <div className="px-3 sm:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-6 min-w-0">
             {mobileNavComponent}
-            <Link href={`/${currentSpace}`} className="text-lg font-bold text-primary shrink-0">
-              FormaCPV
+            <Link href={`/${currentSpace}`} className="flex items-center gap-2 shrink-0">
+              <img src="/logo-pointvision.png" alt="Point Vision" className="h-7 w-7 rounded" />
+              <span className="text-lg font-bold text-primary">FormaCPV</span>
             </Link>
             <nav className="hidden md:flex items-center gap-1">
               {navItems.map((item) => (

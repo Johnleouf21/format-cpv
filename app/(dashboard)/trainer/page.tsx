@@ -53,8 +53,8 @@ export default async function TrainerDashboardPage() {
 
       <div className="space-y-4">
         <h2 className="text-lg font-semibold flex items-center gap-2.5">
-          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-blue-50">
-            <Users className="h-4 w-4 text-blue-600" />
+          <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/10 dark:bg-primary/20">
+            <Users className="h-4 w-4 text-primary" />
           </div>
           Mes apprenants
         </h2>

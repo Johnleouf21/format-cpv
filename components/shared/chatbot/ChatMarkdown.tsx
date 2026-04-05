@@ -41,14 +41,14 @@ export function renderMarkdown(text: string, onNavigate?: (href: string) => void
             <button
               key={match.index}
               onClick={() => onNavigate(href)}
-              className="text-blue-600 underline hover:text-blue-800 cursor-pointer"
+              className="text-primary underline hover:text-primary/80 cursor-pointer"
             >
               {match[2]}
             </button>
           )
         } else {
           parts.push(
-            <a key={match.index} href={href} className="text-blue-600 underline hover:text-blue-800" target="_blank" rel="noopener noreferrer">
+            <a key={match.index} href={href} className="text-primary underline hover:text-primary/80" target="_blank" rel="noopener noreferrer">
               {match[2]}
             </a>
           )

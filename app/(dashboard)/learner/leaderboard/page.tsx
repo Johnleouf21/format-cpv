@@ -83,7 +83,7 @@ export default function LeaderboardPage() {
 
       {/* Position actuelle */}
       {currentUser && (
-        <Card className="border-primary/30 bg-gradient-to-r from-indigo-50/50 to-purple-50/50">
+        <Card className="border-primary/30 bg-gradient-to-r from-primary/5 to-primary/10 dark:from-primary/10 dark:to-primary/20">
           <CardHeader className="pb-2">
             <CardTitle className="text-base flex items-center gap-2">
               {getRankIcon(currentUser.rank)}
@@ -98,11 +98,11 @@ export default function LeaderboardPage() {
           <CardContent>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <Zap className="h-4 w-4 text-indigo-600" />
+                <Zap className="h-4 w-4 text-primary" />
                 <span className="font-semibold">{currentUser.xp} XP</span>
               </div>
-              <div className="flex items-center gap-1.5 bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full">
-                <Star className="h-3 w-3 fill-indigo-500" />
+              <div className="flex items-center gap-1.5 bg-primary/10 text-primary px-2 py-0.5 rounded-full dark:bg-primary/20">
+                <Star className="h-3 w-3 fill-primary" />
                 <span className="text-xs font-bold">Niv. {currentUser.level}</span>
               </div>
               <div className="flex-1 max-w-32">
@@ -151,7 +151,7 @@ export default function LeaderboardPage() {
                       )}
                     </p>
                     <div className="flex items-center gap-2 mt-0.5">
-                      <span className="text-[10px] bg-indigo-100 text-indigo-700 px-1.5 py-0.5 rounded-full font-medium">
+                      <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-medium dark:bg-primary/20">
                         Niv. {entry.level}
                       </span>
                       <Progress value={entry.levelProgress} className="h-1 w-12" />
@@ -160,7 +160,7 @@ export default function LeaderboardPage() {
 
                   <div className="text-right">
                     <div className="flex items-center gap-1">
-                      <Zap className="h-3.5 w-3.5 text-indigo-500" />
+                      <Zap className="h-3.5 w-3.5 text-primary" />
                       <p className="font-semibold">{entry.xp}</p>
                     </div>
                     <p className="text-[10px] text-muted-foreground">XP</p>

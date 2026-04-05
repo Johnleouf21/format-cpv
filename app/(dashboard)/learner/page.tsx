@@ -58,8 +58,8 @@ export default async function LearnerHomePage() {
     if (assignments.length === 0) {
       return (
         <div className="flex flex-col items-center justify-center py-16 px-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 mb-6">
-            <BookOpen className="h-8 w-8 text-blue-600" />
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 mb-6">
+            <BookOpen className="h-8 w-8 text-primary" />
           </div>
           <h1 className="text-2xl font-bold mb-2">
             Bienvenue{session.user.name ? `, ${session.user.name}` : ''} !
@@ -113,8 +113,8 @@ export default async function LearnerHomePage() {
             <Card>
               <CardContent className="pt-4 pb-3">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 shrink-0">
-                    <Target className="h-4.5 w-4.5 text-blue-600" />
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
+                    <Target className="h-4.5 w-4.5 text-primary" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-2xl font-bold">{globalPercent}%</p>
@@ -169,12 +169,12 @@ export default async function LearnerHomePage() {
 
           {/* Resume card */}
           {nextParcours && (
-            <Card data-tour="resume" className="border-blue-200 bg-blue-50/30 dark:bg-blue-950/30 dark:border-blue-800">
+            <Card data-tour="resume" className="border-primary/20 bg-primary/5 dark:bg-primary/10 dark:border-primary/30">
               <CardContent className="pt-4 pb-4">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 shrink-0">
-                      <Clock className="h-5 w-5 text-blue-600" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
+                      <Clock className="h-5 w-5 text-primary" />
                     </div>
                     <div className="min-w-0">
                       <p className="text-sm font-medium">
@@ -208,11 +208,11 @@ export default async function LearnerHomePage() {
                   <Card key={parcours.id} className={isCompleted ? 'border-green-300 bg-green-50/50 dark:bg-green-950/50 dark:border-green-800' : ''}>
                     <CardHeader className="pb-2">
                       <div className="flex items-center gap-3">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${isCompleted ? 'bg-green-100' : 'bg-blue-100'}`}>
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-lg shrink-0 ${isCompleted ? 'bg-green-100 dark:bg-green-900' : 'bg-primary/10 dark:bg-primary/20'}`}>
                           {isCompleted ? (
-                            <Trophy className="h-5 w-5 text-green-600" />
+                            <Trophy className="h-5 w-5 text-green-600 dark:text-green-400" />
                           ) : (
-                            <BookOpen className="h-5 w-5 text-blue-600" />
+                            <BookOpen className="h-5 w-5 text-primary" />
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
@@ -295,8 +295,8 @@ export default async function LearnerHomePage() {
           <Card>
             <CardContent className="pt-4 pb-3">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100 shrink-0">
-                  <Target className="h-4.5 w-4.5 text-blue-600" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
+                  <Target className="h-4.5 w-4.5 text-primary" />
                 </div>
                 <div>
                   <p className="text-2xl font-bold">{percent}%</p>
@@ -351,12 +351,12 @@ export default async function LearnerHomePage() {
 
         {/* Continue button */}
         {data.nextModule && (
-          <Card data-tour="resume" className="border-blue-200 bg-blue-50/30 dark:bg-blue-950/30 dark:border-blue-800">
+          <Card data-tour="resume" className="border-primary/20 bg-primary/5 dark:bg-primary/10 dark:border-primary/30">
             <CardContent className="pt-4 pb-4">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 shrink-0">
-                    <Clock className="h-5 w-5 text-blue-600" />
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 dark:bg-primary/20 shrink-0">
+                    <Clock className="h-5 w-5 text-primary" />
                   </div>
                   <div className="min-w-0">
                     <p className="text-sm font-medium">
@@ -421,8 +421,8 @@ export default async function LearnerHomePage() {
   } catch {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100 mb-6">
-          <BookOpen className="h-8 w-8 text-blue-600" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 mb-6">
+          <BookOpen className="h-8 w-8 text-primary" />
         </div>
         <h1 className="text-2xl font-bold mb-2">
           Bienvenue{session.user.name ? `, ${session.user.name}` : ''} !

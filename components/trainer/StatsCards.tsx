@@ -23,9 +23,9 @@ export function StatsCards({
       value: totalInvited,
       subtitle: 'Invitations créées',
       icon: Users,
-      iconBg: 'bg-blue-50',
-      iconColor: 'text-blue-600',
-      accent: 'border-l-blue-500',
+      iconBg: 'bg-primary/5',
+      iconColor: 'text-primary',
+      accent: 'border-l-primary',
     },
     {
       title: 'Connectés',

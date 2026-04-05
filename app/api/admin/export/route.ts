@@ -60,7 +60,7 @@ async function exportLearners(): Promise<string> {
           parcours: {
             select: {
               title: true,
-              modules: { select: { id: true } },
+              parcoursModules: { select: { moduleId: true } },
             },
           },
         },
@@ -83,7 +83,7 @@ async function exportLearners(): Promise<string> {
 
   const dataRows = learnersWithProgress.map((l) => {
     const parcoursTitles = l.userParcours.map((up) => up.parcours.title).join(', ')
-    const totalModules = l.userParcours.reduce((acc, up) => acc + up.parcours.modules.length, 0)
+    const totalModules = l.userParcours.reduce((acc, up) => acc + up.parcours.parcoursModules.length, 0)
     const completedModules = l.progress.length
     const percentage = totalModules > 0 ? Math.round((completedModules / totalModules) * 100) : 0
 
@@ -109,7 +109,10 @@ async function exportProgress(): Promise<string> {
       module: {
         select: {
           title: true,
-          parcours: { select: { title: true } },
+          parcoursModules: {
+            select: { parcours: { select: { title: true } } },
+            take: 1,
+          },
         },
       },
     },
@@ -128,7 +131,7 @@ async function exportProgress(): Promise<string> {
     csvRow([
       p.user.name,
       p.user.email,
-      p.module.parcours?.title || 'N/A',
+      p.module.parcoursModules[0]?.parcours?.title || 'N/A',
       p.module.title,
       p.completedAt.toLocaleDateString('fr-FR'),
     ])
@@ -146,7 +149,10 @@ async function exportQuizResults(): Promise<string> {
           module: {
             select: {
               title: true,
-              parcours: { select: { title: true } },
+              parcoursModules: {
+                select: { parcours: { select: { title: true } } },
+                take: 1,
+              },
             },
           },
         },
@@ -170,7 +176,7 @@ async function exportQuizResults(): Promise<string> {
     csvRow([
       r.progress.user.name,
       r.progress.user.email,
-      r.progress.module.parcours?.title || 'N/A',
+      r.progress.module.parcoursModules[0]?.parcours?.title || 'N/A',
       r.progress.module.title,
       r.score,
       r.totalQuestions,

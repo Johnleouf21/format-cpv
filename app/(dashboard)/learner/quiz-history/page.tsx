@@ -26,7 +26,10 @@ export default async function QuizHistoryPage() {
             select: {
               id: true,
               title: true,
-              parcours: { select: { id: true, title: true } },
+              parcoursModules: {
+                select: { parcours: { select: { id: true, title: true } } },
+                take: 1,
+              },
             },
           },
         },
@@ -113,7 +116,7 @@ export default async function QuizHistoryPage() {
                         <span className="font-medium truncate">{result.progress.module.title}</span>
                         <Badge variant="secondary" className="text-xs shrink-0">
                           <BookOpen className="h-3 w-3 mr-1" />
-                          {result.progress.module.parcours.title}
+                          {result.progress.module.parcoursModules[0]?.parcours?.title ?? 'Parcours'}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-muted-foreground">

@@ -70,7 +70,7 @@ export async function getTrainerStats(
         userParcours: {
           include: {
             parcours: {
-              include: { modules: { select: { id: true } } },
+              include: { parcoursModules: { select: { moduleId: true } } },
             },
           },
         },
@@ -87,7 +87,7 @@ export async function getTrainerStats(
 
   for (const learner of learners) {
     const allModuleIds = learner.userParcours.flatMap((up) =>
-      up.parcours.modules.map((m) => m.id)
+      up.parcours.parcoursModules.map((pm) => pm.moduleId)
     )
     const totalModules = allModuleIds.length
     if (totalModules === 0) continue
@@ -159,7 +159,7 @@ export async function getTrainerLearners(
       userParcours: {
         include: {
           parcours: {
-            include: { modules: { select: { id: true } } },
+            include: { parcoursModules: { select: { moduleId: true } } },
           },
         },
       },
@@ -172,7 +172,7 @@ export async function getTrainerLearners(
 
   for (const learner of learners) {
     const allModuleIds = learner.userParcours.flatMap((up) =>
-      up.parcours.modules.map((m) => m.id)
+      up.parcours.parcoursModules.map((pm) => pm.moduleId)
     )
     const totalModules = allModuleIds.length
     const completedModuleIds = new Set(learner.progress.map((p) => p.moduleId))
@@ -234,20 +234,23 @@ export async function getLearnerDetails(
         include: {
           parcours: {
             include: {
-              modules: {
+              parcoursModules: {
                 orderBy: { order: 'asc' },
-                select: {
-                  id: true,
-                  title: true,
-                  order: true,
-                  quiz: {
-                    include: {
-                      questions: {
-                        orderBy: { order: 'asc' },
+                include: {
+                  module: {
+                    select: {
+                      id: true,
+                      title: true,
+                      quiz: {
                         include: {
-                          answers: {
+                          questions: {
                             orderBy: { order: 'asc' },
-                            select: { id: true, text: true, isCorrect: true },
+                            include: {
+                              answers: {
+                                orderBy: { order: 'asc' },
+                                select: { id: true, text: true, isCorrect: true },
+                              },
+                            },
                           },
                         },
                       },
@@ -263,7 +266,7 @@ export async function getLearnerDetails(
       progress: {
         include: {
           module: {
-            select: { id: true, title: true, order: true },
+            select: { id: true, title: true },
           },
           quizResult: {
             select: { score: true, totalQuestions: true, answers: true },
@@ -287,7 +290,8 @@ export async function getLearnerDetails(
   const primaryParcours = primaryUp?.parcours || null
 
   const modulesWithProgress =
-    primaryParcours?.modules.map((module) => {
+    primaryParcours?.parcoursModules.map((pm) => {
+      const module = pm.module
       const progress = learner.progress.find(
         (p) => p.moduleId === module.id
       )
@@ -312,7 +316,7 @@ export async function getLearnerDetails(
       return {
         id: module.id,
         title: module.title,
-        order: module.order,
+        order: pm.order,
         isCompleted: completedModuleIds.has(module.id),
         completedAt: progress?.completedAt || null,
         hasQuiz: !!module.quiz,
@@ -343,11 +347,11 @@ export async function getLearnerDetails(
     modules: modulesWithProgress,
     progress: {
       completed: learner.progress.length,
-      total: primaryParcours?.modules.length || 0,
+      total: primaryParcours?.parcoursModules.length || 0,
       percentage:
-        primaryParcours?.modules.length
+        primaryParcours?.parcoursModules.length
           ? Math.round(
-              (learner.progress.length / primaryParcours.modules.length) * 100
+              (learner.progress.length / primaryParcours.parcoursModules.length) * 100
             )
           : 0,
     },

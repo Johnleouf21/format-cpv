@@ -7,7 +7,7 @@ import rehypeHighlight from 'rehype-highlight'
 import 'highlight.js/styles/github-dark.min.css'
 import { Card, CardContent } from '@/components/ui/card'
 import {
-  FileText, List, ChevronRight, Folder, FolderOpen, File,
+  FileText, ChevronRight, Folder, FolderOpen, File,
   FileCode, FileJson, Database, Globe, Shield, Settings, Terminal,
   Palette, Layout, Braces, Server, TestTube, BookOpen, Cog,
   Layers, Rocket, Lock, Wrench, Users, BarChart3, Workflow,

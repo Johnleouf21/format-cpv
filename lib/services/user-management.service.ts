@@ -221,12 +221,12 @@ export async function unassignParcours(data: { userId: string; parcoursId: strin
     where: { userId: data.userId, parcoursId: data.parcoursId },
   })
 
-  // Delete progress for modules in this parcours
-  const modules = await prisma.module.findMany({
+  // Delete progress for modules in this parcours (via ParcoursModule)
+  const parcoursModules = await prisma.parcoursModule.findMany({
     where: { parcoursId: data.parcoursId },
-    select: { id: true },
+    select: { moduleId: true },
   })
-  const moduleIds = modules.map((m) => m.id)
+  const moduleIds = parcoursModules.map((pm) => pm.moduleId)
 
   if (moduleIds.length > 0) {
     await prisma.progress.deleteMany({
@@ -329,7 +329,15 @@ export async function getUsers(options?: {
     include: {
       trainer: { select: { id: true, name: true } },
       userParcours: {
-        include: { parcours: { select: { id: true, title: true, modules: { select: { id: true } } } } },
+        include: {
+          parcours: {
+            select: {
+              id: true,
+              title: true,
+              parcoursModules: { select: { moduleId: true } },
+            },
+          },
+        },
         orderBy: { assignedAt: 'desc' },
       },
       progress: { select: { moduleId: true } },
@@ -338,7 +346,7 @@ export async function getUsers(options?: {
   })
 
   return users.map((user) => {
-    const allModuleIds = user.userParcours.flatMap((up) => up.parcours.modules.map((m) => m.id))
+    const allModuleIds = user.userParcours.flatMap((up) => up.parcours.parcoursModules.map((pm) => pm.moduleId))
     const completedModuleIds = user.progress.map((p) => p.moduleId)
     const completedCount = allModuleIds.filter((id) => completedModuleIds.includes(id)).length
 
@@ -350,8 +358,9 @@ export async function getUsers(options?: {
       createdAt: user.createdAt,
       trainer: user.trainer,
       parcours: user.userParcours.map((up) => {
-        const totalModules = up.parcours.modules.length
-        const completed = up.parcours.modules.filter((m) => completedModuleIds.includes(m.id)).length
+        const moduleIds = up.parcours.parcoursModules.map((pm) => pm.moduleId)
+        const totalModules = moduleIds.length
+        const completed = moduleIds.filter((id) => completedModuleIds.includes(id)).length
         return {
           id: up.parcours.id,
           title: up.parcours.title,

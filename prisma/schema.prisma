@@ -58,11 +58,11 @@ model Parcours {
   title       String
   description String @default("")
 
-  modules      Module[]
-  users        User[]        @relation("LegacyUserParcours")
-  userParcours UserParcours[]
-  invitations  Invitation[]
-  feedbacks    Feedback[]
+  parcoursModules ParcoursModule[]
+  users           User[]        @relation("LegacyUserParcours")
+  userParcours    UserParcours[]
+  invitations     Invitation[]
+  feedbacks       Feedback[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -70,24 +70,34 @@ model Parcours {
   @@map("parcours")
 }
 
+model ParcoursModule {
+  id         String   @id @default(uuid())
+  parcoursId String   @map("parcours_id")
+  parcours   Parcours @relation(fields: [parcoursId], references: [id], onDelete: Cascade)
+  moduleId   String   @map("module_id")
+  module     Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  order      Int      @default(0)
+
+  @@unique([parcoursId, moduleId])
+  @@index([parcoursId, order])
+  @@index([moduleId])
+  @@map("parcours_modules")
+}
+
 model Module {
-  id      String @id @default(uuid())
-  title   String
-  content String @db.Text
-  order       Int    @default(0)
+  id          String @id @default(uuid())
+  title       String
+  content     String @db.Text
   minDuration Int    @default(0) @map("min_duration")
   published   Boolean @default(false)
 
-  parcoursId String   @map("parcours_id")
-  parcours   Parcours @relation(fields: [parcoursId], references: [id], onDelete: Cascade)
-
-  quiz     Quiz?
-  progress Progress[]
+  parcoursModules ParcoursModule[]
+  quiz            Quiz?
+  progress        Progress[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([parcoursId, order])
   @@map("modules")
 }
 

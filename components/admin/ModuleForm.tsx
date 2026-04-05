@@ -6,13 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Loader2, ExternalLink, Eye, Code, AlertCircle, ImageIcon, Video, Clock, Globe } from 'lucide-react'
@@ -30,23 +24,25 @@ interface ModuleFormProps {
     id: string
     title: string
     content: string
-    parcoursId: string
-    order: number
+    parcoursIds: string[]
     minDuration?: number
     published?: boolean
   }
   parcoursList: Parcours[]
+  /** Pre-select a parcours when creating from a parcours detail page */
+  defaultParcoursId?: string
 }
 
-export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
+export function ModuleForm({ module, parcoursList, defaultParcoursId }: ModuleFormProps) {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const [title, setTitle] = useState(module?.title || '')
   const [content, setContent] = useState(module?.content || '')
-  const [parcoursId, setParcoursId] = useState(module?.parcoursId || '')
-  const [order, setOrder] = useState(module?.order?.toString() || '0')
+  const [selectedParcoursIds, setSelectedParcoursIds] = useState<string[]>(
+    module?.parcoursIds || (defaultParcoursId ? [defaultParcoursId] : [])
+  )
   const [minDuration, setMinDuration] = useState(module?.minDuration?.toString() || '0')
   const [published, setPublished] = useState(module?.published ?? false)
 
@@ -87,8 +83,7 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
         body: JSON.stringify({
           title,
           content,
-          parcoursId,
-          order: parseInt(order, 10),
+          parcoursIds: selectedParcoursIds,
           minDuration: parseInt(minDuration, 10) || 0,
           published,
         }),
@@ -159,34 +154,34 @@ export function ModuleForm({ module, parcoursList }: ModuleFormProps) {
             />
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="parcours">Parcours *</Label>
-              <Select value={parcoursId} onValueChange={setParcoursId} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionnez un parcours" />
-                </SelectTrigger>
-                <SelectContent>
-                  {parcoursList.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+          <div className="space-y-2">
+            <Label>Parcours *</Label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 rounded-lg border p-3 max-h-40 overflow-y-auto">
+              {parcoursList.map((p) => (
+                <label
+                  key={p.id}
+                  className="flex items-center gap-2 cursor-pointer hover:bg-muted/50 rounded px-2 py-1.5 transition-colors"
+                >
+                  <Checkbox
+                    checked={selectedParcoursIds.includes(p.id)}
+                    onCheckedChange={(checked) => {
+                      setSelectedParcoursIds((prev) =>
+                        checked
+                          ? [...prev, p.id]
+                          : prev.filter((id) => id !== p.id)
+                      )
+                    }}
+                  />
+                  <span className="text-sm truncate">{p.title}</span>
+                </label>
+              ))}
             </div>
+            {selectedParcoursIds.length === 0 && (
+              <p className="text-xs text-muted-foreground">Sélectionnez au moins un parcours</p>
+            )}
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="order">Ordre</Label>
-              <Input
-                id="order"
-                type="number"
-                min="0"
-                value={order}
-                onChange={(e) => setOrder(e.target.value)}
-              />
-            </div>
-
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="minDuration" className="flex items-center gap-1.5">
                 <Clock className="h-3.5 w-3.5" />
@@ -405,7 +400,7 @@ Description de la section..."
         >
           Annuler
         </Button>
-        <Button type="submit" disabled={isSubmitting || !title || !content || !parcoursId}>
+        <Button type="submit" disabled={isSubmitting || !title || !content || selectedParcoursIds.length === 0}>
           {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           {isEditing ? 'Mettre à jour' : 'Créer le module'}
         </Button>

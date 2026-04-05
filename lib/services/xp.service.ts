@@ -59,13 +59,15 @@ export async function getBulkUserXP(userIds: string[]): Promise<Map<string, XPBr
   })
   const badgeCountByUser = new Map(badgeCounts.map((b) => [b.userId, b._count]))
 
-  // 4. Parcours complétés — charger les assignments + modules en une seule requête
+  // 4. Parcours complétés — charger les assignments + modules via ParcoursModule
   const userParcoursData = await prisma.userParcours.findMany({
     where: { userId: { in: userIds } },
     select: {
       userId: true,
       parcours: {
-        select: { modules: { select: { id: true } } },
+        select: {
+          parcoursModules: { select: { moduleId: true } },
+        },
       },
     },
   })
@@ -107,9 +109,10 @@ export async function getBulkUserXP(userIds: string[]): Promise<Map<string, XPBr
     let parcoursXP = 0
     const userAssignments = userParcoursData.filter((up) => up.userId === userId)
     for (const up of userAssignments) {
-      const totalModules = up.parcours.modules.length
+      const moduleIds = up.parcours.parcoursModules.map((pm) => pm.moduleId)
+      const totalModules = moduleIds.length
       if (totalModules > 0) {
-        const done = up.parcours.modules.filter((m) => completedSet.has(m.id)).length
+        const done = moduleIds.filter((id) => completedSet.has(id)).length
         if (done >= totalModules) parcoursXP += XP_PARCOURS_COMPLETE
       }
     }

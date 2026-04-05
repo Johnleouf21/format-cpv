@@ -5,12 +5,15 @@ export async function getParcoursWithModules(parcoursId: string, userId: string)
   const parcours = await prisma.parcours.findUnique({
     where: { id: parcoursId },
     include: {
-      modules: {
+      parcoursModules: {
         orderBy: { order: 'asc' },
-        select: {
-          id: true,
-          title: true,
-          order: true,
+        include: {
+          module: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
         },
       },
     },
@@ -24,16 +27,18 @@ export async function getParcoursWithModules(parcoursId: string, userId: string)
   const progress = await prisma.progress.findMany({
     where: {
       userId,
-      module: { parcoursId },
+      module: { parcoursModules: { some: { parcoursId } } },
     },
     select: { moduleId: true },
   })
 
   const completedModuleIds = new Set(progress.map((p) => p.moduleId))
 
-  const modulesWithStatus = parcours.modules.map((module) => ({
-    ...module,
-    isCompleted: completedModuleIds.has(module.id),
+  const modulesWithStatus = parcours.parcoursModules.map((pm) => ({
+    id: pm.module.id,
+    title: pm.module.title,
+    order: pm.order,
+    isCompleted: completedModuleIds.has(pm.module.id),
   }))
 
   return {
@@ -45,7 +50,7 @@ export async function getParcoursWithModules(parcoursId: string, userId: string)
     modules: modulesWithStatus,
     progress: {
       completed: completedModuleIds.size,
-      total: parcours.modules.length,
+      total: parcours.parcoursModules.length,
     },
   }
 }
@@ -88,13 +93,16 @@ export async function getUserParcours(userId: string, parcoursId?: string) {
   const parcours = await prisma.parcours.findUnique({
     where: { id: targetParcoursId },
     include: {
-      modules: {
+      parcoursModules: {
         orderBy: { order: 'asc' },
-        select: {
-          id: true,
-          title: true,
-          order: true,
-          quiz: { select: { id: true } },
+        include: {
+          module: {
+            select: {
+              id: true,
+              title: true,
+              quiz: { select: { id: true } },
+            },
+          },
         },
       },
     },
@@ -108,7 +116,7 @@ export async function getUserParcours(userId: string, parcoursId?: string) {
   const progress = await prisma.progress.findMany({
     where: {
       userId,
-      module: { parcoursId: targetParcoursId },
+      module: { parcoursModules: { some: { parcoursId: targetParcoursId } } },
     },
     select: {
       moduleId: true,
@@ -120,14 +128,14 @@ export async function getUserParcours(userId: string, parcoursId?: string) {
 
   const progressMap = new Map(progress.map((p) => [p.moduleId, p]))
 
-  const modulesWithStatus = parcours.modules.map((module) => {
-    const moduleProgress = progressMap.get(module.id)
+  const modulesWithStatus = parcours.parcoursModules.map((pm) => {
+    const moduleProgress = progressMap.get(pm.module.id)
     return {
-      id: module.id,
-      title: module.title,
-      order: module.order,
+      id: pm.module.id,
+      title: pm.module.title,
+      order: pm.order,
       isCompleted: !!moduleProgress,
-      hasQuiz: !!module.quiz,
+      hasQuiz: !!pm.module.quiz,
       quizScore: moduleProgress?.quizResult
         ? {
             score: moduleProgress.quizResult.score,
@@ -143,7 +151,7 @@ export async function getUserParcours(userId: string, parcoursId?: string) {
     user: { id: user.id, name: user.name, email: user.email },
     parcours: { id: parcours.id, title: parcours.title, description: parcours.description },
     modules: modulesWithStatus,
-    progress: { completed: progress.length, total: parcours.modules.length },
+    progress: { completed: progress.length, total: parcours.parcoursModules.length },
     nextModule,
   }
 }
@@ -154,7 +162,7 @@ export async function getUserParcoursAssignments(userId: string) {
     include: {
       parcours: {
         include: {
-          modules: { select: { id: true } },
+          parcoursModules: { select: { moduleId: true } },
         },
       },
     },
@@ -167,19 +175,19 @@ export async function getUserParcoursAssignments(userId: string) {
       where: { id: userId },
       include: {
         parcours: {
-          include: { modules: { select: { id: true } } },
+          include: { parcoursModules: { select: { moduleId: true } } },
         },
       },
     })
     if (user?.parcours) {
       const progress = await prisma.progress.findMany({
-        where: { userId, module: { parcoursId: user.parcours.id } },
+        where: { userId, module: { parcoursModules: { some: { parcoursId: user.parcours.id } } } },
         select: { moduleId: true },
       })
       return [{
         id: user.parcours.id,
         title: user.parcours.title,
-        totalModules: user.parcours.modules.length,
+        totalModules: user.parcours.parcoursModules.length,
         completedModules: progress.length,
       }]
     }
@@ -195,7 +203,7 @@ export async function getUserParcoursAssignments(userId: string) {
   return assignments.map((a) => ({
     id: a.parcours.id,
     title: a.parcours.title,
-    totalModules: a.parcours.modules.length,
-    completedModules: a.parcours.modules.filter((m) => completedModuleIds.has(m.id)).length,
+    totalModules: a.parcours.parcoursModules.length,
+    completedModules: a.parcours.parcoursModules.filter((pm) => completedModuleIds.has(pm.moduleId)).length,
   }))
 }

@@ -26,7 +26,7 @@ export async function getParcours(): Promise<ParcoursWithStats[]> {
     include: {
       _count: {
         select: {
-          modules: true,
+          parcoursModules: true,
           userParcours: true,
         },
       },
@@ -38,7 +38,7 @@ export async function getParcours(): Promise<ParcoursWithStats[]> {
     id: p.id,
     title: p.title,
     description: p.description,
-    moduleCount: p._count.modules,
+    moduleCount: p._count.parcoursModules,
     learnerCount: p._count.userParcours,
     createdAt: p.createdAt,
     updatedAt: p.updatedAt,
@@ -49,13 +49,16 @@ export async function getParcoursById(id: string) {
   const parcours = await prisma.parcours.findUnique({
     where: { id },
     include: {
-      modules: {
+      parcoursModules: {
         orderBy: { order: 'asc' },
-        select: {
-          id: true,
-          title: true,
-          order: true,
-          createdAt: true,
+        include: {
+          module: {
+            select: {
+              id: true,
+              title: true,
+              createdAt: true,
+            },
+          },
         },
       },
       _count: {
@@ -70,6 +73,13 @@ export async function getParcoursById(id: string) {
 
   return {
     ...parcours,
+    // Flatten parcoursModules into a modules array for backward compatibility
+    modules: parcours.parcoursModules.map((pm) => ({
+      id: pm.module.id,
+      title: pm.module.title,
+      order: pm.order,
+      createdAt: pm.module.createdAt,
+    })),
     learnerCount: parcours._count.userParcours,
   }
 }

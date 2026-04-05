@@ -15,11 +15,11 @@ interface Module {
   id: string
   title: string
   content: string
-  order: number
-  parcours: {
-    id: string
-    title: string
-  }
+  parcoursModules: {
+    parcoursId: string
+    order: number
+    parcours: { id: string; title: string }
+  }[]
 }
 
 interface ModulePreviewClientProps {
@@ -98,7 +98,7 @@ export function ModulePreviewClient({ moduleId }: ModulePreviewClientProps) {
       <div className="flex items-center justify-between">
         <PageBreadcrumb items={[
           { label: 'Modules', href: '/admin/modules' },
-          { label: module.parcours.title, href: `/admin/parcours/${module.parcours.id}` },
+          ...(module.parcoursModules.length > 0 ? [{ label: module.parcoursModules[0].parcours.title, href: `/admin/parcours/${module.parcoursModules[0].parcoursId}` }] : []),
           { label: module.title },
         ]} />
         <Button variant="outline" size="sm" asChild>
@@ -112,10 +112,13 @@ export function ModulePreviewClient({ moduleId }: ModulePreviewClientProps) {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Prévisualisation du module</h1>
         <div className="flex items-center gap-2 mt-1">
-          <Badge variant="secondary">{module.parcours.title}</Badge>
-          <span className="text-sm text-muted-foreground">
-            Module {module.order + 1}
-          </span>
+          {module.parcoursModules.length > 0 ? (
+            module.parcoursModules.map((pm) => (
+              <Badge key={pm.parcoursId} variant="secondary">{pm.parcours.title}</Badge>
+            ))
+          ) : (
+            <Badge variant="outline">Non assigné</Badge>
+          )}
         </div>
       </div>
 

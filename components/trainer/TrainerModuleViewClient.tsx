@@ -15,7 +15,7 @@ interface Module {
   parcours: {
     id: string
     title: string
-  }
+  } | null
 }
 
 interface TrainerModuleViewClientProps {
@@ -73,14 +73,18 @@ export function TrainerModuleViewClient({ parcoursId, moduleId }: TrainerModuleV
     <div className="space-y-6">
       <PageBreadcrumb items={[
         { label: 'Parcours', href: '/trainer/parcours' },
-        { label: module.parcours.title, href: `/trainer/parcours/${parcoursId}` },
+        ...(module.parcours ? [{ label: module.parcours.title, href: `/trainer/parcours/${parcoursId}` }] : []),
         { label: module.title },
       ]} />
 
       <div>
         <h1 className="text-2xl font-bold tracking-tight">{module.title}</h1>
         <div className="flex items-center gap-2 mt-1">
-          <Badge variant="secondary">{module.parcours.title}</Badge>
+          {module.parcours ? (
+            <Badge variant="secondary">{module.parcours.title}</Badge>
+          ) : (
+            <Badge variant="outline">Non assigné</Badge>
+          )}
           <span className="text-sm text-muted-foreground">
             Module {module.order + 1}
           </span>

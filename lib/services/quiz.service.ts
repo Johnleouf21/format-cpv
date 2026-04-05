@@ -35,23 +35,29 @@ export interface QuizResultData {
   }[]
 }
 
+/** Resolve a parcoursId for a given module via ParcoursModule */
+async function resolveModuleParcoursId(moduleId: string): Promise<string | null> {
+  const pm = await prisma.parcoursModule.findFirst({
+    where: { moduleId },
+    select: { parcoursId: true },
+  })
+  return pm?.parcoursId ?? null
+}
+
 export async function getModuleQuiz(
   moduleId: string,
   userId: string
 ): Promise<QuizWithQuestions | null> {
   // Verify user has access to this module
-  const module = await prisma.module.findUnique({
-    where: { id: moduleId },
-    select: { parcoursId: true },
-  })
+  const parcoursId = await resolveModuleParcoursId(moduleId)
 
-  if (!module) {
+  if (!parcoursId) {
     throw new ApiError(404, 'Module non trouvé', 'MODULE_NOT_FOUND')
   }
 
   // Check access via UserParcours first
   const hasAccess = await prisma.userParcours.findUnique({
-    where: { userId_parcoursId: { userId, parcoursId: module.parcoursId } },
+    where: { userId_parcoursId: { userId, parcoursId } },
   })
 
   if (!hasAccess) {
@@ -60,7 +66,7 @@ export async function getModuleQuiz(
       where: { id: userId },
       select: { parcoursId: true },
     })
-    if (user?.parcoursId !== module.parcoursId) {
+    if (user?.parcoursId !== parcoursId) {
       throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
     }
   }
@@ -113,7 +119,7 @@ export async function submitQuiz(
     where: { id: quizId },
     include: {
       module: {
-        select: { id: true, parcoursId: true },
+        select: { id: true },
       },
       questions: {
         include: {
@@ -127,18 +133,23 @@ export async function submitQuiz(
     throw new ApiError(404, 'Quiz non trouvé', 'QUIZ_NOT_FOUND')
   }
 
-  // Verify user has access via UserParcours first
-  const hasAccess = await prisma.userParcours.findUnique({
-    where: { userId_parcoursId: { userId, parcoursId: quiz.module.parcoursId } },
-  })
+  // Resolve parcoursId via ParcoursModule
+  const parcoursId = await resolveModuleParcoursId(quiz.module.id)
 
-  if (!hasAccess) {
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { parcoursId: true },
+  if (parcoursId) {
+    // Verify user has access via UserParcours first
+    const hasAccess = await prisma.userParcours.findUnique({
+      where: { userId_parcoursId: { userId, parcoursId } },
     })
-    if (user?.parcoursId !== quiz.module.parcoursId) {
-      throw new ApiError(403, 'Accès non autorisé à ce quiz', 'QUIZ_ACCESS_DENIED')
+
+    if (!hasAccess) {
+      const user = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { parcoursId: true },
+      })
+      if (user?.parcoursId !== parcoursId) {
+        throw new ApiError(403, 'Accès non autorisé à ce quiz', 'QUIZ_ACCESS_DENIED')
+      }
     }
   }
 

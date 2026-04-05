@@ -18,12 +18,12 @@ import { Edit, Trash2, GripVertical, Eye } from 'lucide-react'
 interface Module {
   id: string
   title: string
-  order: number
   published?: boolean
-  parcours: {
-    id: string
-    title: string
-  }
+  parcoursModules: {
+    parcoursId: string
+    order: number
+    parcours: { id: string; title: string }
+  }[]
   hasQuiz: boolean
   updatedAt: Date
 }
@@ -77,7 +77,7 @@ export function ModulesTable({ modules, onDelete }: ModulesTableProps) {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <GripVertical className="h-4 w-4 text-muted-foreground cursor-grab" />
-                    {module.order + 1}
+                    {(module.parcoursModules[0]?.order ?? 0) + 1}
                   </div>
                 </TableCell>
                 <TableCell className="font-medium">
@@ -91,7 +91,13 @@ export function ModulesTable({ modules, onDelete }: ModulesTableProps) {
                   </div>
                 </TableCell>
                 <TableCell>
-                  <Badge variant="secondary">{module.parcours.title}</Badge>
+                  {module.parcoursModules.length > 0 ? (
+                    module.parcoursModules.map((pm) => (
+                      <Badge key={pm.parcoursId} variant="secondary" className="mr-1">{pm.parcours.title}</Badge>
+                    ))
+                  ) : (
+                    <Badge variant="outline">Non assigné</Badge>
+                  )}
                 </TableCell>
                 <TableCell>
                   {module.hasQuiz ? (

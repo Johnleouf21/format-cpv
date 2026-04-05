@@ -20,11 +20,12 @@ import { toast } from 'sonner'
 interface Module {
   id: string
   title: string
-  order: number
-  parcours: {
-    id: string
-    title: string
-  }
+  published?: boolean
+  parcoursModules: {
+    parcoursId: string
+    order: number
+    parcours: { id: string; title: string }
+  }[]
   hasQuiz: boolean
   updatedAt: Date
 }
@@ -90,7 +91,7 @@ export function ModulesPageClient() {
 
   const filteredModules = selectedParcours === 'all'
     ? modules
-    : modules.filter((m) => m.parcours.id === selectedParcours)
+    : modules.filter((m) => m.parcoursModules.some((pm) => pm.parcoursId === selectedParcours))
 
   const moduleToDelete = modules.find((m) => m.id === deleteId)
 
@@ -160,8 +161,8 @@ export function ModulesPageClient() {
               key={m.id}
               id={m.id}
               title={m.title}
-              order={m.order}
-              parcoursTitle={m.parcours.title}
+              parcoursTitles={m.parcoursModules.map((pm) => pm.parcours.title)}
+              published={m.published}
               hasQuiz={m.hasQuiz}
               updatedAt={m.updatedAt}
               previewHref={`/admin/modules/${m.id}/preview`}

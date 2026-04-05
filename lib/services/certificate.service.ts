@@ -30,18 +30,25 @@ async function resolveParcoursId(userId: string, parcoursId?: string): Promise<s
   return user?.parcoursId || null
 }
 
+/** Get the module IDs belonging to a parcours via ParcoursModule */
+async function getParcoursModuleIds(parcoursId: string): Promise<string[]> {
+  const pms = await prisma.parcoursModule.findMany({
+    where: { parcoursId },
+    select: { moduleId: true },
+  })
+  return pms.map((pm) => pm.moduleId)
+}
+
 export async function canGenerateCertificate(userId: string, parcoursId?: string): Promise<boolean> {
   const targetParcoursId = await resolveParcoursId(userId, parcoursId)
   if (!targetParcoursId) return false
 
-  const [completedCount, totalCount] = await Promise.all([
-    prisma.progress.count({
-      where: { userId, module: { parcoursId: targetParcoursId } },
-    }),
-    prisma.module.count({
-      where: { parcoursId: targetParcoursId },
-    }),
-  ])
+  const moduleIds = await getParcoursModuleIds(targetParcoursId)
+  const totalCount = moduleIds.length
+
+  const completedCount = await prisma.progress.count({
+    where: { userId, moduleId: { in: moduleIds } },
+  })
 
   return totalCount > 0 && completedCount === totalCount
 }
@@ -66,18 +73,19 @@ export async function getCertificateData(
 
   const parcours = await prisma.parcours.findUnique({
     where: { id: targetParcoursId },
-    include: { modules: { select: { id: true } } },
+    include: { parcoursModules: { select: { moduleId: true } } },
   })
 
   if (!parcours) {
     throw new ApiError(404, 'Parcours non trouvé', 'NOT_FOUND')
   }
 
-  const completedCount = await prisma.progress.count({
-    where: { userId, module: { parcoursId: targetParcoursId } },
-  })
+  const moduleIds = parcours.parcoursModules.map((pm) => pm.moduleId)
+  const totalModules = moduleIds.length
 
-  const totalModules = parcours.modules.length
+  const completedCount = await prisma.progress.count({
+    where: { userId, moduleId: { in: moduleIds } },
+  })
 
   if (completedCount < totalModules) {
     throw new ApiError(400, 'Le parcours n\'est pas encore complété', 'PARCOURS_NOT_COMPLETED')
@@ -85,17 +93,17 @@ export async function getCertificateData(
 
   const [lastProgress, firstProgress, quizResults] = await Promise.all([
     prisma.progress.findFirst({
-      where: { userId, module: { parcoursId: targetParcoursId } },
+      where: { userId, moduleId: { in: moduleIds } },
       orderBy: { completedAt: 'desc' },
       select: { completedAt: true },
     }),
     prisma.progress.findFirst({
-      where: { userId, module: { parcoursId: targetParcoursId } },
+      where: { userId, moduleId: { in: moduleIds } },
       orderBy: { completedAt: 'asc' },
       select: { completedAt: true },
     }),
     prisma.quizResult.findMany({
-      where: { progress: { userId, module: { parcoursId: targetParcoursId } } },
+      where: { progress: { userId, moduleId: { in: moduleIds } } },
       select: { score: true },
     }),
   ])

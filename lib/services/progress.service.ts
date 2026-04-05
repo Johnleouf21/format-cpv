@@ -29,35 +29,39 @@ export async function getUserProgress(userId: string, parcoursId?: string) {
     throw new ApiError(404, 'Aucun parcours assigné', 'NO_PARCOURS_ASSIGNED')
   }
 
-  const [progress, totalModules] = await Promise.all([
-    prisma.progress.findMany({
-      where: {
-        userId,
-        module: { parcoursId: targetParcoursId },
+  // Get the module IDs in this parcours via ParcoursModule
+  const parcoursModules = await prisma.parcoursModule.findMany({
+    where: { parcoursId: targetParcoursId },
+    orderBy: { order: 'asc' },
+    select: { moduleId: true, order: true },
+  })
+  const parcoursModuleIds = parcoursModules.map((pm) => pm.moduleId)
+  const orderByModuleId = new Map(parcoursModules.map((pm) => [pm.moduleId, pm.order]))
+
+  const progress = await prisma.progress.findMany({
+    where: {
+      userId,
+      moduleId: { in: parcoursModuleIds },
+    },
+    include: {
+      module: {
+        select: { id: true, title: true },
       },
-      include: {
-        module: {
-          select: { id: true, title: true, order: true },
-        },
-        quizResult: {
-          select: { score: true, totalQuestions: true },
-        },
+      quizResult: {
+        select: { score: true, totalQuestions: true },
       },
-      orderBy: { completedAt: 'desc' },
-    }),
-    prisma.module.count({
-      where: { parcoursId: targetParcoursId },
-    }),
-  ])
+    },
+    orderBy: { completedAt: 'desc' },
+  })
 
   return {
     completed: progress.length,
-    total: totalModules,
-    percentage: totalModules > 0 ? Math.round((progress.length / totalModules) * 100) : 0,
+    total: parcoursModuleIds.length,
+    percentage: parcoursModuleIds.length > 0 ? Math.round((progress.length / parcoursModuleIds.length) * 100) : 0,
     modules: progress.map((p) => ({
       moduleId: p.module.id,
       moduleTitle: p.module.title,
-      moduleOrder: p.module.order,
+      moduleOrder: orderByModuleId.get(p.module.id) ?? 0,
       completedAt: p.completedAt,
       quizScore: p.quizResult
         ? {
@@ -73,16 +77,31 @@ export async function markModuleAsCompleted(userId: string, moduleId: string, st
   // Verify module exists and user has access
   const module = await prisma.module.findUnique({
     where: { id: moduleId },
-    select: { id: true, parcoursId: true, minDuration: true },
+    select: {
+      id: true,
+      minDuration: true,
+      parcoursModules: {
+        select: { parcoursId: true, order: true },
+      },
+    },
   })
 
   if (!module) {
     throw new ApiError(404, 'Module non trouvé', 'MODULE_NOT_FOUND')
   }
 
+  // Use first parcoursModule as context
+  const pm = module.parcoursModules[0]
+  if (!pm) {
+    throw new ApiError(404, 'Module non associé à un parcours', 'MODULE_NOT_FOUND')
+  }
+
+  const parcoursId = pm.parcoursId
+  const moduleOrder = pm.order
+
   // Check access via UserParcours
   const hasAccess = await prisma.userParcours.findUnique({
-    where: { userId_parcoursId: { userId, parcoursId: module.parcoursId } },
+    where: { userId_parcoursId: { userId, parcoursId } },
   })
 
   if (!hasAccess) {
@@ -91,7 +110,7 @@ export async function markModuleAsCompleted(userId: string, moduleId: string, st
       where: { id: userId },
       select: { parcoursId: true },
     })
-    if (user?.parcoursId !== module.parcoursId) {
+    if (user?.parcoursId !== parcoursId) {
       throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
     }
   }
@@ -124,19 +143,19 @@ export async function markModuleAsCompleted(userId: string, moduleId: string, st
     },
     include: {
       module: {
-        select: { title: true, order: true },
+        select: { title: true },
       },
     },
   })
 
-  // Find next module
-  const nextModule = await prisma.module.findFirst({
+  // Find next module via ParcoursModule
+  const nextPM = await prisma.parcoursModule.findFirst({
     where: {
-      parcoursId: module.parcoursId,
-      order: { gt: progress.module.order },
+      parcoursId,
+      order: { gt: moduleOrder },
     },
     orderBy: { order: 'asc' },
-    select: { id: true, title: true },
+    include: { module: { select: { id: true, title: true } } },
   })
 
   // Check and award badges (fire-and-forget)
@@ -145,6 +164,6 @@ export async function markModuleAsCompleted(userId: string, moduleId: string, st
   return {
     alreadyCompleted: false,
     progress,
-    nextModule,
+    nextModule: nextPM ? { id: nextPM.module.id, title: nextPM.module.title } : null,
   }
 }

@@ -57,8 +57,8 @@ export async function getLearners(options?: GetLearnersOptions): Promise<Learner
             select: {
               id: true,
               title: true,
-              modules: {
-                select: { id: true },
+              parcoursModules: {
+                select: { moduleId: true },
               },
             },
           },
@@ -77,8 +77,9 @@ export async function getLearners(options?: GetLearnersOptions): Promise<Learner
     const completedModuleIds = new Set(learner.progress.map((p) => p.moduleId))
 
     const parcoursDetails: LearnerParcoursDetail[] = learner.userParcours.map((up) => {
-      const totalModules = up.parcours.modules.length
-      const completed = up.parcours.modules.filter((m) => completedModuleIds.has(m.id)).length
+      const moduleIds = up.parcours.parcoursModules.map((pm) => pm.moduleId)
+      const totalModules = moduleIds.length
+      const completed = moduleIds.filter((id) => completedModuleIds.has(id)).length
       const percentage = totalModules > 0 ? Math.round((completed / totalModules) * 100) : 0
       return {
         id: up.parcours.id,
@@ -125,11 +126,19 @@ export async function getLearnerById(id: string) {
       trainer: {
         select: { id: true, name: true, email: true },
       },
-      parcours: {
+      userParcours: {
         include: {
-          modules: {
-            orderBy: { order: 'asc' },
-            select: { id: true, title: true, order: true },
+          parcours: {
+            include: {
+              parcoursModules: {
+                orderBy: { order: 'asc' },
+                include: {
+                  module: {
+                    select: { id: true, title: true },
+                  },
+                },
+              },
+            },
           },
         },
       },

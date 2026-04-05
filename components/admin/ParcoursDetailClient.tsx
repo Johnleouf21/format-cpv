@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { ParcoursDetailSkeleton } from '@/components/shared/ParcoursCard'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
-import { BookOpen, Plus, Edit, Eye, Trash2 } from 'lucide-react'
+import { BookOpen, Plus, Link2, Edit, Eye, Trash2 } from 'lucide-react'
 import { ConfirmDialog } from './ConfirmDialog'
+import { AddExistingModuleDialog } from './AddExistingModuleDialog'
 import { toast } from 'sonner'
 import { SortableList } from '@/components/shared/SortableList'
 
@@ -38,6 +39,7 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
   const [error, setError] = useState<string | null>(null)
   const [deleteModuleId, setDeleteModuleId] = useState<string | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [showAddExisting, setShowAddExisting] = useState(false)
 
   useEffect(() => {
     async function fetchParcours() {
@@ -167,12 +169,18 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
                 Modules ordonnés par position
               </CardDescription>
             </div>
-            <Button asChild>
-              <Link href={`/admin/modules/new?parcoursId=${parcours.id}`}>
-                <Plus className="mr-2 h-4 w-4" />
-                Ajouter un module
-              </Link>
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowAddExisting(true)}>
+                <Link2 className="mr-2 h-4 w-4" />
+                Module existant
+              </Button>
+              <Button asChild>
+                <Link href={`/admin/modules/new?parcoursId=${parcours.id}`}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nouveau module
+                </Link>
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -231,6 +239,18 @@ export function ParcoursDetailClient({ parcoursId }: ParcoursDetailClientProps) 
         onConfirm={handleDeleteModule}
         isLoading={isDeleting}
         variant="destructive"
+      />
+
+      <AddExistingModuleDialog
+        open={showAddExisting}
+        onOpenChange={setShowAddExisting}
+        parcoursId={parcours.id}
+        excludeModuleIds={parcours.modules.map((m) => m.id)}
+        onAdded={async () => {
+          // Refresh parcours data
+          const res = await fetch(`/api/admin/parcours/${parcoursId}`)
+          if (res.ok) setParcours(await res.json())
+        }}
       />
     </div>
   )

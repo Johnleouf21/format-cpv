@@ -19,7 +19,7 @@ export default async function CertificatesPage() {
     include: {
       parcours: {
         include: {
-          modules: { select: { id: true } },
+          parcoursModules: { select: { moduleId: true } },
         },
       },
     },
@@ -36,12 +36,12 @@ export default async function CertificatesPage() {
   // Find parcours where all modules are completed
   const completedParcours = assignments
     .filter((a) => {
-      const moduleIds = a.parcours.modules.map((m) => m.id)
+      const moduleIds = a.parcours.parcoursModules.map((pm) => pm.moduleId)
       return moduleIds.length > 0 && moduleIds.every((id) => completedSet.has(id))
     })
     .map((a) => {
       // Find latest completion date for this parcours
-      const moduleIds = new Set(a.parcours.modules.map((m) => m.id))
+      const moduleIds = new Set(a.parcours.parcoursModules.map((pm) => pm.moduleId))
       const dates = completedModuleIds
         .filter((p) => moduleIds.has(p.moduleId))
         .map((p) => p.completedAt)
@@ -50,7 +50,7 @@ export default async function CertificatesPage() {
       return {
         id: a.parcours.id,
         title: a.parcours.title,
-        moduleCount: a.parcours.modules.length,
+        moduleCount: a.parcours.parcoursModules.length,
         completedAt: latestDate,
       }
     })

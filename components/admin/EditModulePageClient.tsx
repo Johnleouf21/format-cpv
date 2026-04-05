@@ -9,13 +9,11 @@ interface Module {
   id: string
   title: string
   content: string
-  order: number
   minDuration: number
   published: boolean
-  parcours: {
-    id: string
-    title: string
-  }
+  parcoursModules: {
+    parcours: { id: string; title: string }
+  }[]
 }
 
 interface Parcours {
@@ -81,7 +79,7 @@ export function EditModulePageClient({ moduleId }: EditModulePageClientProps) {
     <div className="space-y-6">
       <PageBreadcrumb items={[
         { label: 'Modules', href: '/admin/modules' },
-        { label: module.parcours.title, href: `/admin/parcours/${module.parcours.id}` },
+        ...(module.parcoursModules.length > 0 ? [{ label: module.parcoursModules[0].parcours.title, href: `/admin/parcours/${module.parcoursModules[0].parcours.id}` }] : []),
         { label: `Modifier : ${module.title}` },
       ]} />
 
@@ -97,8 +95,7 @@ export function EditModulePageClient({ moduleId }: EditModulePageClientProps) {
           id: module.id,
           title: module.title,
           content: module.content,
-          parcoursId: module.parcours.id,
-          order: module.order,
+          parcoursIds: module.parcoursModules.map((pm) => pm.parcours.id),
           minDuration: module.minDuration,
           published: module.published,
         }}

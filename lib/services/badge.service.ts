@@ -36,14 +36,19 @@ export async function checkAndAwardBadges(userId: string): Promise<BadgeType[]> 
   // Calculate completed parcours
   let completedParcours = 0
   for (const assignment of assignments) {
-    const totalModules = await prisma.module.count({
+    const totalModules = await prisma.parcoursModule.count({
       where: { parcoursId: assignment.parcoursId },
     })
     if (totalModules === 0) continue
+    const parcoursModuleIds = await prisma.parcoursModule.findMany({
+      where: { parcoursId: assignment.parcoursId },
+      select: { moduleId: true },
+    })
+    const moduleIds = parcoursModuleIds.map((pm) => pm.moduleId)
     const completedInParcours = await prisma.progress.count({
       where: {
         userId,
-        module: { parcoursId: assignment.parcoursId },
+        moduleId: { in: moduleIds },
       },
     })
     if (completedInParcours >= totalModules) {

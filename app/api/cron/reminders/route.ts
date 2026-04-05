@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
             parcours: {
               select: {
                 title: true,
-                modules: { select: { id: true } },
+                parcoursModules: { select: { moduleId: true } },
               },
             },
           },
@@ -66,8 +66,8 @@ export async function GET(request: NextRequest) {
       const completedModuleIds = new Set(learner.progress.map((p) => p.moduleId))
 
       const unfinishedParcours = learner.userParcours.find((up) => {
-        const totalModules = up.parcours.modules.length
-        const completed = up.parcours.modules.filter((m) => completedModuleIds.has(m.id)).length
+        const totalModules = up.parcours.parcoursModules.length
+        const completed = up.parcours.parcoursModules.filter((pm) => completedModuleIds.has(pm.moduleId)).length
         return totalModules > 0 && completed < totalModules
       })
 
@@ -77,9 +77,9 @@ export async function GET(request: NextRequest) {
         continue
       }
 
-      const totalModules = unfinishedParcours.parcours.modules.length
-      const completedInParcours = unfinishedParcours.parcours.modules.filter(
-        (m) => completedModuleIds.has(m.id)
+      const totalModules = unfinishedParcours.parcours.parcoursModules.length
+      const completedInParcours = unfinishedParcours.parcours.parcoursModules.filter(
+        (pm) => completedModuleIds.has(pm.moduleId)
       ).length
 
       // Calculer les jours depuis la dernière activité

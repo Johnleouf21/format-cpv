@@ -10,8 +10,7 @@ import { logActivity } from '@/lib/services/activity-log.service'
 const updateModuleSchema = z.object({
   title: z.string().min(1, 'Le titre est requis').optional(),
   content: z.string().min(1, 'Le contenu est requis').optional(),
-  parcoursId: z.string().uuid('ID de parcours invalide').optional(),
-  order: z.number().int().min(0).optional(),
+  parcoursIds: z.array(z.string().uuid()).optional(),
   minDuration: z.number().int().min(0).max(480).optional(),
   published: z.boolean().optional(),
 })
@@ -55,22 +54,24 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       targetType: 'module',
     })
 
-    // Notify assigned learners (fire-and-forget)
-    if (module.parcours) {
-      const parcoursId = module.parcours.id
-      prisma.userParcours.findMany({
-        where: { parcoursId },
-        include: { user: { select: { email: true } } },
-      }).then((assignments) => {
-        const emails = assignments.map((a) => a.user.email)
-        if (emails.length > 0) {
-          sendContentUpdateEmailBulk(emails, {
-            contentType: 'module',
-            contentTitle: module.title,
-            parcoursTitle: module.parcours!.title,
-          })
-        }
-      }).catch(() => { /* email errors should not block */ })
+    // Notify assigned learners for each parcours this module belongs to (fire-and-forget)
+    if (module.parcoursModules && module.parcoursModules.length > 0) {
+      for (const pm of module.parcoursModules) {
+        const parcoursId = pm.parcours.id
+        prisma.userParcours.findMany({
+          where: { parcoursId },
+          include: { user: { select: { email: true } } },
+        }).then((assignments) => {
+          const emails = assignments.map((a) => a.user.email)
+          if (emails.length > 0) {
+            sendContentUpdateEmailBulk(emails, {
+              contentType: 'module',
+              contentTitle: module.title,
+              parcoursTitle: pm.parcours.title,
+            })
+          }
+        }).catch(() => { /* email errors should not block */ })
+      }
     }
 
     return NextResponse.json(module)

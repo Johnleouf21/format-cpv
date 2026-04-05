@@ -5,8 +5,12 @@ export async function getModuleById(moduleId: string, userId: string) {
   const module = await prisma.module.findUnique({
     where: { id: moduleId },
     include: {
-      parcours: {
-        select: { id: true, title: true },
+      parcoursModules: {
+        select: {
+          parcoursId: true,
+          order: true,
+          parcours: { select: { id: true, title: true } },
+        },
       },
       quiz: {
         select: { id: true },
@@ -18,9 +22,18 @@ export async function getModuleById(moduleId: string, userId: string) {
     throw new ApiError(404, 'Module non trouvé', 'MODULE_NOT_FOUND')
   }
 
+  // Use first parcoursModule to determine parcours context
+  const pm = module.parcoursModules[0]
+  if (!pm) {
+    throw new ApiError(404, 'Module non associé à un parcours', 'MODULE_NOT_FOUND')
+  }
+
+  const parcoursId = pm.parcoursId
+  const moduleOrder = pm.order
+
   // Check if user has access to this module (assigned to this parcours via UserParcours)
   const hasAccess = await prisma.userParcours.findUnique({
-    where: { userId_parcoursId: { userId, parcoursId: module.parcoursId } },
+    where: { userId_parcoursId: { userId, parcoursId } },
   })
 
   // Fallback: check legacy parcoursId on User
@@ -29,7 +42,7 @@ export async function getModuleById(moduleId: string, userId: string) {
       where: { id: userId },
       select: { parcoursId: true },
     })
-    if (user?.parcoursId !== module.parcoursId) {
+    if (user?.parcoursId !== parcoursId) {
       throw new ApiError(403, 'Accès non autorisé à ce module', 'MODULE_ACCESS_DENIED')
     }
   }
@@ -41,25 +54,25 @@ export async function getModuleById(moduleId: string, userId: string) {
     },
   })
 
-  // Get adjacent modules for navigation
-  const [previousModule, nextModule] = await Promise.all([
-    prisma.module.findFirst({
+  // Get adjacent modules for navigation via ParcoursModule
+  const [previousPM, nextPM] = await Promise.all([
+    prisma.parcoursModule.findFirst({
       where: {
-        parcoursId: module.parcoursId,
-        published: true,
-        order: { lt: module.order },
+        parcoursId,
+        module: { published: true },
+        order: { lt: moduleOrder },
       },
       orderBy: { order: 'desc' },
-      select: { id: true, title: true, order: true },
+      include: { module: { select: { id: true, title: true } } },
     }),
-    prisma.module.findFirst({
+    prisma.parcoursModule.findFirst({
       where: {
-        parcoursId: module.parcoursId,
-        published: true,
-        order: { gt: module.order },
+        parcoursId,
+        module: { published: true },
+        order: { gt: moduleOrder },
       },
       orderBy: { order: 'asc' },
-      select: { id: true, title: true, order: true },
+      include: { module: { select: { id: true, title: true } } },
     }),
   ])
 
@@ -68,27 +81,36 @@ export async function getModuleById(moduleId: string, userId: string) {
       id: module.id,
       title: module.title,
       content: module.content,
-      order: module.order,
+      order: moduleOrder,
       hasQuiz: !!module.quiz,
       minDuration: module.minDuration,
     },
-    parcours: module.parcours,
+    parcours: pm.parcours,
     isCompleted: !!progress,
     navigation: {
-      previous: previousModule,
-      next: nextModule,
+      previous: previousPM ? { id: previousPM.module.id, title: previousPM.module.title, order: previousPM.order } : null,
+      next: nextPM ? { id: nextPM.module.id, title: nextPM.module.title, order: nextPM.order } : null,
     },
   }
 }
 
 export async function getModulesForParcours(parcoursId: string) {
-  return prisma.module.findMany({
-    where: { parcoursId, published: true },
+  const parcoursModules = await prisma.parcoursModule.findMany({
+    where: { parcoursId, module: { published: true } },
     orderBy: { order: 'asc' },
-    select: {
-      id: true,
-      title: true,
-      order: true,
+    include: {
+      module: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
     },
   })
+
+  return parcoursModules.map((pm) => ({
+    id: pm.module.id,
+    title: pm.module.title,
+    order: pm.order,
+  }))
 }

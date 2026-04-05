@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -10,9 +10,9 @@ import { BookOpen, Route, Eye, Edit, Trash2, FileQuestion } from 'lucide-react'
 interface ModuleCardProps {
   id: string
   title: string
-  order: number
-  parcoursTitle: string
+  parcoursTitles: string[]
   hasQuiz?: boolean
+  published?: boolean
   updatedAt?: Date | string
   previewHref: string
   editHref?: string
@@ -21,36 +21,55 @@ interface ModuleCardProps {
 
 export function ModuleCard({
   title,
-  order,
-  parcoursTitle,
+  parcoursTitles,
   hasQuiz,
+  published,
   updatedAt,
   previewHref,
   editHref,
   onDelete,
 }: ModuleCardProps) {
   return (
-    <Card className="hover:shadow-md transition-all hover:border-gray-300">
-      <CardHeader>
+    <Card className="hover:shadow-md transition-all hover:border-gray-300 dark:hover:border-gray-600">
+      <CardHeader className="pb-3">
         <CardTitle className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 shrink-0">
-            <BookOpen className="h-4.5 w-4.5 text-emerald-600" />
+          <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-950 shrink-0">
+            <BookOpen className="h-4.5 w-4.5 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <span className="truncate">{title}</span>
+          <div className="flex-1 min-w-0">
+            <span className="truncate block">{title}</span>
+            {published === false && (
+              <Badge variant="outline" className="mt-1 text-[10px] text-orange-600 border-orange-300">
+                Brouillon
+              </Badge>
+            )}
+          </div>
         </CardTitle>
-        <CardDescription className="flex items-center gap-2 flex-wrap">
-          <Badge variant="secondary" className="gap-1">
-            <Route className="h-3 w-3" />
-            {parcoursTitle}
-          </Badge>
-          <span className="text-xs">Module {order + 1}</span>
+        <div className="flex flex-wrap gap-1.5 mt-2">
+          {parcoursTitles.length > 0 ? (
+            <>
+              {parcoursTitles.slice(0, 2).map((t, i) => (
+                <Badge key={i} variant="secondary" className="gap-1 text-xs max-w-[140px] truncate">
+                  <Route className="h-3 w-3 shrink-0" />
+                  {t}
+                </Badge>
+              ))}
+              {parcoursTitles.length > 2 && (
+                <Badge variant="outline" className="text-xs" title={parcoursTitles.slice(2).join(', ')}>
+                  +{parcoursTitles.length - 2}
+                </Badge>
+              )}
+            </>
+          ) : (
+            <Badge variant="outline" className="text-xs text-muted-foreground">Non assigné</Badge>
+          )}
           {hasQuiz !== undefined && (
-            <Badge variant={hasQuiz ? 'default' : 'outline'} className="gap-1">
+            <Badge variant={hasQuiz ? 'default' : 'outline'} className="gap-1 text-xs">
               <FileQuestion className="h-3 w-3" />
-              Quiz {hasQuiz ? 'oui' : 'non'}
+              {hasQuiz ? 'Quiz' : 'Sans quiz'}
             </Badge>
           )}
-        </CardDescription>
+        </div>
       </CardHeader>
       <CardContent>
         {updatedAt && (

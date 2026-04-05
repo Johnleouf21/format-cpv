@@ -260,3 +260,4 @@ docs/brainstorming-session-results.md
 docs/prd.md
 .gitignore
 docs/front-end-spec.md
+scripts/migrate-modules-to-many-to-many.sql

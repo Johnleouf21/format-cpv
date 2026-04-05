@@ -293,13 +293,13 @@ export function QuizQuestion({
                       disabled={showResult}
                       className={cn(
                         getMatchClass(answer.id),
-                        isPaired && !showResult && 'border-blue-300 bg-blue-50/50 dark:bg-blue-950/50'
+                        isPaired && !showResult && 'border-primary/30 bg-primary/5 dark:bg-primary/10'
                       )}
                     >
                       <div className="flex items-center gap-2">
                         <span className="text-sm flex-1">{answer.text}</span>
                         {isPaired && pairedRight && (
-                          <span className="text-[11px] text-blue-600 dark:text-blue-300 bg-blue-100 dark:bg-blue-900 px-2 py-0.5 rounded-full truncate max-w-[120px]">
+                          <span className="text-[11px] text-primary dark:text-primary bg-primary/10 dark:bg-primary/20 px-2 py-0.5 rounded-full truncate max-w-[120px]">
                             → {pairedRight.matchText}
                           </span>
                         )}
@@ -333,7 +333,7 @@ export function QuizQuestion({
                       >
                         {answer.matchText || answer.text}
                         {pairedLeft && !showResult && (
-                          <span className="block text-[11px] text-blue-600 dark:text-blue-300 mt-0.5">
+                          <span className="block text-[11px] text-primary dark:text-primary mt-0.5">
                             ← {pairedLeft.text}
                           </span>
                         )}

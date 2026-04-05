@@ -38,8 +38,8 @@ const BADGES: BadgeDefinition[] = [
     label: 'Premier pas',
     description: 'Terminer votre premier module',
     icon: Rocket,
-    color: 'text-blue-600',
-    bgColor: 'bg-blue-100',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
     check: (s) => s.completedModules >= 1,
   },
   {
@@ -174,7 +174,7 @@ export function BadgesSection({ stats, earnedBadges }: BadgesSectionProps) {
             return (
               <div
                 key={badge.id}
-                className="flex flex-col items-center text-center p-3 rounded-lg border bg-card hover:shadow-sm transition-shadow"
+                className="flex flex-col items-center text-center p-3 rounded-lg border bg-background hover:shadow-sm transition-shadow"
               >
                 <div className={`flex h-10 w-10 items-center justify-center rounded-full ${badge.bgColor} mb-2`}>
                   <Icon className={`h-5 w-5 ${badge.color}`} />
@@ -189,7 +189,7 @@ export function BadgesSection({ stats, earnedBadges }: BadgesSectionProps) {
             return (
               <div
                 key={badge.id}
-                className="flex flex-col items-center text-center p-3 rounded-lg border border-dashed bg-muted/30"
+                className="flex flex-col items-center text-center p-3 rounded-lg border border-dashed bg-background/50"
               >
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted mb-2">
                   <Icon className="h-5 w-5 text-muted-foreground" />

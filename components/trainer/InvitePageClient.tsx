@@ -94,8 +94,8 @@ export function InvitePageClient({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50">
-                <UserPlus className="h-4.5 w-4.5 text-blue-600" />
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/5">
+                <UserPlus className="h-4.5 w-4.5 text-primary" />
               </div>
               Nouvelle invitation
             </CardTitle>

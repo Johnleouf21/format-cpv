@@ -15,12 +15,12 @@ export function ProgressIndicator({ completed, total }: ProgressIndicatorProps) 
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className={`flex items-center justify-center w-12 h-12 rounded-xl ${
-            isCompleted ? 'bg-green-100' : 'bg-blue-100'
+            isCompleted ? 'bg-green-100' : 'bg-primary/10'
           }`}>
             {isCompleted ? (
               <Target className="w-6 h-6 text-green-600" />
             ) : (
-              <TrendingUp className="w-6 h-6 text-blue-600" />
+              <TrendingUp className="w-6 h-6 text-primary" />
             )}
           </div>
           <div>
@@ -43,7 +43,7 @@ export function ProgressIndicator({ completed, total }: ProgressIndicatorProps) 
             className={`h-full rounded-full transition-all duration-500 ease-out ${
               isCompleted
                 ? 'bg-gradient-to-r from-green-400 to-green-500'
-                : 'bg-gradient-to-r from-blue-400 to-blue-500'
+                : 'bg-gradient-to-r from-primary/70 to-primary'
             }`}
             style={{ width: `${percentage}%` }}
           />
@@ -55,7 +55,7 @@ export function ProgressIndicator({ completed, total }: ProgressIndicatorProps) 
               key={i}
               className={`w-1.5 h-1.5 rounded-full transition-colors ${
                 i < completed
-                  ? isCompleted ? 'bg-green-200' : 'bg-blue-200'
+                  ? isCompleted ? 'bg-green-200' : 'bg-primary/20'
                   : 'bg-gray-200'
               }`}
             />

@@ -103,8 +103,8 @@ export function LearnersListView({
         <div className="flex flex-col gap-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-100">
-                <Users className="h-5 w-5 text-blue-600" />
+              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
+                <Users className="h-5 w-5 text-primary" />
               </div>
               <CardTitle>Apprenants ({learners.length})</CardTitle>
             </div>

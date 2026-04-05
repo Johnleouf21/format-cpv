@@ -217,7 +217,7 @@ export function WhitelistPageClient() {
         <p className="text-sm text-muted-foreground mt-0.5">
           Gérez les domaines et emails autorisés à se connecter
         </p>
-        <p className="text-xs text-blue-600 bg-blue-50 px-3 py-1.5 rounded-md mt-2 inline-block">
+        <p className="text-xs text-primary bg-primary/5 px-3 py-1.5 rounded-md mt-2 inline-block">
           Les utilisateurs ajoutés via la gestion des apprenants sont automatiquement autorisés.
         </p>
       </div>
@@ -311,8 +311,8 @@ export function WhitelistPageClient() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-blue-50">
-                <Mail className="h-4.5 w-4.5 text-blue-600" />
+              <div className="flex items-center justify-center w-9 h-9 rounded-lg bg-primary/5">
+                <Mail className="h-4.5 w-4.5 text-primary" />
               </div>
               Emails individuels
               <span className="text-sm font-normal text-muted-foreground">

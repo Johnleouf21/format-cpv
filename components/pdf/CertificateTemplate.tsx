@@ -11,9 +11,9 @@ import {
 import type { CertificateData } from '@/lib/services/certificate.service'
 
 const colors = {
-  primary: '#2563EB',
-  primaryLight: '#DBEAFE',
-  primaryDark: '#1E40AF',
+  primary: '#2B4C7E',
+  primaryLight: '#7EADD4',
+  primaryDark: '#1E3A5F',
   accent: '#F59E0B',
   accentLight: '#FEF3C7',
   green: '#10B981',
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
   logoSub: {
     fontSize: 9,
-    color: '#93C5FD',
+    color: '#7EADD4',
     letterSpacing: 3,
     marginTop: 3,
   },

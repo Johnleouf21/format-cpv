@@ -10,28 +10,40 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#2B4C7E] via-[#3A5F96] to-[#1E3A5F] px-4">
       {/* Auto sign out any existing session when landing on login page */}
       <AutoSignOut />
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl font-bold">FormaCPV</CardTitle>
-          <CardDescription>
-            Plateforme de formation et d&apos;onboarding
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {params.error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 rounded-md">
-              {getErrorMessage(params.error)}
-            </div>
-          )}
-          <LoginButton />
-          <p className="text-xs text-center text-muted-foreground">
-            Entrez votre adresse email pour recevoir un lien de connexion
-          </p>
-        </CardContent>
-      </Card>
+      <div className="w-full max-w-md space-y-6">
+        {/* Logo & branding */}
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <img src="/logo-pointvision.png" alt="Point Vision" className="h-20 w-20 rounded-xl shadow-2xl" />
+          </div>
+          <h1 className="text-3xl font-bold text-white">FormaCPV</h1>
+          <p className="text-blue-200 mt-1">Plateforme de formation Point Vision</p>
+        </div>
+
+        <Card className="shadow-2xl border-0">
+          <CardHeader className="text-center pb-2">
+            <CardTitle className="text-xl">Connexion</CardTitle>
+            <CardDescription>
+              Entrez votre adresse email pour recevoir un lien de connexion
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {params.error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 dark:bg-red-950 dark:text-red-400 rounded-md">
+                {getErrorMessage(params.error)}
+              </div>
+            )}
+            <LoginButton />
+          </CardContent>
+        </Card>
+
+        <p className="text-center text-xs text-blue-300/70">
+          L&apos;ophtalmologie de pointe &mdash; Groupe Point Vision
+        </p>
+      </div>
     </div>
   )
 }

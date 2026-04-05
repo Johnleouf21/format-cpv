@@ -21,9 +21,9 @@ export function AdminStatsCards({ stats }: AdminStatsCardsProps) {
       value: stats.totalLearners,
       icon: Users,
       description: 'Utilisateurs en formation',
-      iconBg: 'bg-blue-50',
-      iconColor: 'text-blue-600',
-      accent: 'border-l-blue-500',
+      iconBg: 'bg-primary/5',
+      iconColor: 'text-primary',
+      accent: 'border-l-primary',
     },
     {
       title: 'Formateurs',

@@ -163,7 +163,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-blue-600 underline decoration-blue-600/30 underline-offset-2 hover:decoration-blue-600 transition-colors"
+              className="text-primary underline decoration-primary/30 underline-offset-2 hover:decoration-primary transition-colors"
               {...props}
             >
               {children}
@@ -213,7 +213,7 @@ export function ModuleContent({ content }: ModuleContentProps) {
                 <li className="flex items-start gap-3 py-0.5 list-none" {...props}>
                   <span className={`flex-shrink-0 w-[18px] h-[18px] mt-[3px] rounded border-2 ${
                     isChecked
-                      ? 'bg-blue-600 border-blue-600'
+                      ? 'bg-primary border-primary'
                       : 'border-gray-300'
                   } flex items-center justify-center`}>
                     {isChecked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}

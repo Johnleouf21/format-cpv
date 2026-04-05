@@ -8,6 +8,11 @@ interface SendVerificationRequestParams {
 }
 
 const FROM_EMAIL = process.env.EMAIL_FROM || 'FormaCPV <onboarding@resend.dev>'
+const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000'
+const LOGO_URL = `${APP_URL}/logo-pointvision.png`
+const PV_BLUE = '#2B4C7E'
+const PV_BLUE_LIGHT = '#7EADD4'
+const PV_BLUE_DARK = '#1E3A5F'
 
 export async function sendMagicLinkEmail(
   params: SendVerificationRequestParams
@@ -36,18 +41,19 @@ export async function sendMagicLinkEmail(
             <meta name="viewport" content="width=device-width, initial-scale=1.0">
             <title>Connexion FormaCPV</title>
           </head>
-          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h1 style="color: #2563EB; margin: 0;">FormaCPV</h1>
-              <p style="color: #6B7280; margin: 5px 0 0;">Formation Professionnelle</p>
+          <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #F8FAFC;">
+            <div style="background: linear-gradient(135deg, ${PV_BLUE}, ${PV_BLUE_DARK}); border-radius: 12px 12px 0 0; padding: 28px 24px; text-align: center;">
+              <img src="${LOGO_URL}" alt="Point Vision" width="52" height="52" style="border-radius: 10px; margin-bottom: 10px;" />
+              <h1 style="color: white; margin: 0; font-size: 24px; letter-spacing: 0.5px;">FormaCPV</h1>
+              <p style="color: ${PV_BLUE_LIGHT}; margin: 6px 0 0; font-size: 13px; letter-spacing: 0.3px;">Plateforme de formation &mdash; Groupe Point Vision</p>
             </div>
 
-            <div style="background: #F9FAFB; border-radius: 8px; padding: 30px; margin-bottom: 20px;">
-              <h2 style="margin-top: 0; color: #1F2937;">Connexion à votre compte</h2>
+            <div style="background: white; border-radius: 0 0 12px 12px; padding: 30px; margin-bottom: 20px; border: 1px solid #E2E8F0; border-top: none;">
+              <h2 style="margin-top: 0; color: ${PV_BLUE_DARK};">Connexion à votre compte</h2>
               <p>Cliquez sur le bouton ci-dessous pour vous connecter :</p>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${url}" style="display: inline-block; background: #2563EB; color: white; padding: 14px 30px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+                <a href="${url}" style="display: inline-block; background: ${PV_BLUE}; color: white; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
                   Se connecter
                 </a>
               </div>
@@ -58,6 +64,7 @@ export async function sendMagicLinkEmail(
             </div>
 
             <div style="text-align: center; color: #9CA3AF; font-size: 12px;">
+              <p>L'ophtalmologie de pointe &mdash; Groupe Point Vision</p>
               <p>&copy; ${new Date().getFullYear()} FormaCPV. Tous droits réservés.</p>
             </div>
           </body>

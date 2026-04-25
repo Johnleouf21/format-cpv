@@ -190,11 +190,22 @@ export async function submitQuiz(
         correctAnswers: correctOrder,
       })
     } else if (question.type === 'MATCHING') {
-      // Pour l'association : format "leftId:rightId", correct = leftId:leftId (même answer)
+      // Format "leftId:rightId". Une paire est correcte si le matchText du rightId
+      // correspond au matchText attendu par le leftId (tolère les doublons de matchText).
+      const answersById = new Map(question.answers.map((a) => [a.id, a]))
       const correctPairs = question.answers.map((a) => `${a.id}:${a.id}`)
+
+      const isPairCorrect = (pair: string) => {
+        const [leftId, rightId] = pair.split(':')
+        const left = answersById.get(leftId)
+        const right = answersById.get(rightId)
+        if (!left || !right) return false
+        return (left.matchText ?? '') === (right.matchText ?? '')
+      }
+
       const isCorrect =
-        selectedAnswerIds.length === correctPairs.length &&
-        correctPairs.every((pair) => selectedAnswerIds.includes(pair))
+        selectedAnswerIds.length === question.answers.length &&
+        selectedAnswerIds.every(isPairCorrect)
       if (isCorrect) correctCount++
       results.push({
         questionId: question.id,

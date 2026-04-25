@@ -11,6 +11,8 @@ import {
   DndContext,
   DragOverlay,
   PointerSensor,
+  TouchSensor,
+  KeyboardSensor,
   useSensor,
   useSensors,
   useDraggable,
@@ -119,7 +121,9 @@ export function QuizQuestion({
   })[0]
 
   const matchSensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 5 } })
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
+    useSensor(KeyboardSensor)
   )
 
   const handleMatchDragStart = (event: DragStartEvent) => {
@@ -392,17 +396,16 @@ function DraggableMatch({
       ref={setNodeRef}
       style={style}
       className={cn(
-        'rounded-lg border p-3 transition-all flex items-center gap-2',
+        'rounded-lg border p-3 transition-all flex items-center gap-2 touch-none select-none',
         !disabled && 'cursor-grab active:cursor-grabbing',
         isDragging && 'opacity-50 shadow-lg z-50',
         className
       )}
       {...attributes}
+      {...(disabled ? {} : listeners)}
     >
       {!disabled && (
-        <button type="button" className="touch-none shrink-0 text-muted-foreground" {...listeners}>
-          <GripVertical className="h-4 w-4" />
-        </button>
+        <GripVertical className="h-4 w-4 shrink-0 text-muted-foreground" />
       )}
       <div className="flex-1 min-w-0">{children}</div>
     </div>

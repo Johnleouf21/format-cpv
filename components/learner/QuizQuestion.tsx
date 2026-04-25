@@ -165,12 +165,19 @@ export function QuizQuestion({
     onAnswerChange(questionId, pairs)
   }
 
+  // Une paire est correcte si le matchText du rightId == matchText du leftId
+  const isMatchPairCorrect = (leftId: string, rightId: string) => {
+    const left = answers.find((a) => a.id === leftId)
+    const right = answers.find((a) => a.id === rightId)
+    if (!left || !right) return false
+    return (left.matchText ?? '') === (right.matchText ?? '')
+  }
+
   const getMatchClass = (leftId: string) => {
     if (!showResult || !correctAnswers) return ''
     const selectedRight = matchSelections[leftId]
     if (!selectedRight) return ''
-    const correctPair = correctAnswers.find((c) => c.startsWith(`${leftId}:`))
-    if (correctPair === `${leftId}:${selectedRight}`) return 'border-green-500 bg-green-50 dark:bg-green-950'
+    if (isMatchPairCorrect(leftId, selectedRight)) return 'border-green-500 bg-green-50 dark:bg-green-950'
     return 'border-red-500 bg-red-50 dark:bg-red-950'
   }
 
@@ -178,8 +185,7 @@ export function QuizQuestion({
     if (!showResult || !correctAnswers) return ''
     const leftId = Object.entries(matchSelections).find(([, v]) => v === rightId)?.[0]
     if (!leftId) return ''
-    const correctPair = correctAnswers.find((c) => c.startsWith(`${leftId}:`))
-    if (correctPair === `${leftId}:${rightId}`) return 'border-green-500 bg-green-50 dark:bg-green-950'
+    if (isMatchPairCorrect(leftId, rightId)) return 'border-green-500 bg-green-50 dark:bg-green-950'
     return 'border-red-500 bg-red-50 dark:bg-red-950'
   }
 

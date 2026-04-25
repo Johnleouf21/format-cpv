@@ -10,6 +10,7 @@ import { FeedbackModal } from './FeedbackModal'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PageBreadcrumb } from '@/components/shared/PageBreadcrumb'
+import { NavigationBlocker } from '@/components/shared/NavigationBlocker'
 import { Loader2, PartyPopper } from 'lucide-react'
 
 interface ModuleData {
@@ -246,8 +247,22 @@ export function ModulePageClient({ data, initialQuizReview }: ModulePageClientPr
   }
 
   // Module view
+  const minutes = Math.floor(timeRemaining / 60)
+  const seconds = timeRemaining % 60
+  const remainingLabel = minutes > 0
+    ? `${minutes} min ${String(seconds).padStart(2, '0')} s`
+    : `${seconds} s`
+  const navigationBlocked =
+    !moduleCompleted && minDurationSeconds > 0 && !isTimeElapsed
+
   return (
     <div className="space-y-6">
+      <NavigationBlocker
+        active={navigationBlocked}
+        title="Quitter le module ?"
+        message={`Il vous reste ${remainingLabel} avant de pouvoir valider ce module. Si vous quittez maintenant, votre progression ne sera pas enregistrée et vous devrez recommencer.`}
+      />
+
       <PageBreadcrumb items={[
         { label: 'Mes formations', href: '/learner' },
         { label: data.module.title },
